@@ -19,6 +19,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 env = environ.Env(
     SECRET_KEY=str,
     DATABASE_URL=str,
+    WHAPI_API_KEY=str,
+    WHAPI_BASE_URL=str,
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -29,7 +31,11 @@ environ.Env.read_env(BASE_DIR / ".env")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
 
+WHAPI_API_KEY = env("WHAPI_API_KEY")
+WHAPI_BASE_URL = env("WHAPI_BASE_URL")
+
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
 
 ALLOWED_HOSTS = []
@@ -47,7 +53,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "djoser",
     "rest_framework_simplejwt",
-    "rest_framework.authtoken",
     "phonenumber_field",
     "accounts",
 ]
@@ -131,7 +136,6 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -164,3 +168,16 @@ DJOSER = {
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
 }
+
+# Cache: use Django's built-in DB cache backend so cache is stored in Postgres
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache_table",
+        "TIMEOUT": 300,
+        "OPTIONS": {"MAX_ENTRIES": 10000},
+    }
+}
+
+# To create the cache table in the default database run:
+# python manage.py createcachetable
