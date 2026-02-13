@@ -50,6 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=30, blank=True)
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.USER)
     is_active = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
@@ -60,3 +61,28 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return str(self.phone_number)
+
+
+class Guest(User):
+    def save(self, *args, **kwargs):
+        self.role = Role.USER
+        super().save(*args, **kwargs)
+
+
+class Staff(User):
+    def save(self, *args, **kwargs):
+        if self.role not in [Role.MANAGER, Role.AGENT, Role.ADMIN]:
+            raise ValueError("Invalid role for Staff")
+        super().save(*args, **kwargs)
+
+
+class Manager(Staff):
+    def save(self, *args, **kwargs):
+        self.role = Role.MANAGER
+        super().save(*args, **kwargs)
+
+
+class Admin(Staff):
+    def save(self, *args, **kwargs):
+        self.role = Role.ADMIN
+        super().save(*args, **kwargs)

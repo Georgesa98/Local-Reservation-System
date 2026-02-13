@@ -1,5 +1,7 @@
 import pytest
 
+from django.core.cache import cache
+
 
 @pytest.mark.django_db
 class TestAuthEndpoints:
@@ -82,3 +84,32 @@ class TestAuthEndpoints:
         )
         assert response.status_code == 401
         assert "detail" in response.data
+
+    def test_resend_otp_success(self, api_client, mock_send_otp_with_cache):
+        """Test resending OTP after expiration."""
+        phone_number = "+14155552671"
+        # First, signup to send initial OTP
+        api_client.post(
+            "/auth/users/",
+            {"phone_number": phone_number, "password": "strongpassword123"},
+        )
+        cache.delete(f"otp_{phone_number}")
+        response = api_client.post("/auth/resend-otp/", {"phone_number": phone_number})
+        assert response.status_code == 200
+        assert "message" in response.data
+
+    def test_resend_otp_invalid_phone(self, api_client):
+        """Test resend OTP with invalid phone number."""
+        response = api_client.post(
+            "/auth/resend-otp/", {"phone_number": "invalid-phone"}
+        )
+        assert response.status_code == 400
+        assert "phone_number" in response.data
+
+    def test_resend_otp_user_not_found(self, api_client):
+        """Test resend OTP for non-existent user."""
+        response = api_client.post(
+            "/auth/resend-otp/", {"phone_number": "+14155550001"}
+        )
+        assert response.status_code == 404
+        assert "error" in response.data

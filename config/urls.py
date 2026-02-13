@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from accounts.views import VerifyOTPView
+from accounts.views import ResendOTPView, VerifyOTPView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -25,4 +25,5 @@ urlpatterns = [
     path("auth/", include("djoser.urls.authtoken")),
     path("auth/", include("djoser.urls.jwt")),
     path("auth/verify-otp/", VerifyOTPView.as_view(), name="verify-otp"),
+    path("auth/resend-otp/", ResendOTPView.as_view(), name="resend-otp"),
 ]

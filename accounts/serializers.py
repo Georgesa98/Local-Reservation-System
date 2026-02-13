@@ -6,6 +6,7 @@ from rest_framework import serializers
 from django.db import transaction
 from .models import User
 from accounts.services.WhatsappService import send_otp
+from phonenumber_field.serializerfields import PhoneNumberField
 
 
 class UserCreateSerializer(DjoserUserCreateSerializer):
@@ -34,5 +35,9 @@ class UserSerializer(DjoserUserSerializer):
 
 
 class VerifyOTPSerializer(serializers.Serializer):
-    phone_number = serializers.CharField()
+    phone_number = PhoneNumberField()
     otp_code = serializers.CharField()
+
+
+class ResendOTPSerializer(serializers.Serializer):
+    phone_number = PhoneNumberField()
