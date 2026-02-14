@@ -49,7 +49,8 @@ class TestAuthEndpoints:
             "/auth/verify-otp/", {"phone_number": phone_number, "otp_code": "123456"}
         )
         assert verify.status_code == 200
-        assert verify.data.get("verified") is True
+        assert verify.data["success"] is True
+        assert verify.data["data"]["verified"] is True
 
     def test_valid_user_signin(self, api_client, create_user):
         """Test user signin with valid credentials."""
@@ -96,7 +97,8 @@ class TestAuthEndpoints:
         cache.delete(f"otp_{phone_number}")
         response = api_client.post("/auth/resend-otp/", {"phone_number": phone_number})
         assert response.status_code == 200
-        assert "message" in response.data
+        assert response.data["success"] is True
+        assert "OTP resent" in response.data["message"]
 
     def test_resend_otp_invalid_phone(self, api_client):
         """Test resend OTP with invalid phone number."""
@@ -104,7 +106,7 @@ class TestAuthEndpoints:
             "/auth/resend-otp/", {"phone_number": "invalid-phone"}
         )
         assert response.status_code == 400
-        assert "phone_number" in response.data
+        assert response.data["success"] is False
 
     def test_resend_otp_user_not_found(self, api_client):
         """Test resend OTP for non-existent user."""
@@ -112,4 +114,5 @@ class TestAuthEndpoints:
             "/auth/resend-otp/", {"phone_number": "+14155550001"}
         )
         assert response.status_code == 404
-        assert "error" in response.data
+        assert response.data["success"] is False
+        assert "User not found" in response.data["message"]

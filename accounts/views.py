@@ -7,6 +7,7 @@ from rest_framework import status
 from accounts.models import User
 from accounts.serializers import ResendOTPSerializer, VerifyOTPSerializer
 from accounts.services.WhatsappService import can_resend_otp, send_otp, verify_otp
+from config.utils import SuccessResponse, ErrorResponse
 
 
 # Create your views here.
@@ -20,19 +21,21 @@ class VerifyOTPView(APIView):
                 result = verify_otp(
                     serializer.data["phone_number"], serializer.data["otp_code"]
                 )
-                return Response({"verified": result}, status=status.HTTP_200_OK)
+                return SuccessResponse(data={"verified": result})
 
         except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            return ErrorResponse(
+                message="User not found", status_code=status.HTTP_404_NOT_FOUND
             )
 
         except ValidationError as val_error:
-            return Response(str(val_error), status=status.HTTP_400_BAD_REQUEST)
+            return ErrorResponse(
+                message=str(val_error), status_code=status.HTTP_400_BAD_REQUEST
+            )
 
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return ErrorResponse(
+                message=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -46,22 +49,22 @@ class ResendOTPView(APIView):
                 )  # Ensure user exists
                 can_resend, message = can_resend_otp(serializer.data["phone_number"])
                 if not can_resend:
-                    return Response(
-                        {"error": message}, status=status.HTTP_400_BAD_REQUEST
+                    return ErrorResponse(
+                        message=message, status_code=status.HTTP_429_TOO_MANY_REQUESTS
                     )
                 send_otp(serializer.data["phone_number"])
-                return Response(
-                    {"message": "OTP resent successfully"}, status=status.HTTP_200_OK
-                )
+                return SuccessResponse(message="OTP resent successfully")
 
         except User.DoesNotExist:
-            return Response(
-                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            return ErrorResponse(
+                message="User not found", status_code=status.HTTP_404_NOT_FOUND
             )
         except ValidationError as val_error:
-            return Response(str(val_error), status=status.HTTP_400_BAD_REQUEST)
+            return ErrorResponse(
+                message=str(val_error), status_code=status.HTTP_400_BAD_REQUEST
+            )
 
         except Exception as e:
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            return ErrorResponse(
+                message=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
