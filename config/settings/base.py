@@ -21,6 +21,10 @@ env = environ.Env(
     DATABASE_URL=str,
     WHAPI_API_KEY=str,
     WHAPI_BASE_URL=str,
+    SUPABASE_ACCESS_KEY=str,
+    SUPABASE_SECRET_KEY=str,
+    SUPABASE_BUCKET_NAME=str,
+    S3_ENDPOINT_URL=str,
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -54,7 +58,10 @@ INSTALLED_APPS = [
     "djoser",
     "rest_framework_simplejwt",
     "phonenumber_field",
-    "accounts",
+    "storages",
+    "api",
+    "api.accounts",
+    "api.room",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -162,9 +169,9 @@ SIMPLE_JWT = {
 DJOSER = {
     "LOGIN_FIELD": "phone_number",
     "SERIALIZERS": {
-        "user_create": "accounts.serializers.UserCreateSerializer",
-        "user": "accounts.serializers.UserSerializer",
-        "current_user": "accounts.serializers.UserSerializer",
+        "user_create": "api.accounts.serializers.UserCreateSerializer",
+        "user": "api.accounts.serializers.UserSerializer",
+        "current_user": "api.accounts.serializers.UserSerializer",
         "user_delete": "djoser.serializers.UserDeleteSerializer",
     },
 }
@@ -178,6 +185,19 @@ CACHES = {
         "OPTIONS": {"MAX_ENTRIES": 10000},
     }
 }
+
+# Supabase Storage Configuration
+AWS_ACCESS_KEY_ID = env("SUPABASE_ANON_KEY")
+AWS_SECRET_ACCESS_KEY = env("SUPABASE_SECRET_KEY")
+AWS_STORAGE_BUCKET_NAME = env("SUPABASE_BUCKET_NAME")
+AWS_S3_REGION_NAME = "ap-southeast-2"  # From .env
+AWS_S3_ENDPOINT_URL = env("S3_ENDPOINT_URL")
+AWS_S3_CUSTOM_DOMAIN = f'{env("SUPABASE_PROJECT_ID")}.storage.supabase.co'
+AWS_DEFAULT_ACL = "public-read"
+AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 
 # To create the cache table in the default database run:
 # python manage.py createcachetable

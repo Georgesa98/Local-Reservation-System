@@ -1,12 +1,11 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
-from accounts.models import User
-from accounts.serializers import ResendOTPSerializer, VerifyOTPSerializer
-from accounts.services.WhatsappService import can_resend_otp, send_otp, verify_otp
+from api.accounts.models import User
+from api.accounts.serializers import ResendOTPSerializer, VerifyOTPSerializer
+from api.accounts.services.WhatsappService import can_resend_otp, send_otp, verify_otp
 from config.utils import SuccessResponse, ErrorResponse
 
 

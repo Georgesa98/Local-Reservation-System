@@ -5,7 +5,7 @@ from djoser.serializers import (
 from rest_framework import serializers
 from django.db import transaction
 from .models import User
-from accounts.services.WhatsappService import send_otp
+from api.accounts.services.WhatsappService import send_otp
 from phonenumber_field.serializerfields import PhoneNumberField
 
 

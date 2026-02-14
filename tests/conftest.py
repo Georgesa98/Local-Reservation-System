@@ -28,7 +28,7 @@ def mock_send_otp_noop(monkeypatch):
     def _noop(phone_number):
         return True
 
-    monkeypatch.setattr("accounts.serializers.send_otp", _noop, raising=True)
+    monkeypatch.setattr("api.accounts.serializers.send_otp", _noop, raising=True)
     return _noop
 
 
@@ -41,5 +41,7 @@ def mock_send_otp_with_cache(monkeypatch):
         cache.set(f"otp_{phone_number.raw_input}", otp, timeout=300)
         return True
 
-    monkeypatch.setattr("accounts.serializers.send_otp", _send_with_cache, raising=True)
+    monkeypatch.setattr(
+        "api.accounts.serializers.send_otp", _send_with_cache, raising=True
+    )
     return _send_with_cache

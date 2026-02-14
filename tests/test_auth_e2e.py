@@ -9,7 +9,7 @@ class TestAuthEndpoints:
     def test_valid_user_signup(self, api_client, mock_send_otp_noop):
         """Test user signup with valid data."""
         response = api_client.post(
-            "/auth/users/",
+            "/api/auth/users/",
             {"phone_number": "+14155552671", "password": "strongpassword123"},
         )
         assert response.status_code == 201
@@ -18,11 +18,11 @@ class TestAuthEndpoints:
     def test_signup_with_existing_phone_number(self, api_client, mock_send_otp_noop):
         """Test signup with an already existing phone number."""
         api_client.post(
-            "/auth/users/",
+            "/api/auth/users/",
             {"phone_number": "+14155552671", "password": "strongpassword123"},
         )
         response = api_client.post(
-            "/auth/users/",
+            "/api/auth/users/",
             {"phone_number": "+14155552671", "password": "anotherpassword"},
         )
         assert response.status_code == 400
@@ -31,7 +31,8 @@ class TestAuthEndpoints:
     def test_signup_with_invalid_phone_number(self, api_client, mock_send_otp_noop):
         """Test signup with an invalid phone number."""
         response = api_client.post(
-            "/auth/users/", {"phone_number": "invalid-phone", "password": "password123"}
+            "/api/auth/users/",
+            {"phone_number": "invalid-phone", "password": "password123"},
         )
         assert response.status_code == 400
         assert "phone_number" in response.data
@@ -40,13 +41,14 @@ class TestAuthEndpoints:
         """Test the full flow: signup triggers OTP and verify-otp confirms it."""
         phone_number = "+14155552671"
         signup = api_client.post(
-            "/auth/users/",
+            "/api/auth/users/",
             {"phone_number": phone_number, "password": "strongpassword123"},
         )
         assert signup.status_code == 201
 
         verify = api_client.post(
-            "/auth/verify-otp/", {"phone_number": phone_number, "otp_code": "123456"}
+            "/api/auth/verify-otp/",
+            {"phone_number": phone_number, "otp_code": "123456"},
         )
         assert verify.status_code == 200
         assert verify.data["success"] is True
@@ -59,7 +61,8 @@ class TestAuthEndpoints:
         create_user(phone_number=phone_number, password=password)
 
         response = api_client.post(
-            "/auth/jwt/create/", {"phone_number": phone_number, "password": password}
+            "/api/auth/jwt/create/",
+            {"phone_number": phone_number, "password": password},
         )
         assert response.status_code == 200
         assert "access" in response.data
@@ -71,7 +74,7 @@ class TestAuthEndpoints:
         create_user(phone_number=phone_number, password=password)
 
         response = api_client.post(
-            "/auth/jwt/create/",
+            "/api/auth/jwt/create/",
             {"phone_number": phone_number, "password": "wrongpassword"},
         )
         assert response.status_code == 401
@@ -80,7 +83,7 @@ class TestAuthEndpoints:
     def test_signin_with_nonexistent_phone_number(self, api_client):
         """Test signin with a non-existent phone number."""
         response = api_client.post(
-            "/auth/jwt/create/",
+            "/api/auth/jwt/create/",
             {"phone_number": "+14155550001", "password": "password123"},
         )
         assert response.status_code == 401
@@ -91,11 +94,13 @@ class TestAuthEndpoints:
         phone_number = "+14155552671"
         # First, signup to send initial OTP
         api_client.post(
-            "/auth/users/",
+            "/api/auth/users/",
             {"phone_number": phone_number, "password": "strongpassword123"},
         )
         cache.delete(f"otp_{phone_number}")
-        response = api_client.post("/auth/resend-otp/", {"phone_number": phone_number})
+        response = api_client.post(
+            "/api/auth/resend-otp/", {"phone_number": phone_number}
+        )
         assert response.status_code == 200
         assert response.data["success"] is True
         assert "OTP resent" in response.data["message"]
@@ -103,7 +108,7 @@ class TestAuthEndpoints:
     def test_resend_otp_invalid_phone(self, api_client):
         """Test resend OTP with invalid phone number."""
         response = api_client.post(
-            "/auth/resend-otp/", {"phone_number": "invalid-phone"}
+            "/api/auth/resend-otp/", {"phone_number": "invalid-phone"}
         )
         assert response.status_code == 400
         assert response.data["success"] is False
@@ -111,7 +116,7 @@ class TestAuthEndpoints:
     def test_resend_otp_user_not_found(self, api_client):
         """Test resend OTP for non-existent user."""
         response = api_client.post(
-            "/auth/resend-otp/", {"phone_number": "+14155550001"}
+            "/api/auth/resend-otp/", {"phone_number": "+14155550001"}
         )
         assert response.status_code == 404
         assert response.data["success"] is False
