@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from api.accounts.models import Manager
+from api.accounts.models import Manager, Staff
 
 
 class Room(models.Model):
@@ -68,6 +68,12 @@ class RuleType(models.TextChoices):
     LENGTH_OF_STAY = "length_of_stay", "Length of Stay"
 
 
+class ReasonType(models.TextChoices):
+    MAINTENANCE = "maintenance", "Maintenance"
+    PERSONAL_USE = "personal_use", "Personal Use"
+    OTHER = "other", "Other"
+
+
 class PricingRule(models.Model):
     room = models.ForeignKey(
         Room, on_delete=models.CASCADE, related_name="pricing_rules"
@@ -92,3 +98,28 @@ class PricingRule(models.Model):
 
     def __str__(self):
         return f"{self.rule_type} for {self.room.title}"
+
+
+class RoomAvailability(models.Model):
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, related_name="availabilities"
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    reason = models.CharField(max_length=20, choices=ReasonType.choices)
+    notes = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        Staff,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_availabilities",
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["room", "start_date", "end_date"]),
+        ]
+
+    def __str__(self):
+        return f"Blocked {self.start_date} to {self.end_date} for {self.room.title}"

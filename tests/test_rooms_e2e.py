@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 from api.accounts.models import Guest, User, Manager
-from api.room.models import Room, PricingRule
+from api.room.models import Room, PricingRule, RoomAvailability
 
 
 class RoomE2ETests(TestCase):
@@ -428,3 +428,346 @@ class PricingRuleE2ETests(TestCase):
             )
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class RoomAvailabilityE2ETests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        # Create test users
+        self.manager = Manager.objects.create_user(
+            phone_number="+1234567890", password="password", role="MANAGER"
+        )
+        self.other_manager = Manager.objects.create_user(
+            phone_number="+0987654321", password="password", role="MANAGER"
+        )
+        self.guest = Guest.objects.create_user(
+            phone_number="+1111111111", password="password", role="USER"
+        )
+        # Create sample room
+        self.room = Room.objects.create(
+            title="Test Room",
+            base_price_per_night=100.00,
+            location="NYC",
+            capacity=2,
+            manager=self.manager,
+            is_active=True,
+        )
+        # Create sample availabilities
+        self.availability1 = RoomAvailability.objects.create(
+            room=self.room,
+            start_date="2026-03-01",
+            end_date="2026-03-05",
+            reason="maintenance",
+            notes="Plumbing work",
+            created_by=self.manager,
+        )
+        self.availability2 = RoomAvailability.objects.create(
+            room=self.room,
+            start_date="2026-03-10",
+            end_date="2026-03-10",
+            reason="personal_use",
+            notes="Family visit",
+            created_by=self.manager,
+        )
+
+    def test_list_availabilities_manager(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        reasons = [av["reason"] for av in response.data]
+        self.assertIn("maintenance", reasons)
+        self.assertIn("personal_use", reasons)
+
+    def test_list_availabilities_non_manager(self):
+        self.client.force_authenticate(user=self.other_manager)
+        response = self.client.get(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_availability_success(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {
+            "start_date": "2026-04-01",
+            "end_date": "2026-04-03",
+            "reason": "other",
+            "notes": "Special event",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["reason"], "other")
+        self.assertEqual(response.data["room"], self.room.id)
+
+    def test_create_availability_invalid_dates(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {
+            "start_date": "2026-04-03",
+            "end_date": "2026-04-01",  # start after end
+            "reason": "maintenance",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_availability_unauthenticated(self):
+        data = {
+            "start_date": "2026-04-01",
+            "end_date": "2026-04-02",
+            "reason": "maintenance",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_availability_non_manager(self):
+        self.client.force_authenticate(user=self.guest)
+        data = {
+            "start_date": "2026-04-01",
+            "end_date": "2026-04-02",
+            "reason": "maintenance",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_availability_detail_manager(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": self.availability1.id},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["reason"], "maintenance")
+
+    def test_get_availability_detail_non_manager(self):
+        self.client.force_authenticate(user=self.other_manager)
+        response = self.client.get(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": self.availability1.id},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_availability_patch(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {"notes": "Updated notes"}
+        response = self.client.patch(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": self.availability1.id},
+            ),
+            data,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.availability1.refresh_from_db()
+        self.assertEqual(self.availability1.notes, "Updated notes")
+
+    def test_update_availability_non_manager(self):
+        self.client.force_authenticate(user=self.other_manager)
+        data = {"notes": "Hacked"}
+        response = self.client.patch(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": self.availability1.id},
+            ),
+            data,
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_availability_manager(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.delete(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": self.availability1.id},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        with self.assertRaises(RoomAvailability.DoesNotExist):
+            RoomAvailability.objects.get(id=self.availability1.id)
+
+    def test_delete_availability_non_manager(self):
+        self.client.force_authenticate(user=self.other_manager)
+        response = self.client.delete(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": self.availability1.id},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_availabilities_in_room_detail(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(reverse("room-detail", kwargs={"pk": self.room.id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("availabilities", response.data)
+        self.assertEqual(len(response.data["availabilities"]), 2)
+        reasons = [av["reason"] for av in response.data["availabilities"]]
+        self.assertIn("maintenance", reasons)
+        self.assertIn("personal_use", reasons)
+
+    def test_filter_availabilities_by_start_date(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            {"start_date": "2026-03-01"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["reason"], "maintenance")
+
+    def test_filter_availabilities_by_end_date(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            {"end_date": "2026-03-10"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["reason"], "personal_use")
+
+    def test_filter_availabilities_by_reason(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            {"reason": "maintenance"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["reason"], "maintenance")
+
+    def test_create_single_day_availability(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {
+            "start_date": "2026-05-01",
+            "end_date": "2026-05-01",
+            "reason": "other",
+            "notes": "Single day block",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["start_date"], "2026-05-01")
+        self.assertEqual(response.data["end_date"], "2026-05-01")
+
+    def test_create_availability_past_dates(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {
+            "start_date": "2020-01-01",
+            "end_date": "2020-01-02",
+            "reason": "maintenance",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_availability_future_dates(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {
+            "start_date": "2030-01-01",
+            "end_date": "2030-01-05",
+            "reason": "maintenance",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_overlapping_availabilities(self):
+        # Should allow overlapping, no uniqueness constraint
+        self.client.force_authenticate(user=self.manager)
+        data = {
+            "start_date": "2026-03-02",
+            "end_date": "2026-03-04",
+            "reason": "other",
+            "notes": "Overlapping with maintenance",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Now should have 3 availabilities
+        response = self.client.get(
+            reverse("room-availability-list-create", kwargs={"room_id": self.room.id})
+        )
+        self.assertEqual(len(response.data), 3)
+
+    def test_get_availability_non_existent_room(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(
+            reverse("room-availability-list-create", kwargs={"room_id": 99999})
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_create_availability_non_existent_room(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {
+            "start_date": "2026-04-01",
+            "end_date": "2026-04-02",
+            "reason": "maintenance",
+        }
+        response = self.client.post(
+            reverse("room-availability-list-create", kwargs={"room_id": 99999}),
+            data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_non_existent_availability(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": 99999},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_non_existent_availability(self):
+        self.client.force_authenticate(user=self.manager)
+        data = {"notes": "Test"}
+        response = self.client.patch(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": 99999},
+            ),
+            data,
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_non_existent_availability(self):
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.delete(
+            reverse(
+                "room-availability-detail",
+                kwargs={"room_id": self.room.id, "pk": 99999},
+            )
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

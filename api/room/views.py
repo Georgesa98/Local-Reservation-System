@@ -3,9 +3,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Room, RoomImage, PricingRule
-from .serializers import RoomSerializer, RoomImageSerializer, PricingRuleSerializer
-from .services import RoomService, PricingRuleService
+from .models import Room, RoomImage
+from .serializers import (
+    RoomSerializer,
+    RoomImageSerializer,
+    PricingRuleSerializer,
+    RoomAvailabilitySerializer,
+)
+from .services import RoomService, PricingRuleService, RoomAvailabilityService
 from .permissions import IsManager, IsRoomManager
 
 
@@ -160,3 +165,74 @@ class RoomPublicListView(APIView):
         rooms = RoomService.list_rooms(filters=filters)
         serializer = RoomSerializer(rooms, many=True)
         return Response(serializer.data)
+
+
+class RoomAvailabilityListCreateView(APIView):
+    permission_classes = [IsAuthenticated, IsRoomManager]
+
+    def get(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        self.check_object_permissions(request, room)
+        filters = {}
+        if "start_date" in request.GET:
+            filters["start_date"] = request.GET["start_date"]
+        if "end_date" in request.GET:
+            filters["end_date"] = request.GET["end_date"]
+        if "reason" in request.GET:
+            filters["reason"] = request.GET["reason"]
+        availabilities = RoomAvailabilityService.list_room_availabilities(
+            room_id, filters=filters, user=request.user
+        )
+        serializer = RoomAvailabilitySerializer(availabilities, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, room_id):
+        room = get_object_or_404(Room, id=room_id)
+        self.check_object_permissions(request, room)
+        data = request.data.copy()
+        data["room"] = room.id
+        serializer = RoomAvailabilitySerializer(data=data)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            validated_data["room"] = room
+            availability = RoomAvailabilityService.create_room_availability(
+                validated_data, request.user
+            )
+            serializer = RoomAvailabilitySerializer(availability)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RoomAvailabilityDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsRoomManager]
+
+    def get(self, request, room_id, pk):
+        room = get_object_or_404(Room, id=room_id)
+        self.check_object_permissions(request, room)
+        availability = RoomAvailabilityService.get_room_availability(
+            room_id, pk, request.user
+        )
+        serializer = RoomAvailabilitySerializer(availability)
+        return Response(serializer.data)
+
+    def patch(self, request, room_id, pk):
+        room = get_object_or_404(Room, id=room_id)
+        self.check_object_permissions(request, room)
+        availability = RoomAvailabilityService.get_room_availability(
+            room_id, pk, request.user
+        )
+        serializer = RoomAvailabilitySerializer(
+            availability, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            RoomAvailabilityService.update_room_availability(
+                room_id, pk, serializer.validated_data, request.user
+            )
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, room_id, pk):
+        room = get_object_or_404(Room, id=room_id)
+        self.check_object_permissions(request, room)
+        RoomAvailabilityService.delete_room_availability(room_id, pk, request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)

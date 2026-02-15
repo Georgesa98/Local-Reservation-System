@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Room, RoomImage, PricingRule
+from .models import Room, RoomImage, PricingRule, RoomAvailability
 
 
 class RoomImageSerializer(serializers.ModelSerializer):
@@ -25,9 +25,33 @@ class PricingRuleSerializer(serializers.ModelSerializer):
         ]
 
 
+class RoomAvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomAvailability
+        fields = [
+            "id",
+            "room",
+            "start_date",
+            "end_date",
+            "reason",
+            "notes",
+            "created_by",
+        ]
+        read_only_fields = ["id", "room", "created_by"]
+
+    def validate(self, data):
+        if "start_date" in data and "end_date" in data:
+            if data["start_date"] > data["end_date"]:
+                raise serializers.ValidationError(
+                    "Start date must be before or equal to end date."
+                )
+        return data
+
+
 class RoomSerializer(serializers.ModelSerializer):
     images = RoomImageSerializer(many=True, read_only=True)
     pricing_rules = PricingRuleSerializer(many=True, read_only=True)
+    availabilities = RoomAvailabilitySerializer(many=True, read_only=True)
 
     class Meta:
         model = Room
@@ -48,6 +72,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "updated_at",
             "images",
             "pricing_rules",
+            "availabilities",
         ]
         read_only_fields = [
             "average_rating",

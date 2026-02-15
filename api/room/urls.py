@@ -7,6 +7,8 @@ from .views import (
     PricingRuleListCreateView,
     PricingRuleDetailView,
     RoomPublicListView,
+    RoomAvailabilityListCreateView,
+    RoomAvailabilityDetailView,
 )
 
 
@@ -33,5 +35,15 @@ urlpatterns = [
         "<int:room_id>/pricing-rules/<int:pk>/",
         PricingRuleDetailView.as_view(),
         name="pricing-rule-detail",
+    ),
+    path(
+        "<int:room_id>/availabilities/",
+        RoomAvailabilityListCreateView.as_view(),
+        name="room-availability-list-create",
+    ),
+    path(
+        "<int:room_id>/availabilities/<int:pk>/",
+        RoomAvailabilityDetailView.as_view(),
+        name="room-availability-detail",
     ),
 ]
