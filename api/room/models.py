@@ -3,20 +3,14 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Manager
 
 
-class Service(models.TextChoices):
-    AIR_CONDITIONING = "AIR_CONDITIONING", "Air Conditioning"
-    WIFI = "WIFI", "WiFi"
-    TV = "TV", "TV"
-    MINIBAR = "MINIBAR", "Minibar"
-
-
 class Room(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    price_per_night = models.DecimalField(
+    base_price_per_night = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
     )
     location = models.CharField(max_length=255)
+    full_address = models.TextField(blank=True)
     manager = models.ForeignKey(
         Manager,
         on_delete=models.SET_NULL,
@@ -25,9 +19,10 @@ class Room(models.Model):
         related_name="managed_rooms",
     )
     capacity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    services = models.CharField(
-        max_length=255, blank=True, help_text="Comma-separated services"
-    )  # Or use ManyToMany if needed
+    services = models.JSONField(
+        default=list,
+        help_text="List of services: air_conditioning, wifi, tv, minibar, etc",
+    )
     average_rating = models.DecimalField(
         max_digits=3,
         decimal_places=2,
@@ -35,14 +30,18 @@ class Room(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(5)],
     )
     ratings_count = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
             models.Index(fields=["location"]),
-            models.Index(fields=["price_per_night"]),
+            models.Index(fields=["base_price_per_night"]),
             models.Index(fields=["capacity"]),
             models.Index(fields=["average_rating"]),
             models.Index(fields=["manager"]),
+            models.Index(fields=["is_active"]),
         ]
 
     def __str__(self):
@@ -60,3 +59,36 @@ class RoomImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.room.title}"
+
+
+class RuleType(models.TextChoices):
+    WEEKEND = "weekend", "Weekend"
+    HOLIDAY = "holiday", "Holiday"
+    SEASONAL = "seasonal", "Seasonal"
+    LENGTH_OF_STAY = "length_of_stay", "Length of Stay"
+
+
+class PricingRule(models.Model):
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, related_name="pricing_rules"
+    )
+    rule_type = models.CharField(max_length=20, choices=RuleType.choices)
+    price_modifier = models.DecimalField(max_digits=10, decimal_places=2)
+    is_percentage = models.BooleanField(default=False)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    min_nights = models.PositiveIntegerField(null=True, blank=True)
+    days_of_week = models.JSONField(
+        default=list, help_text="List of day numbers, e.g., [5,6] for Fri-Sat"
+    )
+    is_active = models.BooleanField(default=True)
+    priority = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["room", "is_active"]),
+            models.Index(fields=["priority"]),
+        ]
+
+    def __str__(self):
+        return f"{self.rule_type} for {self.room.title}"
