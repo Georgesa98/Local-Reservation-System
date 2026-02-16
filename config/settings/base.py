@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "api",
     "api.accounts",
     "api.room",
+    "api.booking",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
