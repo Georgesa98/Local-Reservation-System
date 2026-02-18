@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Guest, User
 from api.room.models import Room
 
@@ -57,3 +57,25 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"Booking {self.id} - {self.guest} for {self.room}"
+
+
+class Review(models.Model):
+    booking = models.OneToOneField(
+        Booking, on_delete=models.CASCADE, related_name="review"
+    )
+    guest = models.ForeignKey(Guest, on_delete=models.CASCADE, related_name="reviews")
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="reviews")
+    rating = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True)
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "review"
+        indexes = [
+            models.Index(fields=["guest"]),
+            models.Index(fields=["room"]),
+            models.Index(fields=["rating"]),
+        ]

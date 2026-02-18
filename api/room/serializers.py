@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import Room, RoomImage, PricingRule, RoomAvailability
 
 
@@ -6,6 +7,34 @@ class RoomImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomImage
         fields = ["id", "image", "alt_text", "is_main"]
+
+
+class RoomMinimalSerializer(serializers.ModelSerializer):
+    """Minimal room serializer without reviews to avoid circular dependency."""
+
+    images = RoomImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Room
+        fields = [
+            "id",
+            "title",
+            "description",
+            "base_price_per_night",
+            "location",
+            "full_address",
+            "manager",
+            "capacity",
+            "services",
+            "average_rating",
+            "ratings_count",
+            "is_active",
+            "images",
+        ]
+        read_only_fields = [
+            "average_rating",
+            "ratings_count",
+        ]
 
 
 class PricingRuleSerializer(serializers.ModelSerializer):
@@ -52,6 +81,7 @@ class RoomSerializer(serializers.ModelSerializer):
     images = RoomImageSerializer(many=True, read_only=True)
     pricing_rules = PricingRuleSerializer(many=True, read_only=True)
     availabilities = RoomAvailabilitySerializer(many=True, read_only=True)
+    reviews = serializers.SerializerMethodField()
 
     class Meta:
         model = Room
@@ -73,6 +103,7 @@ class RoomSerializer(serializers.ModelSerializer):
             "images",
             "pricing_rules",
             "availabilities",
+            "reviews",
         ]
         read_only_fields = [
             "average_rating",
@@ -80,3 +111,11 @@ class RoomSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_reviews(self, obj):
+        """Lazy import to avoid circular dependency."""
+        from api.booking.serializers import ReviewSerializer
+
+        # Filter to only published reviews for public view
+        reviews = obj.reviews.filter(is_published=True)
+        return ReviewSerializer(reviews, many=True).data

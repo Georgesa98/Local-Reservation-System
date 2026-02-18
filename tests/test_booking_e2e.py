@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from api.accounts.models import Guest, User, Manager
 from api.room.models import Room, RoomAvailability
-from api.booking.models import Booking, BookingStatus, BookingSource
+from api.booking.models import Booking, BookingStatus, BookingSource, Review
 
 
 class BookingE2ETests(TestCase):
@@ -594,3 +594,700 @@ class BookingE2ETests(TestCase):
             reverse("booking-complete", kwargs={"pk": booking_id})
         )
         self.assertEqual(complete_response.data["status"], BookingStatus.COMPLETED)
+
+
+class ReviewE2ETests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        # Create test users
+        self.manager = Manager.objects.create_user(
+            phone_number="+1234567890", password="password", role="MANAGER"
+        )
+        self.guest_user = Guest.objects.create_user(
+            phone_number="+1111111111", password="password", role="USER"
+        )
+        self.other_guest = Guest.objects.create_user(
+            phone_number="+2222222222", password="password", role="USER"
+        )
+
+        # Create test room
+        self.room = Room.objects.create(
+            title="Deluxe Room",
+            base_price_per_night=100.00,
+            location="NYC",
+            capacity=2,
+            average_rating=0.0,
+            ratings_count=0,
+            manager=self.manager,
+            is_active=True,
+        )
+
+        # Create test booking dates
+        self.today = date.today()
+        self.check_in = self.today - timedelta(days=10)
+        self.check_out = self.today - timedelta(days=7)
+
+        # Create completed booking for review
+        self.completed_booking = Booking.objects.create(
+            guest=self.guest_user,
+            room=self.room,
+            check_in_date=self.check_in,
+            check_out_date=self.check_out,
+            number_of_nights=3,
+            number_of_guests=2,
+            total_price=300.00,
+            status=BookingStatus.COMPLETED,
+            booking_source=BookingSource.WEB,
+            created_by=self.manager,
+        )
+
+        # Create pending booking (cannot be reviewed)
+        self.pending_booking = Booking.objects.create(
+            guest=self.guest_user,
+            room=self.room,
+            check_in_date=self.today + timedelta(days=5),
+            check_out_date=self.today + timedelta(days=8),
+            number_of_nights=3,
+            number_of_guests=2,
+            total_price=300.00,
+            status=BookingStatus.PENDING,
+            booking_source=BookingSource.WEB,
+            created_by=self.manager,
+        )
+
+        # Create completed booking for other guest
+        self.other_booking = Booking.objects.create(
+            guest=self.other_guest,
+            room=self.room,
+            check_in_date=self.check_in,
+            check_out_date=self.check_out,
+            number_of_nights=3,
+            number_of_guests=2,
+            total_price=300.00,
+            status=BookingStatus.COMPLETED,
+            booking_source=BookingSource.WEB,
+            created_by=self.manager,
+        )
+
+    # ==================== Create Review Tests ====================
+
+    def test_create_review_success(self):
+        """Test creating a review for completed booking"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {
+            "rating": 5,
+            "comment": "Excellent stay! Very comfortable and clean.",
+        }
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["rating"], 5)
+        self.assertEqual(response.data["comment"], "Excellent stay! Very comfortable and clean.")
+        self.assertEqual(response.data["guest"]["id"], self.guest_user.id)
+        self.assertEqual(response.data["room"]["id"], self.room.id)
+        self.assertFalse(response.data["is_published"])  # Should start unpublished
+
+    def test_create_review_minimal_data(self):
+        """Test creating review with only rating (no comment)"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 4}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["rating"], 4)
+        self.assertEqual(response.data["comment"], "")
+
+    def test_create_review_for_non_completed_booking(self):
+        """Test creating review for non-completed booking fails"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.pending_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_create_review_for_other_guest_booking(self):
+        """Test creating review for someone else's booking fails"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.other_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_create_duplicate_review(self):
+        """Test creating duplicate review for same booking fails"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        
+        # Create first review
+        response1 = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+        
+        # Attempt duplicate
+        response2 = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_review_invalid_rating_too_high(self):
+        """Test creating review with rating > 5 fails"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 6, "comment": "Too good!"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_review_invalid_rating_too_low(self):
+        """Test creating review with rating < 1 fails"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 0, "comment": "Invalid rating"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_review_missing_rating(self):
+        """Test creating review without rating fails"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"comment": "No rating provided"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_review_unauthenticated(self):
+        """Test creating review without authentication fails"""
+        data = {"rating": 5, "comment": "Great!"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_create_review_non_guest_user(self):
+        """Test creating review as manager (not guest) fails"""
+        self.client.force_authenticate(user=self.manager)
+        data = {"rating": 5, "comment": "Great!"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_review_booking_not_found(self):
+        """Test creating review for non-existent booking"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": 99999}),
+            data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # ==================== Get Review Tests ====================
+
+    def test_get_published_review_success(self):
+        """Test getting a published review"""
+        from api.booking.models import Review
+        
+        # Create and publish a review
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Publish it as manager
+        self.client.force_authenticate(user=self.manager)
+        self.client.patch(reverse("review-publish", kwargs={"pk": review_id}))
+        
+        # Get it (anyone can see published reviews)
+        self.client.force_authenticate(user=self.other_guest)
+        response = self.client.get(reverse("review-detail", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["is_published"])
+
+    def test_get_unpublished_review_as_owner(self):
+        """Test owner can see their unpublished review"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Owner can see unpublished review
+        response = self.client.get(reverse("review-detail", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["is_published"])
+
+    def test_get_unpublished_review_as_manager(self):
+        """Test manager can see unpublished review for their room"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Manager can see unpublished review
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(reverse("review-detail", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_unpublished_review_as_other_user(self):
+        """Test other users cannot see unpublished reviews"""
+        self.client.force_authenticate(user=self.guest_user)
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Other user cannot see unpublished review
+        self.client.force_authenticate(user=self.other_guest)
+        response = self.client.get(reverse("review-detail", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_review_not_found(self):
+        """Test getting non-existent review"""
+        self.client.force_authenticate(user=self.guest_user)
+        response = self.client.get(reverse("review-detail", kwargs={"pk": 99999}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # ==================== Update Review Tests ====================
+
+    def test_update_review_rating_success(self):
+        """Test updating review rating"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 3, "comment": "Okay"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Update rating
+        update_data = {"rating": 5}
+        response = self.client.patch(
+            reverse("review-detail", kwargs={"pk": review_id}),
+            update_data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["rating"], 5)
+        self.assertEqual(response.data["comment"], "Okay")  # Comment unchanged
+
+    def test_update_review_comment_success(self):
+        """Test updating review comment"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 4, "comment": "Good"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Update comment
+        update_data = {"comment": "Actually, it was excellent!"}
+        response = self.client.patch(
+            reverse("review-detail", kwargs={"pk": review_id}),
+            update_data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["rating"], 4)  # Rating unchanged
+        self.assertEqual(response.data["comment"], "Actually, it was excellent!")
+
+    def test_update_review_both_fields_success(self):
+        """Test updating both rating and comment"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 3, "comment": "Meh"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Update both
+        update_data = {"rating": 5, "comment": "Changed my mind, it was great!"}
+        response = self.client.patch(
+            reverse("review-detail", kwargs={"pk": review_id}),
+            update_data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["rating"], 5)
+        self.assertEqual(response.data["comment"], "Changed my mind, it was great!")
+
+    def test_update_review_cannot_change_is_published(self):
+        """Test guest cannot change is_published field"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Try to update is_published (should be ignored)
+        update_data = {"is_published": True}
+        response = self.client.patch(
+            reverse("review-detail", kwargs={"pk": review_id}),
+            update_data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["is_published"])  # Should still be False
+
+    def test_update_review_as_non_owner(self):
+        """Test non-owner cannot update review"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Try to update as other guest
+        self.client.force_authenticate(user=self.other_guest)
+        update_data = {"rating": 1}
+        response = self.client.patch(
+            reverse("review-detail", kwargs={"pk": review_id}),
+            update_data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_review_invalid_rating(self):
+        """Test updating review with invalid rating"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Try invalid rating
+        update_data = {"rating": 10}
+        response = self.client.patch(
+            reverse("review-detail", kwargs={"pk": review_id}),
+            update_data,
+            format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ==================== Delete Review Tests ====================
+
+    def test_delete_review_as_owner(self):
+        """Test owner can delete their review"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Delete review
+        response = self.client.delete(reverse("review-detail", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        # Verify deletion
+        get_response = self.client.get(reverse("review-detail", kwargs={"pk": review_id}))
+        self.assertEqual(get_response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_review_as_non_owner(self):
+        """Test non-owner cannot delete review"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Try to delete as other guest
+        self.client.force_authenticate(user=self.other_guest)
+        response = self.client.delete(reverse("review-detail", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_review_not_found(self):
+        """Test deleting non-existent review"""
+        self.client.force_authenticate(user=self.guest_user)
+        response = self.client.delete(reverse("review-detail", kwargs={"pk": 99999}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # ==================== Publish Review Tests ====================
+
+    def test_publish_review_as_manager(self):
+        """Test manager can publish review"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Publish as manager
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.patch(reverse("review-publish", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["is_published"])
+
+    def test_unpublish_review_as_manager(self):
+        """Test manager can unpublish review"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Publish then unpublish as manager
+        self.client.force_authenticate(user=self.manager)
+        self.client.patch(reverse("review-publish", kwargs={"pk": review_id}))
+        
+        response = self.client.patch(reverse("review-publish", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data["is_published"])
+
+    def test_publish_review_as_non_manager(self):
+        """Test non-manager cannot publish review"""
+        self.client.force_authenticate(user=self.guest_user)
+        
+        # Create review
+        data = {"rating": 5, "comment": "Great!"}
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            data,
+            format="json"
+        )
+        review_id = create_response.data["id"]
+        
+        # Try to publish as guest (not manager)
+        response = self.client.patch(reverse("review-publish", kwargs={"pk": review_id}))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # ==================== List Room Reviews Tests ====================
+
+    def test_list_room_reviews_published_only(self):
+        """Test listing only published reviews for a room"""
+        # Create two reviews
+        self.client.force_authenticate(user=self.guest_user)
+        self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            {"rating": 5, "comment": "Great!"},
+            format="json"
+        )
+        
+        self.client.force_authenticate(user=self.other_guest)
+        create_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.other_booking.id}),
+            {"rating": 4, "comment": "Good!"},
+            format="json"
+        )
+        
+        # Publish one review
+        self.client.force_authenticate(user=self.manager)
+        self.client.patch(reverse("review-publish", kwargs={"pk": create_response.data["id"]}))
+        
+        # List reviews (unauthenticated - should see only published)
+        self.client.force_authenticate(user=None)  # Become unauthenticated
+        response = self.client.get(reverse("room-reviews", kwargs={"room_id": self.room.id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertTrue(response.data[0]["is_published"])
+
+    def test_list_room_reviews_manager_sees_all(self):
+        """Test manager sees all reviews (published and unpublished)"""
+        # Create two reviews
+        self.client.force_authenticate(user=self.guest_user)
+        self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            {"rating": 5, "comment": "Great!"},
+            format="json"
+        )
+        
+        self.client.force_authenticate(user=self.other_guest)
+        self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.other_booking.id}),
+            {"rating": 4, "comment": "Good!"},
+            format="json"
+        )
+        
+        # Manager sees all reviews
+        self.client.force_authenticate(user=self.manager)
+        response = self.client.get(reverse("room-reviews", kwargs={"room_id": self.room.id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_list_room_reviews_empty(self):
+        """Test listing reviews for room with no reviews"""
+        response = self.client.get(reverse("room-reviews", kwargs={"room_id": self.room.id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+    # ==================== Rating Aggregation Tests ====================
+
+    def test_room_rating_updates_on_publish(self):
+        """Test room average_rating updates when review is published"""
+        # Create two reviews
+        self.client.force_authenticate(user=self.guest_user)
+        review1_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            {"rating": 5, "comment": "Great!"},
+            format="json"
+        )
+        
+        self.client.force_authenticate(user=self.other_guest)
+        review2_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.other_booking.id}),
+            {"rating": 3, "comment": "Okay"},
+            format="json"
+        )
+        
+        # Publish both reviews
+        self.client.force_authenticate(user=self.manager)
+        self.client.patch(reverse("review-publish", kwargs={"pk": review1_response.data["id"]}))
+        self.client.patch(reverse("review-publish", kwargs={"pk": review2_response.data["id"]}))
+        
+        # Check room rating
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.ratings_count, 2)
+        self.assertEqual(self.room.average_rating, 4.0)  # (5 + 3) / 2
+
+    def test_room_rating_updates_on_unpublish(self):
+        """Test room average_rating updates when review is unpublished"""
+        # Create and publish review
+        self.client.force_authenticate(user=self.guest_user)
+        review_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            {"rating": 5, "comment": "Great!"},
+            format="json"
+        )
+        
+        self.client.force_authenticate(user=self.manager)
+        self.client.patch(reverse("review-publish", kwargs={"pk": review_response.data["id"]}))
+        
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.ratings_count, 1)
+        self.assertEqual(self.room.average_rating, 5.0)
+        
+        # Unpublish review
+        self.client.patch(reverse("review-publish", kwargs={"pk": review_response.data["id"]}))
+        
+        # Check room rating reset
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.ratings_count, 0)
+        self.assertEqual(self.room.average_rating, 0.0)
+
+    def test_room_rating_updates_on_delete(self):
+        """Test room average_rating updates when published review is deleted"""
+        # Create and publish review
+        self.client.force_authenticate(user=self.guest_user)
+        review_response = self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            {"rating": 5, "comment": "Great!"},
+            format="json"
+        )
+        
+        self.client.force_authenticate(user=self.manager)
+        self.client.patch(reverse("review-publish", kwargs={"pk": review_response.data["id"]}))
+        
+        # Delete review
+        self.client.force_authenticate(user=self.guest_user)
+        self.client.delete(reverse("review-detail", kwargs={"pk": review_response.data["id"]}))
+        
+        # Check room rating reset
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.ratings_count, 0)
+        self.assertEqual(self.room.average_rating, 0.0)
+
+    def test_room_rating_not_affected_by_unpublished_reviews(self):
+        """Test unpublished reviews don't affect room rating"""
+        # Create review but don't publish
+        self.client.force_authenticate(user=self.guest_user)
+        self.client.post(
+            reverse("booking-review-create", kwargs={"booking_id": self.completed_booking.id}),
+            {"rating": 1, "comment": "Terrible!"},
+            format="json"
+        )
+        
+        # Room rating should remain unchanged
+        self.room.refresh_from_db()
+        self.assertEqual(self.room.ratings_count, 0)
+        self.assertEqual(self.room.average_rating, 0.0)

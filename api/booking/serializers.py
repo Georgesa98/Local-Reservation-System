@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from api.room.serializers import RoomSerializer
+from api.room.serializers import RoomSerializer, RoomMinimalSerializer
 from api.accounts.serializers import UserSerializer
 
-from .models import Booking, BookingSource
+from .models import Booking, BookingSource, Review
 
 
 class BookingSerializer(serializers.ModelSerializer):
@@ -68,3 +68,31 @@ class BookingUpdateSerializer(serializers.Serializer):
 
 class CancelBookingSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, max_length=255)
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    guest = UserSerializer(read_only=True)
+    room = RoomMinimalSerializer(read_only=True)
+    is_published = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "guest",
+            "room",
+            "rating",
+            "comment",
+            "is_published",
+            "created_at",
+        ]
+
+
+class ReviewCreateSerializer(serializers.Serializer):
+    rating = serializers.IntegerField(min_value=1, max_value=5)
+    comment = serializers.CharField(required=False, allow_blank=True)
+
+
+class ReviewUpdateSerializer(serializers.Serializer):
+    rating = serializers.IntegerField(min_value=1, max_value=5, required=False)
+    comment = serializers.CharField(required=False, allow_blank=True)
