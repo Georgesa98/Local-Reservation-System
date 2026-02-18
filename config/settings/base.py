@@ -26,6 +26,9 @@ env = environ.Env(
     SUPABASE_BUCKET_NAME=str,
     S3_ENDPOINT_URL=str,
     TELEGRAM_BOT_TOKEN=str,
+    STRIPE_PUBLIC_KEY=str,
+    STRIPE_SECRET_KEY=str,
+    FIELD_ENCRYPTION_KEY=str,
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -35,11 +38,15 @@ environ.Env.read_env(BASE_DIR / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
+FIELD_ENCRYPTION_KEY = env("FIELD_ENCRYPTION_KEY")
 
 WHAPI_API_KEY = env("WHAPI_API_KEY")
 WHAPI_BASE_URL = env("WHAPI_BASE_URL")
 
 TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
+
+STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -67,6 +74,7 @@ INSTALLED_APPS = [
     "api.room",
     "api.booking",
     "api.notification",
+    "api.payment",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
