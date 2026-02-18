@@ -25,6 +25,7 @@ env = environ.Env(
     SUPABASE_SECRET_KEY=str,
     SUPABASE_BUCKET_NAME=str,
     S3_ENDPOINT_URL=str,
+    TELEGRAM_BOT_TOKEN=str,
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -37,6 +38,8 @@ SECRET_KEY = env("SECRET_KEY")
 
 WHAPI_API_KEY = env("WHAPI_API_KEY")
 WHAPI_BASE_URL = env("WHAPI_BASE_URL")
+
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -63,6 +66,7 @@ INSTALLED_APPS = [
     "api.accounts",
     "api.room",
     "api.booking",
+    "api.notification",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
