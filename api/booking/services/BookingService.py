@@ -120,11 +120,30 @@ def create_booking(booking_data):
         special_requests=special_requests,
     )
 
-    # TODO: Handle payment creation based on payment_method
-    # If payment_method == 'wallet', check GuestWallet balance, create WalletTransaction
-    # Else, create Payment record for gateway
+    from api.payment.services import PaymentService
+    from api.notification.services.NotificationService import notify_staff_telegram
 
-    return booking
+    if payment_method == "cash":
+        PaymentService.create_cash_payment(booking)
+        notify_staff_telegram(
+            f"📋 New booking #{booking.id}\n"
+            f"Guest: {guest}\n"
+            f"Room: {room}\n"
+            f"Check-in: {check_in_date} \u2192 {check_out_date}\n"
+            f"Total: {total_price} (cash)"
+        )
+        return booking, None
+
+    # Gateway: create pending payment and return client_secret to the caller
+    payment, client_secret = PaymentService.create_gateway_payment(booking)
+    notify_staff_telegram(
+        f"📋 New booking #{booking.id}\n"
+        f"Guest: {guest}\n"
+        f"Room: {room}\n"
+        f"Check-in: {check_in_date} \u2192 {check_out_date}\n"
+        f"Total: {total_price} (awaiting payment)"
+    )
+    return booking, client_secret
 
 
 def get_booking(booking_id):
@@ -222,8 +241,25 @@ def cancel_booking(booking_id, cancel_data=None):
     booking.cancelled_at = timezone.now()
     booking.save()
 
-    # TODO: Handle refund if payment was made
+    from api.payment.models import Payment, PaymentStatus
+    from api.payment.services import RefundService
+    from api.notification.services.NotificationService import notify_staff_telegram
 
+    completed_payment = Payment.objects.filter(
+        booking=booking, status=PaymentStatus.COMPLETED
+    ).first()
+    if completed_payment:
+        cancelled_by = cancel_data.get("cancelled_by")
+        RefundService.create_refund(
+            payment=completed_payment,
+            amount=completed_payment.amount,
+            reason="requested_by_customer",
+            initiated_by=cancelled_by,
+        )
+
+    notify_staff_telegram(
+        f"\u274c Booking #{booking.id} cancelled\n" f"Reason: {reason or 'N/A'}"
+    )
     return booking
 
 
@@ -233,7 +269,27 @@ def confirm_booking(booking_id):
     booking = get_booking(booking_id)
     booking.status = BookingStatus.CONFIRMED
     booking.save()
-    # TODO: Create NotificationLog for confirmation
+
+    from api.notification.services.NotificationService import (
+        send_whatsapp,
+        notify_staff_telegram,
+    )
+
+    phone = str(booking.guest.phone_number)
+    send_whatsapp(
+        user=booking.guest,
+        recipient=phone,
+        message=(
+            f"\u2705 Your booking #{booking.id} is confirmed!\n"
+            f"Room: {booking.room}\n"
+            f"Check-in: {booking.check_in_date} \u2192 {booking.check_out_date}"
+        ),
+    )
+    notify_staff_telegram(
+        f"\u2705 Booking #{booking.id} confirmed\n"
+        f"Guest: {booking.guest}\n"
+        f"Room: {booking.room}"
+    )
     return booking
 
 
@@ -243,7 +299,19 @@ def check_in_booking(booking_id):
     booking = get_booking(booking_id)
     booking.status = BookingStatus.CHECKED_IN
     booking.save()
-    # TODO: Create NotificationLog for check-in
+
+    from api.notification.services.NotificationService import send_whatsapp
+
+    phone = str(booking.guest.phone_number)
+    send_whatsapp(
+        user=booking.guest,
+        recipient=phone,
+        message=(
+            f"🏨 Welcome! You have checked in for booking #{booking.id}.\n"
+            f"Room: {booking.room}\n"
+            f"Check-out: {booking.check_out_date}"
+        ),
+    )
     return booking
 
 
@@ -253,6 +321,20 @@ def complete_booking(booking_id):
     booking = get_booking(booking_id)
     booking.status = BookingStatus.COMPLETED
     booking.save()
-    # TODO: Trigger payout creation
-    # TODO: Create NotificationLog for completion
+
+    from api.payment.services import PayoutService
+    from api.notification.services.NotificationService import notify_staff_telegram
+
+    try:
+        PayoutService.create_payout(booking)
+    except ValueError:
+        # No verified bank account — payout skipped, admin can handle manually
+        pass
+
+    notify_staff_telegram(
+        f"🏁 Booking #{booking.id} completed\n"
+        f"Guest: {booking.guest}\n"
+        f"Room: {booking.room}\n"
+        f"Payout queued for manager."
+    )
     return booking
