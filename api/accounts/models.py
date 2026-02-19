@@ -3,6 +3,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from auditlog.registry import auditlog
+from safedelete.models import SafeDeleteModel, SOFT_DELETE_CASCADE
 
 
 class Role(models.TextChoices):
@@ -65,7 +66,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         return str(self.phone_number)
 
 
-class Guest(User):
+class Guest(SafeDeleteModel, User):
+    _safedelete_policy = SOFT_DELETE_CASCADE
+
     def save(self, *args, **kwargs):
         self.role = Role.USER
         super().save(*args, **kwargs)

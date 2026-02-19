@@ -12,6 +12,7 @@ django-configurations==2.5.1
 django-encrypted-model-fields==0.6.5
 django-environ==0.12.0
 django-phonenumber-field==8.4.0
+django-safedelete==1.4.1
 django-storages==1.14.6
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1

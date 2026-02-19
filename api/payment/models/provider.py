@@ -3,6 +3,7 @@ import json
 from django.db import models
 from encrypted_model_fields.fields import EncryptedTextField
 from auditlog.registry import auditlog
+from safedelete.models import SafeDeleteModel, SOFT_DELETE
 
 
 class ProviderType(models.TextChoices):
@@ -18,7 +19,9 @@ class Environment(models.TextChoices):
     PRODUCTION = "production", "Production"
 
 
-class PaymentProvider(models.Model):
+class PaymentProvider(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE
+
     name = models.CharField(max_length=50, unique=True)
     provider_type = models.CharField(max_length=20, choices=ProviderType.choices)
     environment = models.CharField(

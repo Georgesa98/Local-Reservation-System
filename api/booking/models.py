@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Guest, User
 from api.room.models import Room
 from auditlog.registry import auditlog
+from safedelete.models import SafeDeleteModel, SOFT_DELETE, SOFT_DELETE_CASCADE
 
 
 class BookingStatus(models.TextChoices):
@@ -20,7 +21,9 @@ class BookingSource(models.TextChoices):
     WALK_IN = "walk_in", "Walk In"
 
 
-class Booking(models.Model):
+class Booking(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE_CASCADE
+
     guest = models.ForeignKey(Guest, on_delete=models.CASCADE, related_name="bookings")
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="bookings")
     check_in_date = models.DateField()
@@ -60,7 +63,9 @@ class Booking(models.Model):
         return f"Booking {self.id} - {self.guest} for {self.room}"
 
 
-class Review(models.Model):
+class Review(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE
+
     booking = models.OneToOneField(
         Booking, on_delete=models.CASCADE, related_name="review"
     )

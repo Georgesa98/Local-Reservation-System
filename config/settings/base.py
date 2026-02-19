@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "storages",
     "auditlog",
+    "safedelete",
     "api",
     "api.accounts",
     "api.room",

@@ -2,9 +2,12 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Manager, Staff
 from auditlog.registry import auditlog
+from safedelete.models import SafeDeleteModel, SOFT_DELETE, SOFT_DELETE_CASCADE
 
 
-class Room(models.Model):
+class Room(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE_CASCADE
+
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     base_price_per_night = models.DecimalField(
@@ -75,7 +78,9 @@ class ReasonType(models.TextChoices):
     OTHER = "other", "Other"
 
 
-class PricingRule(models.Model):
+class PricingRule(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE
+
     room = models.ForeignKey(
         Room, on_delete=models.CASCADE, related_name="pricing_rules"
     )

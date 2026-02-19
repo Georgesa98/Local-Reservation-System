@@ -2,6 +2,7 @@ from django.db import models
 
 from api.booking.models import Booking
 from auditlog.registry import auditlog
+from safedelete.models import SafeDeleteModel, SOFT_DELETE, SOFT_DELETE_CASCADE
 
 from .provider import PaymentProvider
 
@@ -18,7 +19,9 @@ class PaymentStatus(models.TextChoices):
     REFUNDED = "refunded", "Refunded"
 
 
-class Payment(models.Model):
+class Payment(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE_CASCADE
+
     booking = models.ForeignKey(
         Booking, on_delete=models.CASCADE, related_name="payments"
     )
@@ -63,7 +66,9 @@ class RefundStatus(models.TextChoices):
     CANCELLED = "cancelled", "Cancelled"
 
 
-class Refund(models.Model):
+class Refund(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE
+
     payment = models.ForeignKey(
         Payment, on_delete=models.CASCADE, related_name="refunds"
     )

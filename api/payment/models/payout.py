@@ -4,6 +4,7 @@ from encrypted_model_fields.fields import EncryptedCharField
 from api.accounts.models import Manager
 from api.booking.models import Booking
 from auditlog.registry import auditlog
+from safedelete.models import SafeDeleteModel, SOFT_DELETE
 
 
 class AccountType(models.TextChoices):
@@ -11,7 +12,9 @@ class AccountType(models.TextChoices):
     MOBILE_MONEY = "mobile_money", "Mobile Money"
 
 
-class ManagerBankAccount(models.Model):
+class ManagerBankAccount(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE
+
     manager = models.ForeignKey(
         Manager, on_delete=models.CASCADE, related_name="bank_accounts"
     )
