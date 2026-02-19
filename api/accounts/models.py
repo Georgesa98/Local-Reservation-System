@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
+from auditlog.registry import auditlog
 
 
 class Role(models.TextChoices):
@@ -87,3 +88,10 @@ class Admin(Staff):
     def save(self, *args, **kwargs):
         self.role = Role.ADMIN
         super().save(*args, **kwargs)
+
+
+auditlog.register(User)
+auditlog.register(Guest)
+auditlog.register(Staff)
+auditlog.register(Manager)
+auditlog.register(Admin)

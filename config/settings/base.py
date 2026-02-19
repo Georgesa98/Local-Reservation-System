@@ -69,12 +69,14 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "phonenumber_field",
     "storages",
+    "auditlog",
     "api",
     "api.accounts",
     "api.room",
     "api.booking",
     "api.notification",
     "api.payment",
+    "api.admin.audit",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -87,6 +89,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "auditlog.middleware.AuditlogMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

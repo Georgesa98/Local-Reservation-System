@@ -1,6 +1,7 @@
 from django.db import models
 
 from api.booking.models import Booking
+from auditlog.registry import auditlog
 
 from .provider import PaymentProvider
 
@@ -140,3 +141,8 @@ class WebhookLog(models.Model):
 
     def __str__(self):
         return f"WebhookLog {self.gateway_event_id} — {self.event_type}"
+
+
+auditlog.register(Payment)
+auditlog.register(Refund)
+auditlog.register(WebhookLog)

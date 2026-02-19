@@ -7,6 +7,7 @@ charset-normalizer==3.4.4
 cryptography==46.0.5
 defusedxml==0.7.1
 Django==6.0.2
+django-auditlog==3.4.1
 django-configurations==2.5.1
 django-encrypted-model-fields==0.6.5
 django-environ==0.12.0

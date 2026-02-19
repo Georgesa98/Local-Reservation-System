@@ -1,6 +1,7 @@
 from django.db import models
 
 from api.accounts.models import User
+from auditlog.registry import auditlog
 
 # Create your models here.
 
@@ -27,3 +28,6 @@ class Notification(models.Model):
     sent_at = models.DateTimeField(auto_now_add=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     response_data = models.JSONField(null=True, blank=True)
+
+
+auditlog.register(Notification)

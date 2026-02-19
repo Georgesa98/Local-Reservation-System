@@ -1,6 +1,7 @@
 from django.db import models
 
 from api.accounts.models import Guest
+from auditlog.registry import auditlog
 
 from .provider import PaymentProvider
 
@@ -56,3 +57,7 @@ class SavedPaymentMethod(models.Model):
 
     def __str__(self):
         return f"{self.method_type} — {self.display_info}"
+
+
+auditlog.register(GatewayCustomer)
+auditlog.register(SavedPaymentMethod)

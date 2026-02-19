@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Manager, Staff
+from auditlog.registry import auditlog
 
 
 class Room(models.Model):
@@ -98,6 +99,11 @@ class PricingRule(models.Model):
 
     def __str__(self):
         return f"{self.rule_type} for {self.room.title}"
+
+
+auditlog.register(Room)
+auditlog.register(RoomImage)
+auditlog.register(PricingRule)
 
 
 class RoomAvailability(models.Model):

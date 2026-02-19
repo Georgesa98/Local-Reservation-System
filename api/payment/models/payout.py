@@ -3,6 +3,7 @@ from encrypted_model_fields.fields import EncryptedCharField
 
 from api.accounts.models import Manager
 from api.booking.models import Booking
+from auditlog.registry import auditlog
 
 
 class AccountType(models.TextChoices):
@@ -85,3 +86,8 @@ class PayoutBooking(models.Model):
 
     def __str__(self):
         return f"Payout {self.payout_id} ← Booking {self.booking_id}"
+
+
+auditlog.register(ManagerBankAccount)
+auditlog.register(Payout)
+auditlog.register(PayoutBooking)

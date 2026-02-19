@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Guest, User
 from api.room.models import Room
+from auditlog.registry import auditlog
 
 
 class BookingStatus(models.TextChoices):
@@ -79,3 +80,7 @@ class Review(models.Model):
             models.Index(fields=["room"]),
             models.Index(fields=["rating"]),
         ]
+
+
+auditlog.register(Booking)
+auditlog.register(Review)

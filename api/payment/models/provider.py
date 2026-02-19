@@ -2,6 +2,7 @@ import json
 
 from django.db import models
 from encrypted_model_fields.fields import EncryptedTextField
+from auditlog.registry import auditlog
 
 
 class ProviderType(models.TextChoices):
@@ -51,3 +52,6 @@ class PaymentProvider(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.environment})"
+
+
+auditlog.register(PaymentProvider)
