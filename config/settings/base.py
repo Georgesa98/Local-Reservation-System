@@ -29,12 +29,15 @@ env = environ.Env(
     STRIPE_PUBLIC_KEY=str,
     STRIPE_SECRET_KEY=str,
     FIELD_ENCRYPTION_KEY=str,
+    CELERY_BROKER_URL=str,
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
@@ -54,6 +57,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# CELERY
+
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_CACHE_BACKEND = "default"
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Damascus"
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 # Application definition
 
@@ -71,6 +86,8 @@ INSTALLED_APPS = [
     "storages",
     "auditlog",
     "safedelete",
+    "django_celery_results",
+    "django_celery_beat",
     "api",
     "api.accounts",
     "api.room",
