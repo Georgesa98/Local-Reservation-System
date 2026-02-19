@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class AuditlogsConfig(AppConfig):
+class AuditConfig(AppConfig):
     name = "api.admin.audit"
