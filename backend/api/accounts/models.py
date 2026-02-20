@@ -4,6 +4,7 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from auditlog.registry import auditlog
 from safedelete.models import SafeDeleteModel, SOFT_DELETE_CASCADE
+from safedelete.managers import SafeDeleteManager
 
 
 class Role(models.TextChoices):
@@ -66,8 +67,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         return str(self.phone_number)
 
 
+class GuestManager(SafeDeleteManager, UserManager):
+    """Manager combining soft-delete queryset with UserManager's create_user."""
+
+    use_in_migrations = True
+
+
 class Guest(SafeDeleteModel, User):
     _safedelete_policy = SOFT_DELETE_CASCADE
+    objects = GuestManager()
 
     def save(self, *args, **kwargs):
         self.role = Role.USER

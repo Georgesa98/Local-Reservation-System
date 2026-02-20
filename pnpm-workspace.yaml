@@ -1,3 +1,10 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
+
+ignoredBuiltDependencies:
+  - electron
+  - electron-winstaller
+  - msw
+  - sharp
+  - unrs-resolver
