@@ -156,9 +156,34 @@ importers:
       axios:
         specifier: latest
         version: 1.13.5
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^0.575.0
+        version: 0.575.0(react@19.2.3)
+      radix-ui:
+        specifier: ^1.4.3
+        version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react:
         specifier: ^18.0.0 || ^19.0.0
         version: 19.2.3
+      react-dom:
+        specifier: ^18.0.0 || ^19.0.0
+        version: 19.2.3(react@19.2.3)
+      tailwind-merge:
+        specifier: ^3.5.0
+        version: 3.5.0
+    devDependencies:
+      shadcn:
+        specifier: ^3.8.5
+        version: 3.8.5(@types/node@20.19.33)(typescript@5.9.3)
+      tailwindcss:
+        specifier: ^4
+        version: 4.2.0
 
 packages:
 
