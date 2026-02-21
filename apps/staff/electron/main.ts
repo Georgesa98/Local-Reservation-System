@@ -1,89 +1,67 @@
-import { app, BrowserWindow, ipcMain, shell } from "electron";
-import path from "node:path";
+import { app, BrowserWindow, ipcMain } from 'electron'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const isDevelopment = process.env.NODE_ENV === "development";
-const rendererDevUrl = process.env.ELECTRON_RENDERER_URL;
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-let mainWindow: BrowserWindow | null = null;
-
-function getRendererEntryPoint(): string {
-  if (isDevelopment && rendererDevUrl) {
-    return rendererDevUrl;
-  }
-
-  return `file://${path.join(app.getAppPath(), "out", "index.html")}`;
+// ── Single-instance lock ──────────────────────────────────────────────────
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  app.quit()
 }
 
-function registerIpcHandlers() {
-  ipcMain.handle("app:getVersion", () => app.getVersion());
-  ipcMain.handle("app:ping", () => "pong");
-}
-
-function createMainWindow() {
-  mainWindow = new BrowserWindow({
+// ── Window factory ────────────────────────────────────────────────────────
+function createWindow(): BrowserWindow {
+  const win = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 1024,
     minHeight: 700,
-    show: false,
-    autoHideMenuBar: true,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
-  });
+  })
 
-  mainWindow.once("ready-to-show", () => {
-    mainWindow?.show();
-  });
-
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url);
-    return { action: "deny" };
-  });
-
-  const entryPoint = getRendererEntryPoint();
-  mainWindow.loadURL(entryPoint);
-
-  if (isDevelopment) {
-    mainWindow.webContents.openDevTools({ mode: "detach" });
+  if (process.env.NODE_ENV === 'development' && process.env.ELECTRON_RENDERER_URL) {
+    win.loadURL(process.env.ELECTRON_RENDERER_URL)
+    win.webContents.openDevTools()
+  } else {
+    win.loadFile(path.join(__dirname, '../out/index.html'))
   }
 
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
+  return win
 }
 
-const gotSingleInstanceLock = app.requestSingleInstanceLock();
+// ── App lifecycle ─────────────────────────────────────────────────────────
+app.whenReady().then(() => {
+  registerIpcHandlers()
+  createWindow()
 
-if (!gotSingleInstanceLock) {
-  app.quit();
-} else {
-  app.on("second-instance", () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) {
-        mainWindow.restore();
-      }
-      mainWindow.focus();
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow()
     }
-  });
+  })
+})
 
-  app.whenReady().then(() => {
-    registerIpcHandlers();
-    createMainWindow();
+app.on('second-instance', () => {
+  const [win] = BrowserWindow.getAllWindows()
+  if (win) {
+    if (win.isMinimized()) win.restore()
+    win.focus()
+  }
+})
 
-    app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        createMainWindow();
-      }
-    });
-  });
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit()
+})
 
-  app.on("window-all-closed", () => {
-    if (process.platform !== "darwin") {
-      app.quit();
-    }
-  });
+// ── IPC handlers ──────────────────────────────────────────────────────────
+function registerIpcHandlers() {
+  ipcMain.handle('app:getVersion', () => app.getVersion())
+  ipcMain.handle('app:ping', () => 'pong')
 }

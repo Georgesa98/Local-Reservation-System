@@ -5,6 +5,7 @@ packages:
 ignoredBuiltDependencies:
   - electron
   - electron-winstaller
+  - esbuild
   - msw
   - sharp
   - unrs-resolver
