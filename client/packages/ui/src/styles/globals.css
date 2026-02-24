@@ -1,6 +1,7 @@
 @import "tailwindcss";
-@source "../../../apps/**/*.{ts,tsx}";
-@source "../../../components/**/*.{ts,tsx}";
+
+@source "../../../../apps/**/*.{ts,tsx}";
+@source "../../../../packages/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
 @import "tw-animate-css";
@@ -8,6 +9,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --font-geist: 'Geist', sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -123,5 +125,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-geist);
   }
+}
+
+
+@font-face {
+  font-family: 'Geist';
+  src: url('./fonts/Geist/Geist-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style:normal;
+  font-display: swap;
 }

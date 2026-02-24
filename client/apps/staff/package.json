@@ -1,0 +1,43 @@
+{
+  "name": "staff",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "main": "dist/electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "dev:desktop": "concurrently -k -n VITE,TSC,ELECTRON -c green,blue,magenta \"vite\" \"tsc -p electron/tsconfig.json --watch --preserveWatchOutput\" \"wait-on tcp:5173 dist/electron/main.js && cross-env NODE_ENV=development ELECTRON_RENDERER_URL=http://localhost:5173 electron dist/electron/main.js\"",
+    "build:web": "tsc -b && vite build",
+    "build:electron": "tsc -p electron/tsconfig.json",
+    "build": "pnpm build:web && pnpm build:electron",
+    "start": "cross-env NODE_ENV=production electron dist/electron/main.js",
+    "dist": "pnpm build && electron-builder",
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/ui": "workspace:*",
+    "lucide-react": "^0.563.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/node": "^25.1.0",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react-swc": "^3.10.2",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^40.6.0",
+    "electron-builder": "^26.0.0",
+    "eslint": "^9.39.2",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "wait-on": "^9.0.4"
+  }
+}
