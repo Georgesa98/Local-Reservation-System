@@ -8,6 +8,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@custom-variant data-horizontal (&[data-orientation=horizontal]);
+@custom-variant data-vertical (&[data-orientation=vertical]);
+@custom-variant data-checked (&[data-state=checked]);
+@custom-variant data-unchecked (&[data-state=unchecked]);
+@custom-variant data-open (&[data-state=open]);
+@custom-variant data-closed (&[data-state=closed]);
+
 :root {
   --font-geist: 'Geist', sans-serif;
   --background: oklch(1 0 0);
@@ -125,15 +132,15 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-geist);
+    font-family: var(--font-geist, var(--font-sans));
   }
 }
 
 
 @font-face {
   font-family: 'Geist';
-  src: url('./fonts/Geist/Geist-Variable.ttf') format('truetype');
+  src: url('../../fonts/Geist/Geist-Variable.ttf') format('truetype');
   font-weight: 100 900;
-  font-style:normal;
+  font-style: normal;
   font-display: swap;
 }
