@@ -9,29 +9,14 @@ import {
   FieldSeparator,
 } from "@workspace/ui/components/field";
 import { Input } from "@workspace/ui/components/input";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-const signupSchema = z
-  .object({
-    name: z.string().min(2, "Full name must be at least 2 characters"),
-    phonenumber: z
-      .string()
-      .min(1, "Phone number is required")
-      .regex(/^\+?[1-9]\d{7,14}$/, "Enter a valid phone number"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-type SignupFormValues = z.infer<typeof signupSchema>;
+import { signupSchema, type SignupFormValues } from "./schema";
+import { signup } from "./api";
 
 export function SignupForm({ className }: { className?: string }) {
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
@@ -40,8 +25,13 @@ export function SignupForm({ className }: { className?: string }) {
     resolver: zodResolver(signupSchema),
   });
 
-  function onSubmit(data: SignupFormValues) {
-    console.log("Signup submitted:", data);
+  async function onSubmit(data: SignupFormValues) {
+    try {
+      await signup(data)
+      navigate("/otp", { state: { phoneNumber: data.phonenumber } })
+    } catch (error) {
+      console.error("Signup failed:", error)
+    }
   }
 
   return (

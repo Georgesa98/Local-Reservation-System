@@ -12,17 +12,8 @@ import { Input } from "@workspace/ui/components/input";
 import { Link } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-
-const loginSchema = z.object({
-  phonenumber: z
-    .string()
-    .min(1, "Phone number is required")
-    .regex(/^\+?[1-9]\d{7,14}$/, "Enter a valid phone number"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormValues } from "./schema";
+import { login } from "./api";
 
 export function LoginForm({ className }: { className?: string }) {
   const {
@@ -33,8 +24,12 @@ export function LoginForm({ className }: { className?: string }) {
     resolver: zodResolver(loginSchema),
   });
 
-  function onSubmit(data: LoginFormValues) {
-    console.log("Login submitted:", data);
+  async function onSubmit(data: LoginFormValues) {
+    try {
+      await login(data)
+    } catch (error) {
+      console.error("Login failed:", error)
+    }
   }
 
   return (

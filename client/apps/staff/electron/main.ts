@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { saveTokens, getTokens, clearTokens, isEncryptionAvailable } from './tokenStorage.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -68,3 +69,34 @@ app.on('window-all-closed', () => {
 // ──────────────────────────────────────────────
 
 ipcMain.handle('app:get-version', () => app.getVersion())
+
+ipcMain.handle('token:save', async (_event, access: string, refresh: string) => {
+  try {
+    await saveTokens(access, refresh)
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('token:get', async () => {
+  try {
+    const tokens = await getTokens()
+    return { success: true, data: tokens }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('token:clear', async () => {
+  try {
+    await clearTokens()
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('token:isEncryptionAvailable', () => {
+  return isEncryptionAvailable()
+})

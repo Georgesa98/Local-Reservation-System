@@ -16,18 +16,15 @@ import {
 import { Link } from "react-router";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { otpSchema, type OtpFormValues } from "./schema";
+import { verifyOtp, resendOtp } from "./api";
 
-const otpSchema = z.object({
-  otp: z
-    .string()
-    .length(6, "Code must be exactly 6 digits")
-    .regex(/^\d+$/, "Code must contain only digits"),
-});
+interface OtpFormProps {
+  phoneNumber: string
+  className?: string
+}
 
-type OtpFormValues = z.infer<typeof otpSchema>;
-
-export function OtpForm({ className }: { className?: string }) {
+export function OtpForm({ phoneNumber, className }: OtpFormProps) {
   const {
     control,
     handleSubmit,
@@ -37,8 +34,23 @@ export function OtpForm({ className }: { className?: string }) {
     defaultValues: { otp: "" },
   });
 
-  function onSubmit(data: OtpFormValues) {
-    console.log("OTP submitted:", data);
+  async function onSubmit(data: OtpFormValues) {
+    try {
+      const result = await verifyOtp(phoneNumber, data)
+      if (!result.verified) {
+        console.error("OTP verification failed")
+      }
+    } catch (error) {
+      console.error("OTP verification failed:", error)
+    }
+  }
+
+  async function handleResend() {
+    try {
+      await resendOtp(phoneNumber)
+    } catch (error) {
+      console.error("Resend failed:", error)
+    }
   }
 
   return (
@@ -96,6 +108,7 @@ export function OtpForm({ className }: { className?: string }) {
             <button
               type="button"
               className="underline underline-offset-4 hover:text-primary"
+              onClick={handleResend}
             >
               Resend code
             </button>
