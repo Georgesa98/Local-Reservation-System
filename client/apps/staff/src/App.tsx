@@ -3,6 +3,7 @@ import { DevRouteBar } from "./components/DevRouteBar";
 import { LoginPage } from "./pages/login";
 import { SignupPage } from "./pages/signup";
 import { UIProvider } from "../../../packages/ui/src/context/UIProvider";
+import { OtpPage } from "./pages/otp";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/otp" element={<OtpPage />} />
           </Routes>
         </UIProvider>
         <DevRouteBar />

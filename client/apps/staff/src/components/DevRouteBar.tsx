@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 
-const DEFAULT_ROUTES = ["/", "/dashboard", "/settings", "/users"];
+const DEFAULT_ROUTES = ["/", "/login", "/signup"];
 
 export const DevRouteBar = () => {
   const navigate = useNavigate();
