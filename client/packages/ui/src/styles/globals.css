@@ -144,3 +144,15 @@
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'Noto Sans Arabic';
+  src: url('../../fonts/Noto-Sans-Arabic/NotoSansArabic-Variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root:is([dir="rtl"]) body {
+  font-family: 'Noto Sans Arabic', sans-serif;
+}

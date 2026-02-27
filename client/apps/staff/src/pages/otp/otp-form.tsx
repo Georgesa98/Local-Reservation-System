@@ -16,26 +16,12 @@ import {
 import { Link, useNavigate } from "react-router";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { otpSchema, type OtpFormValues } from "./schema";
+import { createOtpSchema, type OtpFormValues } from "./schema";
 import { verifyOtp, resendOtp, type OtpChannel } from "./api";
 import { OtpMethodDialog } from "./otp-method-dialog";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
-
-const channelHeadings: Record<OtpChannel, { title: string; description: string }> = {
-  whatsapp: {
-    title: "Check your WhatsApp",
-    description: "We sent a 6-digit verification code to your WhatsApp number.",
-  },
-  email: {
-    title: "Check your email",
-    description: "We sent a 6-digit verification code to your email address.",
-  },
-  telegram: {
-    title: "Check your Telegram",
-    description: "We sent a 6-digit verification code to your Telegram account.",
-  },
-}
+import { useTranslation } from "react-i18next";
 
 interface OtpFormProps {
   phoneNumber: string
@@ -54,6 +40,8 @@ export function OtpForm({
   onChannelChange,
   className,
 }: OtpFormProps) {
+  const { t } = useTranslation()
+  const otpSchema = useMemo(() => createOtpSchema(t), [t])
   const [dialogOpen, setDialogOpen] = useState(false)
   const navigate = useNavigate()
 
@@ -71,44 +59,42 @@ export function OtpForm({
     try {
       const result = await verifyOtp(phoneNumber, data)
       if (result.verified) {
-        toast.success("Phone number verified successfully.")
+        toast.success(t("toast.verified"))
         navigate("/", { replace: true })
       } else {
-        setError("otp", { message: "Incorrect code. Please try again." })
+        setError("otp", { message: t("validation.otpIncorrect") })
       }
     } catch {
-      setError("otp", { message: "Verification failed. Please try again." })
+      setError("otp", { message: t("validation.otpFailed") })
     }
   }
 
   async function handleResend() {
-    const toastId = toast.loading("Sending code…")
+    const toastId = toast.loading(t("toast.sending"))
     try {
       await resendOtp(phoneNumber, channel)
-      toast.success("Code sent!", { id: toastId })
+      toast.success(t("toast.codeSent"), { id: toastId })
     } catch (error: unknown) {
       const message =
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Failed to resend code. Please try again."
+        t("toast.resendFailed")
       toast.error(message, { id: toastId })
     }
   }
 
   async function handleChannelChange(newChannel: OtpChannel) {
     onChannelChange(newChannel)
-    const toastId = toast.loading("Sending code…")
+    const toastId = toast.loading(t("toast.sending"))
     try {
       await resendOtp(phoneNumber, newChannel)
-      toast.success("Code sent!", { id: toastId })
+      toast.success(t("toast.codeSent"), { id: toastId })
     } catch (error: unknown) {
       const message =
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Failed to send code via the selected method."
+        t("toast.sendFailed")
       toast.error(message, { id: toastId })
     }
   }
-
-  const heading = channelHeadings[channel]
 
   return (
     <>
@@ -118,13 +104,14 @@ export function OtpForm({
       >
         <FieldGroup>
           <div className="flex flex-col items-center gap-1 text-center">
-            <h1 className="text-2xl font-bold">{heading.title}</h1>
+            <h1 className="text-2xl font-bold">{t(`otp.channel.${channel}.title`)}</h1>
             <p className="text-muted-foreground text-sm text-balance">
-              {heading.description} Enter it below to continue.
+              {t(`otp.channel.${channel}.description`)}{" "}
+              {t("otp.enterBelow")}
             </p>
           </div>
           <Field className="items-center" data-invalid={!!errors.otp}>
-            <FieldLabel htmlFor="otp">Verification Code</FieldLabel>
+            <FieldLabel htmlFor="otp">{t("otp.codeLabel")}</FieldLabel>
             <Controller
               name="otp"
               control={control}
@@ -151,23 +138,23 @@ export function OtpForm({
             />
             <FieldError errors={[errors.otp]} />
             <FieldDescription className="text-center">
-              The code expires in 5 minutes.
+              {t("otp.expires")}
             </FieldDescription>
           </Field>
           <Field>
             <Button type="submit" disabled={isSubmitting}>
-              Verify
+              {t("otp.submit")}
             </Button>
           </Field>
           <Field>
             <FieldDescription className="text-center">
-              Didn&apos;t receive a code?{" "}
+              {t("otp.didntReceive")}{" "}
               <button
                 type="button"
                 className="underline underline-offset-4 hover:text-primary"
                 onClick={handleResend}
               >
-                Resend code
+                {t("otp.resend")}
               </button>
             </FieldDescription>
             <FieldDescription className="text-center">
@@ -176,11 +163,11 @@ export function OtpForm({
                 className="underline underline-offset-4 hover:text-primary"
                 onClick={() => setDialogOpen(true)}
               >
-                Try a different method
+                {t("otp.tryDifferent")}
               </button>
-              {" or "}
+              {" "}{t("otp.or")}{" "}
               <Link to="/login" className="underline underline-offset-4">
-                go back
+                {t("otp.goBack")}
               </Link>
             </FieldDescription>
           </Field>

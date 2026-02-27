@@ -3,6 +3,21 @@ import { useLocation, Navigate } from "react-router";
 import { useState } from "react";
 import { OtpForm } from "./otp-form";
 import type { OtpChannel } from "./api";
+import { useTranslation } from "react-i18next";
+
+function LangToggle() {
+  const { i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  return (
+    <button
+      type="button"
+      onClick={() => i18n.changeLanguage(isAr ? "en" : "ar")}
+      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+    >
+      {isAr ? "English" : "عربي"}
+    </button>
+  );
+}
 
 export function OtpPage() {
   const location = useLocation()
@@ -26,6 +41,9 @@ export function OtpPage() {
             </div>
             Acme Inc.
           </a>
+          <div className="flex-1 flex justify-end">
+            <LangToggle />
+          </div>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">

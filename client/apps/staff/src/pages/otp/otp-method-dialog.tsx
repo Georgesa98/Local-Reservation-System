@@ -9,6 +9,7 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { MessageCircle, Mail, Send, ExternalLink } from "lucide-react"
 import type { OtpChannel } from "./api"
+import { useTranslation } from "react-i18next"
 
 interface OtpMethodDialogProps {
   open: boolean
@@ -19,31 +20,16 @@ interface OtpMethodDialogProps {
   onSelectChannel: (channel: OtpChannel) => void
 }
 
-const channelConfig: Record<
-  OtpChannel,
-  { label: string; description: string; icon: React.ReactNode }
-> = {
-  whatsapp: {
-    label: "WhatsApp",
-    description: "Send code to your WhatsApp number",
-    icon: <MessageCircle className="size-5 text-green-500" />,
-  },
-  email: {
-    label: "Email",
-    description: "Send code to your email address",
-    icon: <Mail className="size-5 text-blue-500" />,
-  },
-  telegram: {
-    label: "Telegram",
-    description: "Send code to your Telegram account",
-    icon: <Send className="size-5 text-sky-500" />,
-  },
-}
-
 const telegramBotUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME as string | undefined
 const telegramBotLink = telegramBotUsername
   ? `https://t.me/${telegramBotUsername}?start=link`
   : undefined
+
+const channelIcons: Record<OtpChannel, React.ReactNode> = {
+  whatsapp: <MessageCircle className="size-5 text-green-500" />,
+  email: <Mail className="size-5 text-blue-500" />,
+  telegram: <Send className="size-5 text-sky-500" />,
+}
 
 export function OtpMethodDialog({
   open,
@@ -53,6 +39,8 @@ export function OtpMethodDialog({
   hasTelegram,
   onSelectChannel,
 }: OtpMethodDialogProps) {
+  const { t } = useTranslation()
+
   const methods: { channel: OtpChannel; available: boolean }[] = [
     { channel: "whatsapp", available: true },
     { channel: "email", available: hasEmail },
@@ -69,35 +57,37 @@ export function OtpMethodDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Choose delivery method</DialogTitle>
+          <DialogTitle>{t("otpDialog.title")}</DialogTitle>
           <DialogDescription>
-            Select how you want to receive your verification code.
+            {t("otpDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-2">
           {methods.map(({ channel, available }) => {
-            const config = channelConfig[channel]
             const isCurrent = channel === currentChannel
             const isTelegramUnlinked = channel === "telegram" && !available
 
+            const label = t(`otpDialog.${channel}.label`)
+            const description = isTelegramUnlinked
+              ? t("otpDialog.telegram.unlinked")
+              : !available && channel === "email"
+                ? t("otpDialog.email.unavailable")
+                : t(`otpDialog.${channel}.description`)
+
             const rowContent = (
               <>
-                {config.icon}
+                {channelIcons[channel]}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium">
-                    {config.label}
+                    {label}
                     {isCurrent && (
-                      <span className="text-primary ml-2 text-xs font-normal">current</span>
+                      <span className="text-primary ml-2 text-xs font-normal">
+                        {t("common.current")}
+                      </span>
                     )}
                   </div>
-                  <div className="text-muted-foreground text-xs">
-                    {isTelegramUnlinked
-                      ? "Link your Telegram account first"
-                      : !available && channel === "email"
-                        ? "No email on file"
-                        : config.description}
-                  </div>
+                  <div className="text-muted-foreground text-xs">{description}</div>
                 </div>
                 {isTelegramUnlinked && telegramBotLink && (
                   <ExternalLink className="size-4 text-muted-foreground shrink-0" />
@@ -105,7 +95,6 @@ export function OtpMethodDialog({
               </>
             )
 
-            // Telegram unlinked: render as an anchor that opens the bot link
             if (isTelegramUnlinked && telegramBotLink) {
               return (
                 <a
@@ -143,7 +132,7 @@ export function OtpMethodDialog({
 
         <DialogClose asChild>
           <Button variant="outline" className="w-full mt-1">
-            Cancel
+            {t("otpDialog.cancel")}
           </Button>
         </DialogClose>
       </DialogContent>

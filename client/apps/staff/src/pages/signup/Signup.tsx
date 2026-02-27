@@ -1,9 +1,27 @@
 import { SignupForm } from "./signup-form";
+import { useTranslation } from "react-i18next";
+
+function LangToggle() {
+  const { i18n } = useTranslation();
+  const isAr = i18n.language === "ar";
+  return (
+    <button
+      type="button"
+      onClick={() => i18n.changeLanguage(isAr ? "en" : "ar")}
+      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+    >
+      {isAr ? "English" : "عربي"}
+    </button>
+  );
+}
+
 export function SignupPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start"></div>
+        <div className="flex justify-end">
+          <LangToggle />
+        </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
             <SignupForm />

@@ -1,10 +1,13 @@
 import { z } from "zod"
+import type { TFunction } from "i18next"
 
-export const otpSchema = z.object({
-  otp: z
-    .string()
-    .length(6, "Code must be exactly 6 digits")
-    .regex(/^\d+$/, "Code must contain only digits"),
-})
+export function createOtpSchema(t: TFunction) {
+  return z.object({
+    otp: z
+      .string()
+      .length(6, t("validation.otpLength"))
+      .regex(/^\d+$/, t("validation.otpDigits")),
+  })
+}
 
-export type OtpFormValues = z.infer<typeof otpSchema>
+export type OtpFormValues = z.infer<ReturnType<typeof createOtpSchema>>

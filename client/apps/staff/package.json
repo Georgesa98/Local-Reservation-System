@@ -20,11 +20,13 @@
     "@workspace/ui": "workspace:*",
     "axios": "^1.13.5",
     "electron-store": "^11.0.2",
+    "i18next": "^25.8.13",
     "lucide-react": "^0.563.0",
     "next-themes": "^0.4.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.2",
+    "react-i18next": "^16.5.4",
     "react-router": "^7.13.1",
     "zod": "^3.25.76"
   },
