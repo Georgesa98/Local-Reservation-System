@@ -89,6 +89,11 @@ const en = {
     verified: "Phone number verified successfully.",
   },
 
+  phoneInput: {
+    searchPlaceholder: "Search country...",
+    noResults: "No countries found",
+  },
+
   validation: {
     nameMin: "Full name must be at least 2 characters",
     phoneRequired: "Phone number is required",

@@ -82,7 +82,7 @@ export function OtpMethodDialog({
                   <div className="font-medium">
                     {label}
                     {isCurrent && (
-                      <span className="text-primary ml-2 text-xs font-normal">
+                      <span className="text-primary ms-2 text-xs font-normal">
                         {t("common.current")}
                       </span>
                     )}
@@ -102,7 +102,7 @@ export function OtpMethodDialog({
                   href={telegramBotLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted cursor-pointer"
+                  className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-start text-sm transition-colors hover:bg-muted cursor-pointer"
                 >
                   {rowContent}
                 </a>
@@ -116,7 +116,7 @@ export function OtpMethodDialog({
                 disabled={!available}
                 onClick={() => handleSelect(channel, available)}
                 className={[
-                  "flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex items-center gap-3 rounded-lg border px-3 py-2.5 text-start text-sm transition-colors",
                   isCurrent
                     ? "border-primary bg-primary/5 cursor-default"
                     : available

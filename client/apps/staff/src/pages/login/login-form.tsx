@@ -73,7 +73,7 @@ export function LoginForm({ className }: { className?: string }) {
             <FieldLabel htmlFor="password">{t("login.passwordLabel")}</FieldLabel>
             <a
               href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
+              className="ms-auto text-sm underline-offset-4 hover:underline"
             >
               {t("login.forgotPassword")}
             </a>

@@ -4,6 +4,7 @@ import { ChevronDownIcon, SearchIcon } from "lucide-react"
 import { cn } from "@workspace/ui/lib/utils"
 import { Input } from "@workspace/ui/components/input"
 import { COUNTRIES, DEFAULT_COUNTRY, type Country } from "./countries"
+import { useTranslation } from "react-i18next"
 
 export interface PhoneInputProps
   extends Omit<React.ComponentProps<"input">, "value" | "onChange"> {
@@ -31,6 +32,7 @@ function parseValue(value: string): { country: Country; local: string } {
 export const PhoneInput = React.memo(
   React.forwardRef<HTMLInputElement, PhoneInputProps>(
     ({ value = "", onChange, onBlur, name, className, ...rest }, ref) => {
+      const { t } = useTranslation()
       const parsed = parseValue(value)
 
       const [selectedCountry, setSelectedCountry] = React.useState<Country>(
@@ -89,7 +91,7 @@ export const PhoneInput = React.memo(
       }
 
       return (
-        <div className={cn("flex items-center gap-0", className)}>
+        <div className={cn("flex items-center gap-0 rtl:flex-row-reverse", className)}>
           {/* Country picker trigger */}
           <PopoverPrimitive.Root open={open} onOpenChange={handleOpenChange}>
             <PopoverPrimitive.Trigger asChild>
@@ -97,7 +99,8 @@ export const PhoneInput = React.memo(
                 type="button"
                 aria-label={`Select country code, currently ${selectedCountry.name} ${selectedCountry.dialCode}`}
                 className={cn(
-                  "dark:bg-input/30 border-input focus-visible:border-ring focus-visible:ring-ring/50 h-8 shrink-0 rounded-lg rounded-r-none border border-r-0 bg-transparent px-2.5 py-1 text-sm transition-colors focus-visible:ring-3 outline-none",
+                  "dark:bg-input/30 border-input focus-visible:border-ring focus-visible:ring-ring/50 h-8 shrink-0 rounded-lg border bg-transparent px-2.5 py-1 text-sm transition-colors focus-visible:ring-3 outline-none",
+                  "rounded-r-none border-r-0 rtl:rounded-r-lg rtl:border-r rtl:rounded-l-none rtl:border-l-0",
                   "flex items-center gap-1.5 cursor-pointer hover:bg-muted/50",
                   open && "border-ring ring-ring/50 ring-3"
                 )}
@@ -135,7 +138,7 @@ export const PhoneInput = React.memo(
                   <SearchIcon className="size-3.5 text-muted-foreground shrink-0" />
                   <input
                     type="text"
-                    placeholder="Search country..."
+                    placeholder={t("phoneInput.searchPlaceholder")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="h-7 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
@@ -151,7 +154,7 @@ export const PhoneInput = React.memo(
                 >
                   {filteredCountries.length === 0 ? (
                     <p className="py-4 text-center text-sm text-muted-foreground">
-                      No countries found
+                      {t("phoneInput.noResults")}
                     </p>
                   ) : (
                     filteredCountries.map((country) => (
@@ -170,7 +173,7 @@ export const PhoneInput = React.memo(
                         <span className="text-base leading-none select-none w-5 shrink-0">
                           {country.flag}
                         </span>
-                        <span className="flex-1 truncate text-left">
+                         <span className="flex-1 truncate text-start">
                           {country.name}
                         </span>
                         <span className="text-muted-foreground tabular-nums shrink-0">
@@ -194,7 +197,7 @@ export const PhoneInput = React.memo(
             onChange={handleLocalChange}
             onBlur={onBlur}
             placeholder="912 345 678"
-            className={cn("rounded-l-none", rest.className)}
+            className={cn("rounded-l-none rtl:rounded-l-lg rtl:rounded-r-none", rest.className)}
             {...rest}
           />
         </div>

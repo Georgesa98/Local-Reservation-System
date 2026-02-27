@@ -91,6 +91,11 @@ const ar: Translation = {
     verified: "تم التحقق من رقم الهاتف بنجاح.",
   },
 
+  phoneInput: {
+    searchPlaceholder: "ابحث عن دولة...",
+    noResults: "لا توجد نتائج",
+  },
+
   validation: {
     nameMin: "يجب أن يكون الاسم الكامل حرفين على الأقل",
     phoneRequired: "رقم الهاتف مطلوب",

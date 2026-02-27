@@ -156,3 +156,7 @@
 :root:is([dir="rtl"]) body {
   font-family: 'Noto Sans Arabic', sans-serif;
 }
+
+[dir="rtl"] [data-slot="input"] {
+  text-align: right;
+}
