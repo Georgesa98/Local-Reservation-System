@@ -89,6 +89,10 @@ const ar: Translation = {
     resendFailed: "فشل إعادة الإرسال. حاول مرة أخرى.",
     sendFailed: "فشل إرسال الرمز عبر الطريقة المحددة.",
     verified: "تم التحقق من رقم الهاتف بنجاح.",
+    loginSuccess: "تم تسجيل الدخول بنجاح.",
+    loginFailed: "فشل تسجيل الدخول. تحقق من بياناتك.",
+    signupSuccess: "تم إنشاء الحساب! يرجى التحقق من هاتفك.",
+    signupFailed: "فشل إنشاء الحساب. حاول مرة أخرى.",
   },
 
   phoneInput: {

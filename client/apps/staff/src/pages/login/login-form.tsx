@@ -8,7 +8,7 @@ import {
   FieldLabel,
   FieldSeparator,
 } from "@workspace/ui/components/field";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createLoginSchema, type LoginFormValues } from "./schema";
@@ -17,10 +17,12 @@ import { PhoneInput } from "@/components/phone-input";
 import { Input } from "@workspace/ui/components/input";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { toast } from "sonner";
 
 export function LoginForm({ className }: { className?: string }) {
   const { t } = useTranslation();
   const loginSchema = useMemo(() => createLoginSchema(t), [t]);
+  const navigate = useNavigate();
 
   const {
     control,
@@ -35,8 +37,11 @@ export function LoginForm({ className }: { className?: string }) {
   async function onSubmit(data: LoginFormValues) {
     try {
       await login(data)
+      toast.success(t("toast.loginSuccess"))
+      navigate("/")
     } catch (error) {
       console.error("Login failed:", error)
+      toast.error(t("toast.loginFailed"))
     }
   }
 

@@ -17,6 +17,7 @@ import { signup } from "./api";
 import { PhoneInput } from "@/components/phone-input";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { toast } from "sonner";
 
 export function SignupForm({ className }: { className?: string }) {
   const { t } = useTranslation();
@@ -34,21 +35,21 @@ export function SignupForm({ className }: { className?: string }) {
   });
 
   async function onSubmit(data: SignupFormValues) {
-    let otpSent = false
     try {
       const response = await signup(data)
-      otpSent = response.otp_sent
+      toast.success(t("toast.signupSuccess"))
+      navigate("/otp", {
+        state: {
+          phoneNumber: data.phonenumber,
+          hasEmail: !!data.email,
+          hasTelegram: false,
+          otpSent: response.otp_sent,
+        },
+      })
     } catch (error) {
       console.error("Signup failed:", error)
+      toast.error(t("toast.signupFailed"))
     }
-    navigate("/otp", {
-      state: {
-        phoneNumber: data.phonenumber,
-        hasEmail: !!data.email,
-        hasTelegram: false,
-        otpSent,
-      },
-    })
   }
 
   return (

@@ -6,7 +6,7 @@
   "main": "dist/electron/main.js",
   "scripts": {
     "dev": "vite",
-    "dev:desktop": "concurrently -k -n VITE,TSC,ELECTRON -c green,blue,magenta \"vite\" \"tsc -p electron/tsconfig.json --watch --preserveWatchOutput\" \"wait-on tcp:5173 dist/electron/main.js && cross-env NODE_ENV=development ELECTRON_RENDERER_URL=http://localhost:5173 electron dist/electron/main.js\"",
+    "dev:desktop": "concurrently -k -n VITE,TSC,ELECTRON -c green,blue,magenta \"vite\" \"tsc -p electron/tsconfig.json --watch --preserveWatchOutput\" \"wait-on tcp:5173 dist/electron/main.js && cross-env NODE_ENV=development ELECTRON_RENDERER_URL=http://localhost:5173 electron --password-store=kwallet6 dist/electron/main.js\"",
     "build:web": "tsc -b && vite build",
     "build:electron": "tsc -p electron/tsconfig.json",
     "build": "pnpm build:web && pnpm build:electron",

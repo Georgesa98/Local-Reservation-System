@@ -87,6 +87,10 @@ const en = {
     resendFailed: "Failed to resend code. Please try again.",
     sendFailed: "Failed to send code via the selected method.",
     verified: "Phone number verified successfully.",
+    loginSuccess: "Logged in successfully.",
+    loginFailed: "Login failed. Check your credentials.",
+    signupSuccess: "Account created! Please verify your phone.",
+    signupFailed: "Signup failed. Please try again.",
   },
 
   phoneInput: {
