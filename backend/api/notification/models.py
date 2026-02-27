@@ -15,6 +15,7 @@ class Status(models.TextChoices):
 class Channel(models.TextChoices):
     WHATSAPP = "WHATSAPP", "WhatsApp"
     TELEGRAM = "TELEGRAM", "Telegram"
+    EMAIL = "EMAIL", "Email"
 
 
 class Notification(models.Model):

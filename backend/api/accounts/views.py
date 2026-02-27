@@ -1,15 +1,16 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
 from api.accounts.models import User
 from api.accounts.serializers import ResendOTPSerializer, VerifyOTPSerializer
-from api.accounts.services.WhatsappService import can_resend_otp, send_otp, verify_otp
+from api.accounts.services.OTPService import (
+    can_resend_otp,
+    send_otp,
+    verify_otp,
+    OTP_CHANNEL_WHATSAPP,
+)
 from config.utils import SuccessResponse, ErrorResponse
-
-
-# Create your views here.
 
 
 class VerifyOTPView(APIView):
@@ -43,15 +44,36 @@ class ResendOTPView(APIView):
         try:
             serializer = ResendOTPSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
-                user = User.objects.get(
-                    phone_number=serializer.data["phone_number"]
-                )  # Ensure user exists
-                can_resend, message = can_resend_otp(serializer.data["phone_number"])
+                phone_number = serializer.data["phone_number"]
+                channel = serializer.data.get("channel", OTP_CHANNEL_WHATSAPP)
+
+                user = User.objects.get(phone_number=phone_number)
+
+                # Validate channel availability for this user
+                if channel == "email" and not user.email:
+                    return ErrorResponse(
+                        message="No email address on file for this account.",
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                    )
+                if channel == "telegram" and not user.telegram_chat_id:
+                    return ErrorResponse(
+                        message="Telegram is not linked to this account.",
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                can_resend, message = can_resend_otp(phone_number)
                 if not can_resend:
                     return ErrorResponse(
                         message=message, status_code=status.HTTP_429_TOO_MANY_REQUESTS
                     )
-                send_otp(serializer.data["phone_number"])
+
+                ok = send_otp(phone_number, channel=channel)
+                if not ok:
+                    return ErrorResponse(
+                        message=f"Failed to send OTP via {channel}.",
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
                 return SuccessResponse(message="OTP resent successfully")
 
         except User.DoesNotExist:

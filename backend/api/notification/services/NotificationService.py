@@ -5,7 +5,7 @@ from django.utils import timezone
 from api.notification.models import Channel, Notification, Status
 
 
-def _send_whapi_message(recipient: str, message: str) -> dict:
+def _send_whapi_message(recipient: any, message: str) -> dict:
     """Make the raw HTTP call to the WHAPI endpoint. Returns the response dict."""
     url = f"{settings.WHAPI_BASE_URL}/messages/text"
     headers = {
@@ -13,7 +13,7 @@ def _send_whapi_message(recipient: str, message: str) -> dict:
         "Content-Type": "application/json",
     }
     payload = {
-        "to": "".join(filter(str.isdigit, recipient)),
+        "to": "".join(filter(str.isdigit, recipient.raw_input)),
         "body": message,
     }
     response = requests.post(url, json=payload, headers=headers)

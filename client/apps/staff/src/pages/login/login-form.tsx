@@ -8,20 +8,23 @@ import {
   FieldLabel,
   FieldSeparator,
 } from "@workspace/ui/components/field";
-import { Input } from "@workspace/ui/components/input";
 import { Link } from "react-router";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormValues } from "./schema";
 import { login } from "./api";
+import { PhoneInput } from "@/components/phone-input";
+import { Input } from "@workspace/ui/components/input";
 
 export function LoginForm({ className }: { className?: string }) {
   const {
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
+    defaultValues: { phonenumber: "+963" },
   });
 
   async function onSubmit(data: LoginFormValues) {
@@ -46,13 +49,17 @@ export function LoginForm({ className }: { className?: string }) {
         </div>
         <Field data-invalid={!!errors.phonenumber}>
           <FieldLabel htmlFor="phonenumber">Phone Number</FieldLabel>
-          <Input
-            id="phonenumber"
-            type="text"
-            placeholder="+963123456789"
-            aria-invalid={!!errors.phonenumber}
-            className="bg-background"
-            {...register("phonenumber")}
+          <Controller
+            name="phonenumber"
+            control={control}
+            render={({ field }) => (
+              <PhoneInput
+                id="phonenumber"
+                aria-invalid={!!errors.phonenumber}
+                className="bg-background"
+                {...field}
+              />
+            )}
           />
           <FieldError errors={[errors.phonenumber]} />
         </Field>

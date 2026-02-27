@@ -10,28 +10,40 @@ import {
 } from "@workspace/ui/components/field";
 import { Input } from "@workspace/ui/components/input";
 import { Link, useNavigate } from "react-router";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupFormValues } from "./schema";
 import { signup } from "./api";
+import { PhoneInput } from "@/components/phone-input";
 
 export function SignupForm({ className }: { className?: string }) {
   const navigate = useNavigate()
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
+    defaultValues: { phonenumber: "+963" },
   });
 
   async function onSubmit(data: SignupFormValues) {
+    let otpSent = false
     try {
-      await signup(data)
-      navigate("/otp", { state: { phoneNumber: data.phonenumber } })
+      const response = await signup(data)
+      otpSent = response.otp_sent
     } catch (error) {
       console.error("Signup failed:", error)
     }
+    navigate("/otp", {
+      state: {
+        phoneNumber: data.phonenumber,
+        hasEmail: !!data.email,
+        hasTelegram: false,
+        otpSent,
+      },
+    })
   }
 
   return (
@@ -60,19 +72,35 @@ export function SignupForm({ className }: { className?: string }) {
         </Field>
         <Field data-invalid={!!errors.phonenumber}>
           <FieldLabel htmlFor="phonenumber">Phone Number</FieldLabel>
-          <Input
-            id="phonenumber"
-            type="text"
-            placeholder="+963123456789"
-            aria-invalid={!!errors.phonenumber}
-            className="bg-background"
-            {...register("phonenumber")}
+          <Controller
+            name="phonenumber"
+            control={control}
+            render={({ field }) => (
+              <PhoneInput
+                id="phonenumber"
+                aria-invalid={!!errors.phonenumber}
+                className="bg-background"
+                {...field}
+              />
+            )}
           />
           <FieldDescription>
             We&apos;ll use this to contact you. We will not share your phone
             number with anyone else.
           </FieldDescription>
           <FieldError errors={[errors.phonenumber]} />
+        </Field>
+        <Field data-invalid={!!errors.email}>
+          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            aria-invalid={!!errors.email}
+            className="bg-background"
+            {...register("email")}
+          />
+          <FieldError errors={[errors.email]} />
         </Field>
         <Field data-invalid={!!errors.password}>
           <FieldLabel htmlFor="password">Password</FieldLabel>

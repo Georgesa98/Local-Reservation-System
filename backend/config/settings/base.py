@@ -30,6 +30,8 @@ env = environ.Env(
     STRIPE_SECRET_KEY=str,
     FIELD_ENCRYPTION_KEY=str,
     CELERY_BROKER_URL=str,
+    EMAIL_HOST_USER=str,
+    EMAIL_HOST_PASSWORD=str,
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -50,6 +52,15 @@ TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
 
 STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+
+# Email (Gmail SMTP)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 

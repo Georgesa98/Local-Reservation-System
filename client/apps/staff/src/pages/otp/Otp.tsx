@@ -1,10 +1,20 @@
 import { GalleryVerticalEnd } from "lucide-react";
-import { useLocation } from "react-router";
+import { useLocation, Navigate } from "react-router";
+import { useState } from "react";
 import { OtpForm } from "./otp-form";
+import type { OtpChannel } from "./api";
 
 export function OtpPage() {
   const location = useLocation()
-  const phoneNumber = location.state?.phoneNumber ?? ""
+  const phoneNumber: string = location.state?.phoneNumber ?? ""
+  const hasEmail: boolean = location.state?.hasEmail ?? false
+  const hasTelegram: boolean = location.state?.hasTelegram ?? false
+
+  const [channel, setChannel] = useState<OtpChannel>("whatsapp")
+
+  if (!phoneNumber) {
+    return <Navigate to="/signup" replace />
+  }
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
@@ -19,7 +29,13 @@ export function OtpPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <OtpForm phoneNumber={phoneNumber} />
+            <OtpForm
+              phoneNumber={phoneNumber}
+              channel={channel}
+              hasEmail={hasEmail}
+              hasTelegram={hasTelegram}
+              onChannelChange={setChannel}
+            />
           </div>
         </div>
       </div>
