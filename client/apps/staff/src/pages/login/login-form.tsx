@@ -2,11 +2,9 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@workspace/ui/components/field";
 import { Link, useNavigate } from "react-router";
 import { useForm, Controller } from "react-hook-form";
@@ -36,29 +34,28 @@ export function LoginForm({ className }: { className?: string }) {
 
   async function onSubmit(data: LoginFormValues) {
     try {
-      await login(data)
-      toast.success(t("toast.loginSuccess"))
-      navigate("/")
+      await login(data);
+      toast.success(t("toast.loginSuccess"));
+      navigate("/");
     } catch (error) {
-      console.error("Login failed:", error)
-      toast.error(t("toast.loginFailed"))
+      console.error("Login failed:", error);
+      toast.error(t("toast.loginFailed"));
     }
   }
 
   return (
     <form
-      className={cn("flex flex-col gap-6", className)}
+      className={cn("flex flex-col gap-5", className)}
       onSubmit={handleSubmit(onSubmit)}
     >
       <FieldGroup>
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">{t("login.title")}</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-            {t("login.subtitle")}
-          </p>
+        <div className="flex flex-col items-center gap-2 text-center mb-2">
+          <h1 className="auth-heading">{t("login.title")}</h1>
         </div>
         <Field data-invalid={!!errors.phonenumber}>
-          <FieldLabel htmlFor="phonenumber">{t("login.phoneLabel")}</FieldLabel>
+          <FieldLabel htmlFor="phonenumber" className="label-caps">
+            {t("login.phoneLabel")}
+          </FieldLabel>
           <Controller
             name="phonenumber"
             control={control}
@@ -66,7 +63,7 @@ export function LoginForm({ className }: { className?: string }) {
               <PhoneInput
                 id="phonenumber"
                 aria-invalid={!!errors.phonenumber}
-                className="bg-background"
+                className="bg-card"
                 {...field}
               />
             )}
@@ -74,40 +71,37 @@ export function LoginForm({ className }: { className?: string }) {
           <FieldError errors={[errors.phonenumber]} />
         </Field>
         <Field data-invalid={!!errors.password}>
-          <div className="flex items-center">
-            <FieldLabel htmlFor="password">{t("login.passwordLabel")}</FieldLabel>
-            <a
-              href="#"
-              className="ms-auto text-sm underline-offset-4 hover:underline"
-            >
-              {t("login.forgotPassword")}
-            </a>
-          </div>
+          <FieldLabel htmlFor="password" className="label-caps">
+            {t("login.passwordLabel")}
+          </FieldLabel>
           <Input
             id="password"
             type="password"
             aria-invalid={!!errors.password}
-            className="bg-background"
+            className="bg-card"
             {...register("password")}
           />
           <FieldError errors={[errors.password]} />
         </Field>
         <Field>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting} className="w-full uppercase tracking-widest">
             {t("login.submit")}
           </Button>
         </Field>
-        <FieldSeparator className="*:data-[slot=field-separator-content]:bg-muted dark:*:data-[slot=field-separator-content]:bg-card">
-          {t("login.orContinueWith")}
-        </FieldSeparator>
-        <Field>
-          <FieldDescription className="text-center">
-            {t("login.noAccount")}{" "}
-            <Link to="/signup" className="underline underline-offset-4">
-              {t("login.signUp")}
-            </Link>
-          </FieldDescription>
-        </Field>
+        <div className="flex items-center justify-between pt-1">
+          <Link
+            to="/forgot-password"
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 uppercase tracking-widest"
+          >
+            {t("login.forgotPassword")}
+          </Link>
+          <Link
+            to="/signup"
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 uppercase tracking-widest"
+          >
+            {t("login.signUp")}
+          </Link>
+        </div>
       </FieldGroup>
     </form>
   );

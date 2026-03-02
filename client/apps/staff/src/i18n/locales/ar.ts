@@ -12,11 +12,11 @@ const ar: Translation = {
     subtitle: "أدخل رقم هاتفك للمتابعة",
     phoneLabel: "رقم الهاتف",
     passwordLabel: "كلمة المرور",
-    forgotPassword: "نسيت كلمة المرور؟",
+    forgotPassword: "نسيت كلمة المرور",
     submit: "تسجيل الدخول",
     orContinueWith: "أو تابع بـ",
     noAccount: "ليس لديك حساب؟",
-    signUp: "إنشاء حساب",
+    signUp: "طلب وصول",
   },
 
   signup: {
@@ -38,6 +38,8 @@ const ar: Translation = {
   },
 
   otp: {
+    title: "التحقق من الهوية",
+    sentTo: "أدخل الرمز المكوّن من 6 أرقام المرسل إلى",
     channel: {
       whatsapp: {
         title: "تحقق من واتساب",
@@ -60,7 +62,7 @@ const ar: Translation = {
     resend: "إعادة الإرسال",
     tryDifferent: "جرّب طريقة أخرى",
     or: "أو",
-    goBack: "العودة",
+    goBack: "العودة إلى تسجيل الدخول",
   },
 
   otpDialog: {
@@ -93,6 +95,8 @@ const ar: Translation = {
     loginFailed: "فشل تسجيل الدخول. تحقق من بياناتك.",
     signupSuccess: "تم إنشاء الحساب! يرجى التحقق من هاتفك.",
     signupFailed: "فشل إنشاء الحساب. حاول مرة أخرى.",
+    resetLinkSent: "تم إرسال رابط إعادة التعيين! تحقق من بريدك.",
+    resetLinkFailed: "فشل إرسال الرابط. حاول مرة أخرى.",
   },
 
   phoneInput: {
@@ -114,6 +118,14 @@ const ar: Translation = {
     otpIncorrect: "الرمز غير صحيح. حاول مرة أخرى.",
     otpFailed: "فشل التحقق. حاول مرة أخرى.",
     passwordRequired: "كلمة المرور مطلوبة",
+  },
+
+  forgotPassword: {
+    title: "إعادة تعيين كلمة المرور",
+    emailLabel: "البريد الإلكتروني",
+    emailPlaceholder: "you@company.com",
+    submit: "إرسال رابط الإعادة",
+    backToLogin: "العودة إلى تسجيل الدخول",
   },
 }
 

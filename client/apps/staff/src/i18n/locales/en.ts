@@ -6,15 +6,15 @@ const en = {
   },
 
   login: {
-    title: "Login to your account",
+    title: "Login",
     subtitle: "Enter your phone number below to login to your account",
     phoneLabel: "Phone Number",
     passwordLabel: "Password",
-    forgotPassword: "Forgot your password?",
-    submit: "Login",
+    forgotPassword: "Forgot Password",
+    submit: "Sign In",
     orContinueWith: "Or continue with",
     noAccount: "Don't have an account?",
-    signUp: "Sign up",
+    signUp: "Request Access",
   },
 
   signup: {
@@ -36,6 +36,8 @@ const en = {
   },
 
   otp: {
+    title: "Verify Identity",
+    sentTo: "Enter the 6-digit code sent to",
     channel: {
       whatsapp: {
         title: "Check your WhatsApp",
@@ -55,10 +57,10 @@ const en = {
     expires: "The code expires in 5 minutes.",
     submit: "Verify",
     didntReceive: "Didn't receive a code?",
-    resend: "Resend code",
+    resend: "Resend Code",
     tryDifferent: "Try a different method",
     or: "or",
-    goBack: "go back",
+    goBack: "Back to Login",
   },
 
   otpDialog: {
@@ -91,6 +93,8 @@ const en = {
     loginFailed: "Login failed. Check your credentials.",
     signupSuccess: "Account created! Please verify your phone.",
     signupFailed: "Signup failed. Please try again.",
+    resetLinkSent: "Reset link sent! Check your email.",
+    resetLinkFailed: "Failed to send reset link. Please try again.",
   },
 
   phoneInput: {
@@ -112,6 +116,14 @@ const en = {
     otpIncorrect: "Incorrect code. Please try again.",
     otpFailed: "Verification failed. Please try again.",
     passwordRequired: "Password is required",
+  },
+
+  forgotPassword: {
+    title: "Reset Password",
+    emailLabel: "Email",
+    emailPlaceholder: "you@company.com",
+    submit: "Send Reset Link",
+    backToLogin: "Back to Login",
   },
 } as const
 

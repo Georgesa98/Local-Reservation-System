@@ -2,7 +2,6 @@ import { cn } from "@workspace/ui/lib/utils";
 import { Button } from "@workspace/ui/components/button";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -24,12 +23,21 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 interface OtpFormProps {
-  phoneNumber: string
-  channel: OtpChannel
-  hasEmail: boolean
-  hasTelegram: boolean
-  onChannelChange: (channel: OtpChannel) => void
-  className?: string
+  phoneNumber: string;
+  channel: OtpChannel;
+  hasEmail: boolean;
+  hasTelegram: boolean;
+  onChannelChange: (channel: OtpChannel) => void;
+  className?: string;
+}
+
+/** Masks all but the last 4 digits: +963 •••• 4422 */
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length <= 4) return phone;
+  const prefix = phone.startsWith("+") ? "+" + digits.slice(0, digits.length - 10) : "";
+  const visible = digits.slice(-4);
+  return `${prefix} •••• ${visible}`.trim();
 }
 
 export function OtpForm({
@@ -40,10 +48,10 @@ export function OtpForm({
   onChannelChange,
   className,
 }: OtpFormProps) {
-  const { t } = useTranslation()
-  const otpSchema = useMemo(() => createOtpSchema(t), [t])
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const navigate = useNavigate()
+  const { t } = useTranslation();
+  const otpSchema = useMemo(() => createOtpSchema(t), [t]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const {
     control,
@@ -57,61 +65,62 @@ export function OtpForm({
 
   async function onSubmit(data: OtpFormValues) {
     try {
-      const result = await verifyOtp(phoneNumber, data)
+      const result = await verifyOtp(phoneNumber, data);
       if (result.verified) {
-        toast.success(t("toast.verified"))
-        navigate("/", { replace: true })
+        toast.success(t("toast.verified"));
+        navigate("/", { replace: true });
       } else {
-        setError("otp", { message: t("validation.otpIncorrect") })
+        setError("otp", { message: t("validation.otpIncorrect") });
       }
     } catch {
-      setError("otp", { message: t("validation.otpFailed") })
+      setError("otp", { message: t("validation.otpFailed") });
     }
   }
 
   async function handleResend() {
-    const toastId = toast.loading(t("toast.sending"))
+    const toastId = toast.loading(t("toast.sending"));
     try {
-      await resendOtp(phoneNumber, channel)
-      toast.success(t("toast.codeSent"), { id: toastId })
+      await resendOtp(phoneNumber, channel);
+      toast.success(t("toast.codeSent"), { id: toastId });
     } catch (error: unknown) {
       const message =
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        t("toast.resendFailed")
-      toast.error(message, { id: toastId })
+        t("toast.resendFailed");
+      toast.error(message, { id: toastId });
     }
   }
 
   async function handleChannelChange(newChannel: OtpChannel) {
-    onChannelChange(newChannel)
-    const toastId = toast.loading(t("toast.sending"))
+    onChannelChange(newChannel);
+    const toastId = toast.loading(t("toast.sending"));
     try {
-      await resendOtp(phoneNumber, newChannel)
-      toast.success(t("toast.codeSent"), { id: toastId })
+      await resendOtp(phoneNumber, newChannel);
+      toast.success(t("toast.codeSent"), { id: toastId });
     } catch (error: unknown) {
       const message =
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        t("toast.sendFailed")
-      toast.error(message, { id: toastId })
+        t("toast.sendFailed");
+      toast.error(message, { id: toastId });
     }
   }
 
   return (
     <>
       <form
-        className={cn("flex flex-col gap-6", className)}
+        className={cn("flex flex-col gap-5", className)}
         onSubmit={handleSubmit(onSubmit)}
       >
         <FieldGroup>
-          <div className="flex flex-col items-center gap-1 text-center">
-            <h1 className="text-2xl font-bold">{t(`otp.channel.${channel}.title`)}</h1>
-            <p className="text-muted-foreground text-sm text-balance">
-              {t(`otp.channel.${channel}.description`)}{" "}
-              {t("otp.enterBelow")}
+          <div className="flex flex-col items-center gap-2 text-center mb-2">
+            <h1 className="auth-heading">{t("otp.title")}</h1>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mt-1">
+              {t("otp.sentTo")} {maskPhone(phoneNumber)}
             </p>
           </div>
           <Field className="items-center" data-invalid={!!errors.otp}>
-            <FieldLabel htmlFor="otp">{t("otp.codeLabel")}</FieldLabel>
+            <FieldLabel htmlFor="otp" className="label-caps">
+              {t("otp.codeLabel")}
+            </FieldLabel>
             <Controller
               name="otp"
               control={control}
@@ -137,40 +146,27 @@ export function OtpForm({
               )}
             />
             <FieldError errors={[errors.otp]} />
-            <FieldDescription className="text-center">
-              {t("otp.expires")}
-            </FieldDescription>
           </Field>
           <Field>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} className="w-full uppercase tracking-widest">
               {t("otp.submit")}
             </Button>
           </Field>
-          <Field>
-            <FieldDescription className="text-center">
-              {t("otp.didntReceive")}{" "}
-              <button
-                type="button"
-                className="underline underline-offset-4 hover:text-primary"
-                onClick={handleResend}
-              >
-                {t("otp.resend")}
-              </button>
-            </FieldDescription>
-            <FieldDescription className="text-center">
-              <button
-                type="button"
-                className="underline underline-offset-4 hover:text-primary"
-                onClick={() => setDialogOpen(true)}
-              >
-                {t("otp.tryDifferent")}
-              </button>
-              {" "}{t("otp.or")}{" "}
-              <Link to="/login" className="underline underline-offset-4">
-                {t("otp.goBack")}
-              </Link>
-            </FieldDescription>
-          </Field>
+          <div className="flex items-center justify-between pt-1">
+            <button
+              type="button"
+              onClick={handleResend}
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 uppercase tracking-widest"
+            >
+              {t("otp.resend")}
+            </button>
+            <Link
+              to="/login"
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 uppercase tracking-widest"
+            >
+              {t("otp.goBack")}
+            </Link>
+          </div>
         </FieldGroup>
       </form>
 

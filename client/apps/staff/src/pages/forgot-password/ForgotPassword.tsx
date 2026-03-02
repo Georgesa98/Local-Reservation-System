@@ -1,4 +1,4 @@
-import { LoginForm } from "./login-form";
+import { ForgotPasswordForm } from "./forgot-password-form";
 import { useTranslation } from "react-i18next";
 
 function LangToggle() {
@@ -15,14 +15,14 @@ function LangToggle() {
   );
 }
 
-export function LoginPage() {
+export function ForgotPasswordPage() {
   return (
     <div className="auth-page">
       <div className="auth-card">
         <div className="absolute top-4 end-4">
           <LangToggle />
         </div>
-        <LoginForm />
+        <ForgotPasswordForm />
       </div>
     </div>
   );

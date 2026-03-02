@@ -1,4 +1,3 @@
-import { GalleryVerticalEnd } from "lucide-react";
 import { useLocation, Navigate } from "react-router";
 import { useState } from "react";
 import { OtpForm } from "./otp-form";
@@ -12,7 +11,7 @@ function LangToggle() {
     <button
       type="button"
       onClick={() => i18n.changeLanguage(isAr ? "en" : "ar")}
-      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+      className="text-xs text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase"
     >
       {isAr ? "English" : "عربي"}
     </button>
@@ -20,48 +19,29 @@ function LangToggle() {
 }
 
 export function OtpPage() {
-  const location = useLocation()
-  const phoneNumber: string = location.state?.phoneNumber ?? ""
-  const hasEmail: boolean = location.state?.hasEmail ?? false
-  const hasTelegram: boolean = location.state?.hasTelegram ?? false
+  const location = useLocation();
+  const phoneNumber: string = location.state?.phoneNumber ?? "";
+  const hasEmail: boolean = location.state?.hasEmail ?? false;
+  const hasTelegram: boolean = location.state?.hasTelegram ?? false;
 
-  const [channel, setChannel] = useState<OtpChannel>("whatsapp")
+  const [channel, setChannel] = useState<OtpChannel>("whatsapp");
 
   if (!phoneNumber) {
-    return <Navigate to="/signup" replace />
+    return <Navigate to="/signup" replace />;
   }
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
-            <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-              <GalleryVerticalEnd className="size-4" />
-            </div>
-            Acme Inc.
-          </a>
-          <div className="flex-1 flex justify-end">
-            <LangToggle />
-          </div>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="absolute top-4 end-4">
+          <LangToggle />
         </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <OtpForm
-              phoneNumber={phoneNumber}
-              channel={channel}
-              hasEmail={hasEmail}
-              hasTelegram={hasTelegram}
-              onChannelChange={setChannel}
-            />
-          </div>
-        </div>
-      </div>
-      <div className="bg-muted relative hidden lg:block">
-        <img
-          src="/placeholder.svg"
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+        <OtpForm
+          phoneNumber={phoneNumber}
+          channel={channel}
+          hasEmail={hasEmail}
+          hasTelegram={hasTelegram}
+          onChannelChange={setChannel}
         />
       </div>
     </div>
