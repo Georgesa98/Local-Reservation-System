@@ -125,6 +125,15 @@ const en = {
     submit: "Send Reset Link",
     backToLogin: "Back to Login",
   },
+
+  nav: {
+    dashboard: "Dashboard",
+    inventory: "Inventory",
+    bookings: "Bookings",
+    finance: "Finance",
+    system: "System",
+    logout: "Logout",
+  },
 } as const
 
 export default en

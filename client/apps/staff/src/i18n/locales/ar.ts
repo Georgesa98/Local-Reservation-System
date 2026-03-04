@@ -127,6 +127,15 @@ const ar: Translation = {
     submit: "إرسال رابط الإعادة",
     backToLogin: "العودة إلى تسجيل الدخول",
   },
+
+  nav: {
+    dashboard: "لوحة التحكم",
+    inventory: "المخزون",
+    bookings: "الحجوزات",
+    finance: "المالية",
+    system: "النظام",
+    logout: "تسجيل الخروج",
+  },
 }
 
 export default ar

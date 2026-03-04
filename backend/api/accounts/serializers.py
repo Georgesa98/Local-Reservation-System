@@ -29,11 +29,11 @@ class UserCreateSerializer(DjoserUserCreateSerializer):
 
 
 class UserSerializer(DjoserUserSerializer):
-    """Application-specific user serializer exposing id, phone number, email, and telegram status."""
+    """Application-specific user serializer exposing id, phone number, email, telegram status, role, and name."""
 
     class Meta(DjoserUserSerializer.Meta):
         model = User
-        fields = ("id", "phone_number", "email", "telegram_chat_id")
+        fields = ("id", "phone_number", "email", "telegram_chat_id", "role", "first_name", "last_name")
 
 
 class VerifyOTPSerializer(serializers.Serializer):

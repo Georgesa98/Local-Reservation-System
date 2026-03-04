@@ -5,6 +5,7 @@ import { SignupPage } from "./pages/signup";
 import { UIProvider } from "../../../packages/ui/src/context/UIProvider";
 import { OtpPage } from "./pages/otp";
 import { ForgotPasswordPage } from "./pages/forgot-password";
+import { DashboardPage } from "./pages/dashboard";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <HashRouter>
         <UIProvider Link={Link}>
           <Routes>
+            <Route path="/" element={<DashboardPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/otp" element={<OtpPage />} />

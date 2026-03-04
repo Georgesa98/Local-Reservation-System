@@ -1,19 +1,5 @@
 import { LoginForm } from "./login-form";
-import { useTranslation } from "react-i18next";
-
-function LangToggle() {
-  const { i18n } = useTranslation();
-  const isAr = i18n.language === "ar";
-  return (
-    <button
-      type="button"
-      onClick={() => i18n.changeLanguage(isAr ? "en" : "ar")}
-      className="text-xs text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase"
-    >
-      {isAr ? "English" : "عربي"}
-    </button>
-  );
-}
+import LangToggle from "../../components/LangToggle";
 
 export function LoginPage() {
   return (
