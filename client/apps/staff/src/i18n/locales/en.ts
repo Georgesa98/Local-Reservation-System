@@ -128,7 +128,7 @@ const en = {
 
   nav: {
     dashboard: "Dashboard",
-    inventory: "Inventory",
+    rooms: "Rooms",
     bookings: "Bookings",
     finance: "Finance",
     system: "System",

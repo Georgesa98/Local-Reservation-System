@@ -7,6 +7,7 @@ import {
   DollarSign,
   Settings,
   ArrowRight,
+  DoorOpen,
 } from "lucide-react";
 import {
   SidebarContent,
@@ -17,7 +18,7 @@ import {
 
 const navItems = [
   { key: "dashboard" as const, path: "/", icon: LayoutDashboard },
-  { key: "inventory" as const, path: "/inventory", icon: Package },
+  { key: "rooms" as const, path: "/rooms", icon: DoorOpen },
   { key: "bookings" as const, path: "/bookings", icon: CalendarDays },
   { key: "finance" as const, path: "/finance", icon: DollarSign },
   { key: "system" as const, path: "/system", icon: Settings },

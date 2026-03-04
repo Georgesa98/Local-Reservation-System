@@ -130,7 +130,7 @@ const ar: Translation = {
 
   nav: {
     dashboard: "لوحة التحكم",
-    inventory: "المخزون",
+    rooms: "الغرف",
     bookings: "الحجوزات",
     finance: "المالية",
     system: "النظام",
