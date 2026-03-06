@@ -17,7 +17,7 @@ import {
 } from "@workspace/ui/components/sidebar";
 
 const navItems = [
-  { key: "dashboard" as const, path: "/", icon: LayoutDashboard },
+  { key: "dashboard" as const, path: "/dashboard", icon: LayoutDashboard },
   { key: "rooms" as const, path: "/rooms", icon: DoorOpen },
   { key: "bookings" as const, path: "/bookings", icon: CalendarDays },
   { key: "finance" as const, path: "/finance", icon: DollarSign },

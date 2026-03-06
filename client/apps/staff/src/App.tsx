@@ -1,25 +1,41 @@
-import { HashRouter, Link, Route, Routes } from "react-router";
+import { HashRouter, Route, Routes } from "react-router";
 import { DevRouteBar } from "./components/DevRouteBar";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoginPage } from "./pages/login";
 import { SignupPage } from "./pages/signup";
-import { UIProvider } from "../../../packages/ui/src/context/UIProvider";
 import { OtpPage } from "./pages/otp";
 import { ForgotPasswordPage } from "./pages/forgot-password";
-import { DashboardPage } from "./pages/dashboard";
+import { DashboardPage, RoomsPage } from "./pages/dashboard";
 
 function App() {
   return (
     <>
       <HashRouter>
-        <UIProvider Link={Link}>
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/otp" element={<OtpPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          </Routes>
-        </UIProvider>
+        <Routes>
+          {/* Protected routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="rooms"
+            element={
+              <ProtectedRoute>
+                <RoomsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/otp" element={<OtpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        </Routes>
         <DevRouteBar />
       </HashRouter>
     </>
