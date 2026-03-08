@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getTokens, clearTokens } from '../lib/tokenManager'
+import { getTokens, clearTokens, refreshTokens } from '../lib/tokenManager'
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
 
@@ -26,8 +26,17 @@ export function useAuth(): UseAuthResult {
     setStatus('loading')
     try {
       const tokens = await getTokens()
-      if (tokens?.access && isTokenValid(tokens.access)) {
+      if (!tokens) {
+        setStatus('unauthenticated')
+        return
+      }
+      if (isTokenValid(tokens.access)) {
         setStatus('authenticated')
+        return
+      }
+      if (isTokenValid(tokens.refresh)) {
+        const refreshed = await refreshTokens(tokens.refresh)
+        setStatus(refreshed ? 'authenticated' : 'unauthenticated')
       } else {
         setStatus('unauthenticated')
       }

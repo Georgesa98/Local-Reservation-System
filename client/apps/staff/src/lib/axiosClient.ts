@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
-import { getAccessToken, clearTokens } from './tokenManager'
+import { getAccessToken, getTokens, refreshTokens, clearTokens } from './tokenManager'
 
 export const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -59,13 +59,18 @@ axiosClient.interceptors.response.use(
     isRefreshing = true
 
     try {
-      const token = await getAccessToken()
-      if (token) {
-        processQueue(null, token)
-        originalRequest.headers.Authorization = `Bearer ${token}`
-        return axiosClient(originalRequest)
+      const tokens = await getTokens()
+      if (!tokens?.refresh) {
+        throw new Error('No refresh token available')
       }
-      throw new Error('No refresh token available')
+      const refreshed = await refreshTokens(tokens.refresh)
+      if (!refreshed) {
+        throw new Error('Token refresh failed')
+      }
+      const newAccessToken = await getAccessToken()
+      processQueue(null, newAccessToken)
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+      return axiosClient(originalRequest)
     } catch (refreshError) {
       processQueue(refreshError, null)
       await clearTokens()

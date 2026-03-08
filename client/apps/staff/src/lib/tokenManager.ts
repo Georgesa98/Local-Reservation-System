@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { getAccessToken, clearTokens } from './tokenManager'
 
 export interface Tokens {
   access: string
@@ -100,7 +99,7 @@ function isTokenExpiringSoon(token: string): boolean {
   }
 }
 
-async function refreshTokens(refresh: string): Promise<boolean> {
+export async function refreshTokens(refresh: string): Promise<boolean> {
   try {
     const response = await refreshAxios.post(REFRESH_ENDPOINT, {
       refresh,
@@ -109,7 +108,6 @@ async function refreshTokens(refresh: string): Promise<boolean> {
     await saveTokens(access, newRefresh)
     return true
   } catch {
-    await clearTokens()
     return false
   }
 }
