@@ -27,9 +27,9 @@ def delete_room(room_id, user=None):
     return True
 
 
-def list_rooms(filters=None, user=None):
+def list_rooms(filters=None, user=None, scope_to_manager: bool = False):
     queryset = Room.objects.all()
-    if user and hasattr(user, "managed_rooms"):  # Assuming Manager has managed_rooms
+    if scope_to_manager and user is not None:
         queryset = queryset.filter(manager=user)
     if filters:
         if "location" in filters and filters["location"]:

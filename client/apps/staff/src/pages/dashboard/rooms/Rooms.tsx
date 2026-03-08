@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Search, LayoutList, LayoutGrid } from "lucide-react";
 import DashboardLayout from "../layout";
-import { fetchRooms } from "./api";
+import { fetchRooms, deleteRoom } from "./api";
 import { RoomsDataTable } from "./data-table";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -19,6 +20,8 @@ export function RoomsPage() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const queryClient = useQueryClient();
+
   // Single query key — React Query deduplicates by key, eliminating triple calls
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ["rooms", currentPage, search, showInactive],
@@ -30,6 +33,17 @@ export function RoomsPage() {
         ...(!showInactive ? { is_active: true } : {}),
       }),
     placeholderData: keepPreviousData, // keep current page visible while next loads
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteRoom,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      toast.success("Room deleted");
+    },
+    onError: () => {
+      toast.error("Failed to delete room");
+    },
   });
 
   const totalCount = data?.count ?? 0;
@@ -152,6 +166,7 @@ export function RoomsPage() {
               data={rooms}
               isLoading={isLoading}
               isError={isError}
+              onDeleteRoom={(id) => deleteMutation.mutate(id)}
             />
           )}
         </div>

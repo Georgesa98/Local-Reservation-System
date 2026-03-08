@@ -1,25 +1,19 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Room, RoomImage
-from .serializers import (
+
+from ..models import Room, RoomImage
+from ..serializers import (
     RoomSerializer,
     RoomImageSerializer,
     PricingRuleSerializer,
     RoomAvailabilitySerializer,
 )
-from .services import RoomService, PricingRuleService, RoomAvailabilityService
-from .permissions import IsManager, IsRoomManager
-
-
-class RoomPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = "page_size"
-    max_page_size = 100
-    page_query_param = "page"
+from ..services import RoomService, PricingRuleService, RoomAvailabilityService
+from ..permissions import IsManager, IsRoomManager
+from .pagination import RoomPagination
 
 
 class RoomListCreateView(APIView):
@@ -40,7 +34,9 @@ class RoomListCreateView(APIView):
         if "is_active" in request.GET:
             filters["is_active"] = request.GET["is_active"].lower() == "true"
 
-        queryset = RoomService.list_rooms(filters=filters, user=request.user)
+        queryset = RoomService.list_rooms(
+            filters=filters, user=request.user, scope_to_manager=True
+        )
 
         paginator = RoomPagination()
         page = paginator.paginate_queryset(queryset, request)
@@ -129,7 +125,7 @@ class PricingRuleListCreateView(APIView):
         self.check_object_permissions(request, room)
         serializer = PricingRuleSerializer(data=request.data)
         if serializer.is_valid():
-            pricing_rule = PricingRuleService.create_pricing_rule(
+            PricingRuleService.create_pricing_rule(
                 room_id, serializer.validated_data, request.user
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -152,7 +148,7 @@ class PricingRuleDetailView(APIView):
             pricing_rule, data=request.data, partial=True
         )
         if serializer.is_valid():
-            updated_rule = PricingRuleService.update_pricing_rule(
+            PricingRuleService.update_pricing_rule(
                 room_id, pk, serializer.validated_data, request.user
             )
             return Response(serializer.data)
@@ -163,24 +159,6 @@ class PricingRuleDetailView(APIView):
         self.check_object_permissions(request, pricing_rule.room)
         PricingRuleService.delete_pricing_rule(room_id, pk, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class RoomPublicListView(APIView):
-    def get(self, request):
-        filters = {}
-        if "location" in request.GET:
-            filters["location"] = request.GET["location"]
-        if "base_price_per_night" in request.GET:
-            filters["base_price_per_night"] = request.GET["base_price_per_night"]
-        if "capacity" in request.GET:
-            filters["capacity"] = request.GET["capacity"]
-        if "average_rating" in request.GET:
-            filters["average_rating"] = request.GET["average_rating"]
-        # Force is_active=True for public
-        filters["is_active"] = True
-        rooms = RoomService.list_rooms(filters=filters)
-        serializer = RoomSerializer(rooms, many=True)
-        return Response(serializer.data)
 
 
 class RoomAvailabilityListCreateView(APIView):

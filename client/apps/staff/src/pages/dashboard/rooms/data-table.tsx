@@ -14,13 +14,20 @@ interface RoomsDataTableProps {
   data: Room[];
   isLoading: boolean;
   isError: boolean;
+  onDeleteRoom: (id: number) => void;
 }
 
-export function RoomsDataTable({ data, isLoading, isError }: RoomsDataTableProps) {
+export function RoomsDataTable({
+  data,
+  isLoading,
+  isError,
+  onDeleteRoom,
+}: RoomsDataTableProps) {
   const table = useReactTable({
     data,
     columns: roomColumns,
     getCoreRowModel: getCoreRowModel(),
+    meta: { onDeleteRoom },
   });
 
   if (isError) {

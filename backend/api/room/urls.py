@@ -6,14 +6,25 @@ from .views import (
     RoomImageDeleteView,
     PricingRuleListCreateView,
     PricingRuleDetailView,
-    RoomPublicListView,
     RoomAvailabilityListCreateView,
     RoomAvailabilityDetailView,
+    AdminRoomListView,
+    AdminRoomDetailView,
+    RoomPublicListView,
+    RoomPublicDetailView,
 )
 
 
 urlpatterns = [
+    # Public — no auth required
     path("public/", RoomPublicListView.as_view(), name="room-public-list"),
+    path("public/<int:pk>/", RoomPublicDetailView.as_view(), name="room-public-detail"),
+
+    # Admin — IsAuthenticated + IsAdmin, all rooms across managers
+    path("admin/", AdminRoomListView.as_view(), name="room-admin-list"),
+    path("admin/<int:pk>/", AdminRoomDetailView.as_view(), name="room-admin-detail"),
+
+    # Manager — IsAuthenticated + IsManager, scoped to own rooms
     path("", RoomListCreateView.as_view(), name="room-list-create"),
     path("<int:pk>/", RoomDetailView.as_view(), name="room-detail"),
     path(

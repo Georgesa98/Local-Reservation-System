@@ -77,6 +77,43 @@ class RoomAvailabilitySerializer(serializers.ModelSerializer):
         return data
 
 
+class PublicRoomSerializer(serializers.ModelSerializer):
+    """
+    Lean serializer for unauthenticated / guest browsing.
+
+    Exposes only guest-relevant fields — pricing_rules and availabilities
+    are internal management data and must not be leaked to the public.
+    Published reviews are included so guests can read ratings.
+    """
+
+    images = RoomImageSerializer(many=True, read_only=True)
+    reviews = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Room
+        fields = [
+            "id",
+            "title",
+            "description",
+            "base_price_per_night",
+            "location",
+            "capacity",
+            "services",
+            "average_rating",
+            "ratings_count",
+            "images",
+            "reviews",
+        ]
+        read_only_fields = fields
+
+    def get_reviews(self, obj):
+        """Lazy import to avoid circular dependency."""
+        from api.booking.serializers import ReviewSerializer
+
+        reviews = obj.reviews.filter(is_published=True)
+        return ReviewSerializer(reviews, many=True).data
+
+
 class RoomSerializer(serializers.ModelSerializer):
     images = RoomImageSerializer(many=True, read_only=True)
     pricing_rules = PricingRuleSerializer(many=True, read_only=True)
