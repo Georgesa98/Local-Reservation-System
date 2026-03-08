@@ -36,7 +36,7 @@ export function LoginForm({ className }: { className?: string }) {
     try {
       await login(data);
       toast.success(t("toast.loginSuccess"));
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       toast.error(t("toast.loginFailed"));
@@ -84,7 +84,11 @@ export function LoginForm({ className }: { className?: string }) {
           <FieldError errors={[errors.password]} />
         </Field>
         <Field>
-          <Button type="submit" disabled={isSubmitting} className="w-full uppercase tracking-widest">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full uppercase tracking-widest"
+          >
             {t("login.submit")}
           </Button>
         </Field>

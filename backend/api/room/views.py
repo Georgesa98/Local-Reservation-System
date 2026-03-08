@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Room, RoomImage
@@ -12,6 +13,13 @@ from .serializers import (
 )
 from .services import RoomService, PricingRuleService, RoomAvailabilityService
 from .permissions import IsManager, IsRoomManager
+
+
+class RoomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 100
+    page_query_param = "page"
 
 
 class RoomListCreateView(APIView):
@@ -31,8 +39,16 @@ class RoomListCreateView(APIView):
             filters["manager"] = request.GET["manager"]
         if "is_active" in request.GET:
             filters["is_active"] = request.GET["is_active"].lower() == "true"
-        rooms = RoomService.list_rooms(filters=filters, user=request.user)
-        serializer = RoomSerializer(rooms, many=True)
+
+        queryset = RoomService.list_rooms(filters=filters, user=request.user)
+
+        paginator = RoomPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = RoomSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = RoomSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def post(self, request):

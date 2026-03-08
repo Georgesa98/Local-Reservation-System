@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from api.accounts.models import Manager, Admin, Staff
+from api.accounts.models import Manager, Admin, Staff, Role
 
 
 class IsManager(BasePermission):
@@ -8,7 +8,7 @@ class IsManager(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return isinstance(request.user, Manager)
+        return request.user.role == Role.MANAGER
 
 
 class IsRoomManager(BasePermission):
