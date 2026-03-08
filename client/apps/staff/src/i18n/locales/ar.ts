@@ -136,6 +136,43 @@ const ar: Translation = {
     system: "النظام",
     logout: "تسجيل الخروج",
   },
+
+  rooms: {
+    title: "المخزون",
+    addRoom: "إضافة غرفة",
+    searchPlaceholder: "ابحث عن عقار...",
+    showInactive: "عرض غير النشطة",
+    gridComingSoon: "عرض الشبكة قريباً",
+    noRooms: "لا توجد غرف",
+    showing: "عرض {{start}}–{{end}} من {{total}} غرفة",
+    prev: "السابق",
+    next: "التالي",
+    loading: "جارٍ التحميل…",
+    errorLoading: "فشل تحميل الغرف. حاول مرة أخرى.",
+    noRoomsFound: "لا توجد غرف",
+    toast: {
+      deleted: "تم حذف الغرفة",
+      deleteFailed: "فشل حذف الغرفة",
+    },
+    columns: {
+      property: "العقار",
+      capacity: "السعة",
+      rate: "السعر (الليلة)",
+      status: "الحالة",
+      actions: "الإجراءات",
+    },
+    actions: {
+      edit: "تعديل الغرفة",
+      delete: "حذف الغرفة",
+    },
+    deleteDialog: {
+      title: "حذف الغرفة",
+      description: "هل أنت متأكد أنك تريد حذف",
+      cannotUndo: "لا يمكن التراجع عن هذا الإجراء.",
+      confirm: "حذف",
+      cancel: "إلغاء",
+    },
+  },
 }
 
 export default ar

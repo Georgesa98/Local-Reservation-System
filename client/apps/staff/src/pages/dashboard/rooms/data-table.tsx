@@ -1,4 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   TableBody,
@@ -23,6 +24,7 @@ export function RoomsDataTable({
   isError,
   onDeleteRoom,
 }: RoomsDataTableProps) {
+  const { t } = useTranslation();
   const table = useReactTable({
     data,
     columns: roomColumns,
@@ -34,7 +36,7 @@ export function RoomsDataTable({
     return (
       <div className="flex items-center justify-center flex-1 py-20">
         <p className="text-sm" style={{ color: "var(--destructive, #ef4444)" }}>
-          Failed to load rooms. Please try again.
+          {t("rooms.errorLoading")}
         </p>
       </div>
     );
@@ -43,7 +45,7 @@ export function RoomsDataTable({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center flex-1 py-20">
-        <p className="label-caps">Loading…</p>
+        <p className="label-caps">{t("rooms.loading")}</p>
       </div>
     );
   }
@@ -77,7 +79,7 @@ export function RoomsDataTable({
               colSpan={roomColumns.length}
               className="text-center py-12"
             >
-              <span className="label-caps">No rooms found</span>
+              <span className="label-caps">{t("rooms.noRoomsFound")}</span>
             </TableCell>
           </TableRow>
         ) : (

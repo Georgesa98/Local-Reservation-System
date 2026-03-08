@@ -134,6 +134,43 @@ const en = {
     system: "System",
     logout: "Logout",
   },
+
+  rooms: {
+    title: "Inventory",
+    addRoom: "Add Room",
+    searchPlaceholder: "Search property...",
+    showInactive: "Show Inactive",
+    gridComingSoon: "Grid view coming soon",
+    noRooms: "No rooms",
+    showing: "Showing {{start}}–{{end}} of {{total}} rooms",
+    prev: "Prev",
+    next: "Next",
+    loading: "Loading…",
+    errorLoading: "Failed to load rooms. Please try again.",
+    noRoomsFound: "No rooms found",
+    toast: {
+      deleted: "Room deleted",
+      deleteFailed: "Failed to delete room",
+    },
+    columns: {
+      property: "Property",
+      capacity: "Capacity",
+      rate: "Rate (Night)",
+      status: "Status",
+      actions: "Actions",
+    },
+    actions: {
+      edit: "Edit room",
+      delete: "Delete room",
+    },
+    deleteDialog: {
+      title: "Delete room",
+      description: "Are you sure you want to delete",
+      cannotUndo: "This action cannot be undone.",
+      confirm: "Delete",
+      cancel: "Cancel",
+    },
+  },
 } as const
 
 export default en

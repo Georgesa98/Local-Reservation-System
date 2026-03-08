@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Users, Pencil, Trash2 } from "lucide-react";
 import {
@@ -37,6 +38,7 @@ function RoomActionsCell({
   room: Room;
   onDeleteRoom: (id: number) => void;
 }) {
+  const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
@@ -45,7 +47,7 @@ function RoomActionsCell({
       <Button
         variant="ghost"
         size="icon-sm"
-        title="Edit room"
+        title={t("rooms.actions.edit")}
         disabled
         style={{ color: "var(--muted-foreground)" }}
       >
@@ -56,7 +58,7 @@ function RoomActionsCell({
       <Button
         variant="ghost"
         size="icon-sm"
-        title="Delete room"
+        title={t("rooms.actions.delete")}
         onClick={() => setConfirmOpen(true)}
         style={{ color: "var(--muted-foreground)" }}
         className="hover:text-destructive"
@@ -71,13 +73,14 @@ function RoomActionsCell({
           style={{ border: "1px solid var(--border)" }}
         >
           <DialogHeader>
-            <DialogTitle className="label-caps">Delete room</DialogTitle>
+            <DialogTitle className="label-caps">{t("rooms.deleteDialog.title")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete{" "}
+              {t("rooms.deleteDialog.description")}{" "}
               <span style={{ color: "var(--foreground)", fontWeight: 600 }}>
                 {room.title}
               </span>
-              ? This action cannot be undone.
+              {"? "}
+              {t("rooms.deleteDialog.cannotUndo")}
             </DialogDescription>
           </DialogHeader>
 
@@ -87,7 +90,7 @@ function RoomActionsCell({
               className="label-caps"
               onClick={() => setConfirmOpen(false)}
             >
-              Cancel
+              {t("rooms.deleteDialog.cancel")}
             </Button>
             <Button
               className="label-caps"
@@ -101,7 +104,7 @@ function RoomActionsCell({
                 setConfirmOpen(false);
               }}
             >
-              Delete
+              {t("rooms.deleteDialog.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -117,7 +120,10 @@ const col = createColumnHelper<Room>();
 export const roomColumns = [
   col.display({
     id: "property",
-    header: "PROPERTY",
+    header: () => {
+      const { t } = useTranslation();
+      return t("rooms.columns.property");
+    },
     cell: ({ row }) => {
       const room = row.original;
       const mainImage = room.images.find((img) => img.is_main) ?? room.images[0];
@@ -154,7 +160,10 @@ export const roomColumns = [
   }),
 
   col.accessor("capacity", {
-    header: "CAPACITY",
+    header: () => {
+      const { t } = useTranslation();
+      return t("rooms.columns.capacity");
+    },
     cell: ({ getValue }) => (
       <div
         className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium"
@@ -167,7 +176,10 @@ export const roomColumns = [
   }),
 
   col.accessor("base_price_per_night", {
-    header: "RATE (NIGHT)",
+    header: () => {
+      const { t } = useTranslation();
+      return t("rooms.columns.rate");
+    },
     cell: ({ getValue, row }) => (
       <span
         className="text-sm tabular-nums"
@@ -183,7 +195,10 @@ export const roomColumns = [
   }),
 
   col.accessor("is_active", {
-    header: "STATUS",
+    header: () => {
+      const { t } = useTranslation();
+      return t("rooms.columns.status");
+    },
     cell: ({ getValue }) => (
       <span
         className="inline-block w-3 h-3 rounded-full"
@@ -197,7 +212,10 @@ export const roomColumns = [
 
   col.display({
     id: "actions",
-    header: "ACTIONS",
+    header: () => {
+      const { t } = useTranslation();
+      return t("rooms.columns.actions");
+    },
     cell: ({ row, table }) => {
       const meta = table.options.meta as RoomsTableMeta | undefined;
       if (!meta?.onDeleteRoom) return null;

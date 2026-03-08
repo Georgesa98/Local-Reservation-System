@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -15,6 +16,7 @@ const PAGE_SIZE = 10;
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function RoomsPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -39,10 +41,10 @@ export function RoomsPage() {
     mutationFn: deleteRoom,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
-      toast.success("Room deleted");
+      toast.success(t("rooms.toast.deleted"));
     },
     onError: () => {
-      toast.error("Failed to delete room");
+      toast.error(t("rooms.toast.deleteFailed"));
     },
   });
 
@@ -83,9 +85,9 @@ export function RoomsPage() {
           className="flex items-center justify-between px-6 py-4 shrink-0"
           style={{ borderBottom: "1px solid var(--border)" }}
         >
-          <h1 className="auth-heading">Inventory</h1>
+          <h1 className="auth-heading">{t("rooms.title")}</h1>
           <Button className="px-5 py-2 text-xs font-bold tracking-widest uppercase">
-            Add Room&nbsp;+
+            {t("rooms.addRoom")}&nbsp;+
           </Button>
         </div>
 
@@ -107,7 +109,7 @@ export function RoomsPage() {
             <Input
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="SEARCH PROPERTY..."
+              placeholder={t("rooms.searchPlaceholder").toUpperCase()}
               className="border-0 shadow-none focus-visible:ring-0 bg-transparent label-caps h-8 px-0"
             />
           </div>
@@ -124,7 +126,7 @@ export function RoomsPage() {
               className="w-4 h-4 cursor-pointer"
               style={{ accentColor: "var(--foreground)" }}
             />
-            <span className="label-caps whitespace-nowrap">Show Inactive</span>
+            <span className="label-caps whitespace-nowrap">{t("rooms.showInactive")}</span>
           </label>
 
           {/* View mode */}
@@ -159,7 +161,7 @@ export function RoomsPage() {
         <div className="flex-1 min-h-0 overflow-auto">
           {viewMode === "grid" ? (
             <div className="flex items-center justify-center h-full py-20">
-              <p className="label-caps">Grid view coming soon</p>
+              <p className="label-caps">{t("rooms.gridComingSoon")}</p>
             </div>
           ) : (
             <RoomsDataTable
@@ -178,8 +180,8 @@ export function RoomsPage() {
         >
           <span className="label-caps">
             {totalCount === 0
-              ? "No rooms"
-              : `Showing ${rangeStart}–${rangeEnd} of ${totalCount} rooms`}
+              ? t("rooms.noRooms")
+              : t("rooms.showing", { start: rangeStart, end: rangeEnd, total: totalCount })}
           </span>
 
           <div className="flex items-center">
@@ -189,7 +191,7 @@ export function RoomsPage() {
               disabled={currentPage <= 1 || isFetching}
               onClick={() => setCurrentPage((p) => p - 1)}
             >
-              Prev
+              {t("rooms.prev")}
             </Button>
 
             {pageNumbers.map((page) => (
@@ -210,7 +212,7 @@ export function RoomsPage() {
               disabled={currentPage >= totalPages || isFetching}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
-              Next
+              {t("rooms.next")}
             </Button>
           </div>
         </div>
