@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     "api.notification",
     "api.payment",
     "api.admin.audit",
+    "api.seed",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
