@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Users, Pencil, Trash2 } from "lucide-react";
 import {
@@ -39,16 +40,17 @@ function RoomActionsCell({
   onDeleteRoom: (id: number) => void;
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
     <div className="flex items-center gap-1">
-      {/* Edit — placeholder */}
+      {/* Edit — navigate to detail page */}
       <Button
         variant="ghost"
         size="icon-sm"
         title={t("rooms.actions.edit")}
-        disabled
+        onClick={() => navigate(`/rooms/${room.id}`)}
         style={{ color: "var(--muted-foreground)" }}
       >
         <Pencil size={14} strokeWidth={1.5} />
@@ -128,8 +130,15 @@ export const roomColumns = [
       const room = row.original;
       const mainImage = room.images.find((img) => img.is_main) ?? room.images[0];
       const dim = !room.is_active;
+      const navigate = useNavigate();
       return (
-        <div className="flex items-center gap-3">
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => navigate(`/rooms/${room.id}`)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && navigate(`/rooms/${room.id}`)}
+        >
           {mainImage ? (
             <img
               src={mainImage.image}

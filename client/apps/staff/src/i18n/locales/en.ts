@@ -3,6 +3,8 @@ const en = {
     or: "Or",
     cancel: "Cancel",
     current: "current",
+    back: "Back",
+    comingSoon: "Coming soon",
   },
 
   login: {
@@ -169,6 +171,67 @@ const en = {
       cannotUndo: "This action cannot be undone.",
       confirm: "Delete",
       cancel: "Cancel",
+    },
+  },
+
+  room: {
+    breadcrumb: {
+      inventory: "Inventory",
+      rooms: "Rooms",
+      room: "Room #{{number}}",
+    },
+    badge: {
+      live: "Live",
+      inactive: "Inactive",
+    },
+    lastSync: "Last Sync",
+    saveChanges: "Save Changes",
+    saving: "Saving…",
+    loading: "Loading…",
+    errorLoading: "Failed to load room. Please try again.",
+    mainImageAlt: "Room image",
+    addImage: "Add image",
+    manageAll: "Manage All",
+    editRules: "Edit Rules",
+    chars: "Chars",
+    tabs: {
+      overview: "Overview",
+      images: "Images",
+      pricing: "Pricing",
+      availability: "Availability",
+      reviews: "Reviews",
+    },
+    section: {
+      generalInfo: "General Information",
+      occupancyRate: "Occupancy & Base Rate",
+      description: "Description",
+      amenities: "Amenities",
+      mainImage: "Main Image",
+      activeRules: "Active Rules",
+    },
+    field: {
+      internalTitle: "Internal Title",
+      publicListingName: "Public Listing Name",
+      propertyType: "Property Type",
+      floorArea: "Floor Area (m²)",
+      maxGuests: "Max Guests",
+      bedrooms: "Bedrooms",
+      baseNightlyRate: "Base Nightly Rate",
+      marketingCopy: "Marketing Copy",
+    },
+    amenities: {
+      add: "Add",
+      allAdded: "All amenities added",
+    },
+    rules: {
+      rule: "Rule",
+      adj: "Adj.",
+      none: "No active rules",
+      total: "Total {{count}} active rules",
+    },
+    toast: {
+      saved: "Room saved",
+      saveFailed: "Failed to save room",
     },
   },
 } as const

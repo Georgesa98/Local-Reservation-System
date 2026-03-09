@@ -44,3 +44,35 @@ export interface PaginatedRooms {
   previous: string | null;
   results: Room[];
 }
+
+/** Pricing rule returned by GET /api/rooms/<id>/pricing-rules/ */
+export interface PricingRule {
+  id: number;
+  name: string;
+  days?: string;           // e.g. "Fri, Sat" — human-readable label
+  min_stay?: number;       // minimum stay in nights (if applicable)
+  adjustment_percent: string; // DecimalField as string — positive = increase, negative = decrease
+}
+
+/** Paginated envelope for pricing rules */
+export interface PaginatedPricingRules {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: PricingRule[];
+}
+
+/** Writable fields for PATCH /api/rooms/<id>/ */
+export type UpdateRoomPayload = Partial<
+  Pick<
+    Room,
+    | "title"
+    | "description"
+    | "base_price_per_night"
+    | "location"
+    | "full_address"
+    | "capacity"
+    | "services"
+    | "is_active"
+  >
+>;

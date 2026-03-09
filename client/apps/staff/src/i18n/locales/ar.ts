@@ -5,6 +5,8 @@ const ar: Translation = {
     or: "أو",
     cancel: "إلغاء",
     current: "الحالي",
+    back: "رجوع",
+    comingSoon: "قريباً",
   },
 
   login: {
@@ -171,6 +173,67 @@ const ar: Translation = {
       cannotUndo: "لا يمكن التراجع عن هذا الإجراء.",
       confirm: "حذف",
       cancel: "إلغاء",
+    },
+  },
+
+  room: {
+    breadcrumb: {
+      inventory: "المخزون",
+      rooms: "الغرف",
+      room: "غرفة #{{number}}",
+    },
+    badge: {
+      live: "نشط",
+      inactive: "غير نشط",
+    },
+    lastSync: "آخر مزامنة",
+    saveChanges: "حفظ التغييرات",
+    saving: "جارٍ الحفظ…",
+    loading: "جارٍ التحميل…",
+    errorLoading: "فشل تحميل الغرفة. حاول مرة أخرى.",
+    mainImageAlt: "صورة الغرفة",
+    addImage: "إضافة صورة",
+    manageAll: "إدارة الكل",
+    editRules: "تعديل القواعد",
+    chars: "حرف",
+    tabs: {
+      overview: "نظرة عامة",
+      images: "الصور",
+      pricing: "التسعير",
+      availability: "التوفر",
+      reviews: "التقييمات",
+    },
+    section: {
+      generalInfo: "المعلومات العامة",
+      occupancyRate: "الإشغال والسعر الأساسي",
+      description: "الوصف",
+      amenities: "المرافق",
+      mainImage: "الصورة الرئيسية",
+      activeRules: "القواعد النشطة",
+    },
+    field: {
+      internalTitle: "العنوان الداخلي",
+      publicListingName: "اسم القائمة العامة",
+      propertyType: "نوع العقار",
+      floorArea: "المساحة (م²)",
+      maxGuests: "الحد الأقصى للضيوف",
+      bedrooms: "غرف النوم",
+      baseNightlyRate: "السعر الأساسي للليلة",
+      marketingCopy: "النص التسويقي",
+    },
+    amenities: {
+      add: "إضافة",
+      allAdded: "تمت إضافة جميع المرافق",
+    },
+    rules: {
+      rule: "القاعدة",
+      adj: "التعديل",
+      none: "لا توجد قواعد نشطة",
+      total: "إجمالي {{count}} قواعد نشطة",
+    },
+    toast: {
+      saved: "تم حفظ الغرفة",
+      saveFailed: "فشل حفظ الغرفة",
     },
   },
 }
