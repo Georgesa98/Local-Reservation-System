@@ -35,6 +35,7 @@ import {
   RoomDetailSkeleton,
   ImageTabSection,
   PricingTabSection,
+  AvailabilityTabSection,
 } from "../../../../components/rooms";
 
 // ─── Form state shape ─────────────────────────────────────────────────────────
@@ -322,8 +323,20 @@ export function SpecificRoomPage() {
             )}
           </TabsContent>
 
+          {/* ── Availability tab ───────────────────────────────────────── */}
+          <TabsContent
+            value="availability"
+            className="flex-1 min-h-0 overflow-auto m-0"
+          >
+            {room ? (
+              <AvailabilityTabSection roomId={roomId} room={room} />
+            ) : (
+              <RoomDetailSkeleton />
+            )}
+          </TabsContent>
+
           {/* ── Stub tabs ──────────────────────────────────────────────────── */}
-          {(["availability", "reviews"] as const).map(
+          {(["reviews"] as const).map(
             (tab) => (
               <TabsContent
                 key={tab}

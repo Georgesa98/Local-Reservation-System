@@ -266,6 +266,57 @@ const ar: Translation = {
         makeMainFailed: "فشل تحديث الصورة الرئيسية",
       },
     },
+    availability: {
+      currentlyBlocked: "الفترات المحجوبة",
+      activeRanges: "{{count}} نطاق نشط",
+      availabilityLog: "سجل التوفر",
+      newBlock: "استثناء حجب جديد",
+      syncNotice: "مزامنة فورية مع جميع قنوات الحجز العالمية.",
+      noBlocked: "لا توجد فترات محجوبة",
+      columns: {
+        dateRange: "نطاق التاريخ",
+        reason: "السبب",
+        status: "الحالة",
+      },
+      actions: {
+        remove: "إزالة",
+      },
+      status: {
+        active: "نشط",
+        expired: "منتهي",
+      },
+      reason: {
+        maintenance: "صيانة",
+        personal_use: "استخدام شخصي",
+        other: "أخرى",
+      },
+      form: {
+        startDate: "تاريخ البدء",
+        endDate: "تاريخ الانتهاء",
+        blockingReason: "سبب الحجب",
+        internalNotes: "ملاحظات داخلية",
+        notesPlaceholder: "اذكر السبب التفصيلي لهذا الحجب...",
+        submit: "تطبيق استثناء الحجب",
+      },
+      stats: {
+        totalBlockedYtd: "إجمالي الأيام المحجوبة هذا العام",
+        availabilityRate: "معدل التوفر",
+        days: "{{count}} يوم",
+        rate: "{{value}}%",
+      },
+      confirmDelete: {
+        title: "إزالة الحجب",
+        description: "هل أنت متأكد أنك تريد إزالة هذه الفترة المحجوبة؟ لا يمكن التراجع عن هذا الإجراء.",
+        confirm: "إزالة",
+        cancel: "إلغاء",
+      },
+      toast: {
+        created: "تم تطبيق الحجب",
+        createFailed: "فشل تطبيق الحجب",
+        deleted: "تم إزالة الحجب",
+        deleteFailed: "فشل إزالة الحجب",
+      },
+    },
     pricing: {
       title: "قواعد التسعير الديناميكي",
       subtitle: "إعداد تعديلات التسعير الموسمية والشرطية",

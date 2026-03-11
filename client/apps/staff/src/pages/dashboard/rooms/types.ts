@@ -10,6 +10,30 @@ export interface RoomImage {
   is_main: boolean;
 }
 
+/** Reason choices — mirrors backend ReasonType.choices */
+export type AvailabilityReason = "maintenance" | "personal_use" | "other";
+
+/**
+ * Room availability (blocked period) — mirrors RoomAvailabilitySerializer.
+ * Source of truth: backend/api/room/serializers.py → RoomAvailabilitySerializer
+ */
+export interface RoomAvailability {
+  id: number;
+  start_date: string;   // ISO date "YYYY-MM-DD"
+  end_date: string;     // ISO date "YYYY-MM-DD"
+  reason: AvailabilityReason;
+  notes: string;
+  created_by: number | null; // FK to Staff — read-only
+}
+
+/** Writable fields for POST /api/rooms/<id>/availabilities/ */
+export interface AvailabilityPayload {
+  start_date: string;
+  end_date: string;
+  reason: AvailabilityReason;
+  notes?: string;
+}
+
 export interface Room {
   id: number;
   title: string;
@@ -24,6 +48,7 @@ export interface Room {
   ratings_count: number;        // read-only
   is_active: boolean;
   images: RoomImage[];
+  availabilities: RoomAvailability[];
   created_at: string;           // ISO 8601
   updated_at: string;           // ISO 8601
 }

@@ -264,6 +264,57 @@ const en = {
         makeMainFailed: "Failed to update main image",
       },
     },
+    availability: {
+      currentlyBlocked: "Currently Blocked",
+      activeRanges: "{{count}} Active Ranges",
+      availabilityLog: "Availability Log",
+      newBlock: "New Block Exception",
+      syncNotice: "Immediate sync to all global booking channels.",
+      noBlocked: "No blocked ranges",
+      columns: {
+        dateRange: "Date Range",
+        reason: "Reason",
+        status: "Status",
+      },
+      actions: {
+        remove: "Remove",
+      },
+      status: {
+        active: "Active",
+        expired: "Expired",
+      },
+      reason: {
+        maintenance: "Maintenance",
+        personal_use: "Personal Use",
+        other: "Other",
+      },
+      form: {
+        startDate: "Start Date",
+        endDate: "End Date",
+        blockingReason: "Blocking Reason",
+        internalNotes: "Internal Notes",
+        notesPlaceholder: "Detail the specific requirement for this block...",
+        submit: "Apply Block Exception",
+      },
+      stats: {
+        totalBlockedYtd: "Total Blocked YTD",
+        availabilityRate: "Availability Rate",
+        days: "{{count}} Days",
+        rate: "{{value}}%",
+      },
+      confirmDelete: {
+        title: "Remove Block",
+        description: "Are you sure you want to remove this blocked period? This cannot be undone.",
+        confirm: "Remove",
+        cancel: "Cancel",
+      },
+      toast: {
+        created: "Block applied",
+        createFailed: "Failed to apply block",
+        deleted: "Block removed",
+        deleteFailed: "Failed to remove block",
+      },
+    },
     pricing: {
       title: "Dynamic Pricing Rules",
       subtitle: "Configure seasonal and conditional pricing adjustments",

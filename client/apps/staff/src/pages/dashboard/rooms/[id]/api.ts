@@ -2,6 +2,8 @@ import { axiosClient } from "@/lib/axiosClient";
 import type {
   Room,
   RoomImage,
+  RoomAvailability,
+  AvailabilityPayload,
   PricingRule,
   PricingRulePayload,
   UpdateRoomPayload,
@@ -73,6 +75,33 @@ export async function setMainRoomImage(
     `/api/rooms/${roomId}/images/${imageId}/set-main/`
   );
   return response.data;
+}
+
+// ── Room availabilities ───────────────────────────────────────────────────────
+
+/**
+ * POST /api/rooms/<id>/availabilities/
+ * Creates a new blocked period for the room.
+ */
+export async function createRoomAvailability(
+  roomId: number,
+  payload: AvailabilityPayload
+): Promise<RoomAvailability> {
+  const response = await axiosClient.post<RoomAvailability>(
+    `/api/rooms/${roomId}/availabilities/`,
+    payload
+  );
+  return response.data;
+}
+
+/**
+ * DELETE /api/rooms/<id>/availabilities/<availId>/
+ */
+export async function deleteRoomAvailability(
+  roomId: number,
+  availId: number
+): Promise<void> {
+  await axiosClient.delete(`/api/rooms/${roomId}/availabilities/${availId}/`);
 }
 
 // ── Pricing rules ─────────────────────────────────────────────────────────────
