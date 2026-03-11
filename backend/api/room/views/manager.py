@@ -110,6 +110,17 @@ class RoomImageDeleteView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class RoomImageSetMainView(APIView):
+    permission_classes = [IsAuthenticated, IsRoomManager]
+
+    def patch(self, request, room_id, image_id):
+        room = get_object_or_404(Room, id=room_id)
+        self.check_object_permissions(request, room)
+        image = RoomService.set_main_room_image(room_id, image_id, user=request.user)
+        serializer = RoomImageSerializer(image)
+        return Response(serializer.data)
+
+
 class PricingRuleListCreateView(APIView):
     permission_classes = [IsAuthenticated, IsRoomManager]
 

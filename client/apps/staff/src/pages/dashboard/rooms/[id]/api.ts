@@ -1,6 +1,7 @@
 import { axiosClient } from "@/lib/axiosClient";
 import type {
   Room,
+  RoomImage,
   PricingRule,
   PricingRulePayload,
   UpdateRoomPayload,
@@ -20,6 +21,57 @@ export async function updateRoom(
   payload: UpdateRoomPayload
 ): Promise<Room> {
   const response = await axiosClient.patch<Room>(`/api/rooms/${id}/`, payload);
+  return response.data;
+}
+
+// ── Room images ───────────────────────────────────────────────────────────────
+
+/**
+ * POST /api/rooms/<id>/images/
+ * Uploads one or more image files as multipart/form-data.
+ * Sends images as an indexed list: images[0][image], images[0][alt_text], etc.
+ * The first file in the list is marked is_main only if no main image exists yet.
+ */
+export async function addRoomImages(
+  roomId: number,
+  files: File[],
+  firstIsMain = false
+): Promise<RoomImage[]> {
+  const formData = new FormData();
+  files.forEach((file, i) => {
+    formData.append(`images[${i}][image]`, file);
+    formData.append(`images[${i}][alt_text]`, file.name);
+    formData.append(`images[${i}][is_main]`, i === 0 && firstIsMain ? "true" : "false");
+  });
+  const response = await axiosClient.post<RoomImage[]>(
+    `/api/rooms/${roomId}/images/`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return response.data;
+}
+
+/**
+ * DELETE /api/rooms/<id>/images/<image_id>/
+ */
+export async function deleteRoomImage(
+  roomId: number,
+  imageId: number
+): Promise<void> {
+  await axiosClient.delete(`/api/rooms/${roomId}/images/${imageId}/`);
+}
+
+/**
+ * PATCH /api/rooms/<id>/images/<image_id>/set-main/
+ * Promotes the given image to is_main = true for the room.
+ */
+export async function setMainRoomImage(
+  roomId: number,
+  imageId: number
+): Promise<RoomImage> {
+  const response = await axiosClient.patch<RoomImage>(
+    `/api/rooms/${roomId}/images/${imageId}/set-main/`
+  );
   return response.data;
 }
 

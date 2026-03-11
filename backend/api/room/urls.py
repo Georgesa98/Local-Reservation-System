@@ -4,6 +4,7 @@ from .views import (
     RoomDetailView,
     RoomImageCreateView,
     RoomImageDeleteView,
+    RoomImageSetMainView,
     PricingRuleListCreateView,
     PricingRuleDetailView,
     RoomAvailabilityListCreateView,
@@ -36,6 +37,11 @@ urlpatterns = [
         "<int:room_id>/images/<int:image_id>/",
         RoomImageDeleteView.as_view(),
         name="room-image-delete",
+    ),
+    path(
+        "<int:room_id>/images/<int:image_id>/set-main/",
+        RoomImageSetMainView.as_view(),
+        name="room-image-set-main",
     ),
     path(
         "<int:room_id>/pricing-rules/",

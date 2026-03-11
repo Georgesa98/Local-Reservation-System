@@ -231,6 +231,41 @@ const ar: Translation = {
       none: "لا توجد قواعد نشطة",
       total: "إجمالي {{count}} قواعد نشطة",
     },
+    images: {
+      title: "معرض الصور",
+      uploadCard: {
+        label: "رفع صور جديدة",
+        hint: "اسحب وأفلت أو انقر",
+      },
+      badge: {
+        main: "الصورة الرئيسية",
+      },
+      actions: {
+        makeMain: "تعيين كرئيسية",
+        delete: "حذف",
+      },
+      confirmDelete: {
+        title: "حذف الصورة",
+        description: "هل أنت متأكد أنك تريد حذف هذه الصورة؟ لا يمكن التراجع عن هذا الإجراء.",
+        confirm: "حذف",
+        cancel: "إلغاء",
+      },
+      stats: {
+        storage: "مساحة التخزين",
+        assets: "عدد الصور",
+        lastSynced: "آخر مزامنة",
+        storageValue: "{{used}} ميغابايت / 100 ميغابايت",
+        assetsValue: "{{count}} صورة نشطة",
+      },
+      toast: {
+        uploaded: "تم رفع الصورة",
+        uploadFailed: "فشل رفع الصورة",
+        deleted: "تم حذف الصورة",
+        deleteFailed: "فشل حذف الصورة",
+        madeMain: "تم تحديث الصورة الرئيسية",
+        makeMainFailed: "فشل تحديث الصورة الرئيسية",
+      },
+    },
     pricing: {
       title: "قواعد التسعير الديناميكي",
       subtitle: "إعداد تعديلات التسعير الموسمية والشرطية",

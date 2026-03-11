@@ -33,6 +33,7 @@ import {
   MainImageSection,
   ActiveRulesSection,
   RoomDetailSkeleton,
+  ImageTabSection,
   PricingTabSection,
 } from "../../../../components/rooms";
 
@@ -309,8 +310,20 @@ export function SpecificRoomPage() {
             />
           </TabsContent>
 
+          {/* ── Images tab ─────────────────────────────────────────────── */}
+          <TabsContent
+            value="images"
+            className="flex-1 min-h-0 overflow-auto m-0"
+          >
+            {room ? (
+              <ImageTabSection roomId={roomId} room={room} />
+            ) : (
+              <RoomDetailSkeleton />
+            )}
+          </TabsContent>
+
           {/* ── Stub tabs ──────────────────────────────────────────────────── */}
-          {(["images", "availability", "reviews"] as const).map(
+          {(["availability", "reviews"] as const).map(
             (tab) => (
               <TabsContent
                 key={tab}

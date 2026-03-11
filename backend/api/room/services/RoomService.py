@@ -71,3 +71,14 @@ def remove_room_image(image_id, user=None):
     image = get_object_or_404(RoomImage, id=image_id)
     image.delete()
     return True
+
+
+def set_main_room_image(room_id, image_id, user=None):
+    """Promote image_id to main for room_id. Clears any existing main first."""
+    room = get_object_or_404(Room, id=room_id)
+    image = get_object_or_404(RoomImage, id=image_id, room=room)
+    # Clear existing main in a single UPDATE, then set the new one
+    room.images.filter(is_main=True).update(is_main=False)
+    image.is_main = True
+    image.save(update_fields=["is_main"])
+    return image

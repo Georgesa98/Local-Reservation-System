@@ -229,6 +229,41 @@ const en = {
       none: "No active rules",
       total: "Total {{count}} active rules",
     },
+    images: {
+      title: "Image Gallery",
+      uploadCard: {
+        label: "Upload New Images",
+        hint: "Drag & Drop or Click",
+      },
+      badge: {
+        main: "MAIN IMAGE",
+      },
+      actions: {
+        makeMain: "MAKE MAIN",
+        delete: "DELETE",
+      },
+      confirmDelete: {
+        title: "Delete Image",
+        description: "Are you sure you want to delete this image? This action cannot be undone.",
+        confirm: "Delete",
+        cancel: "Cancel",
+      },
+      stats: {
+        storage: "Storage Usage",
+        assets: "Asset Count",
+        lastSynced: "Last Synced",
+        storageValue: "{{used}} MB / 100 MB",
+        assetsValue: "{{count}} Images Active",
+      },
+      toast: {
+        uploaded: "Image uploaded",
+        uploadFailed: "Failed to upload image",
+        deleted: "Image deleted",
+        deleteFailed: "Failed to delete image",
+        madeMain: "Main image updated",
+        makeMainFailed: "Failed to update main image",
+      },
+    },
     pricing: {
       title: "Dynamic Pricing Rules",
       subtitle: "Configure seasonal and conditional pricing adjustments",
