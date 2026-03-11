@@ -8,21 +8,26 @@ interface ActiveRulesSectionProps {
   onEditRules: () => void;
 }
 
-function formatAdjustment(value: string): string {
-  const num = parseFloat(value);
-  if (isNaN(num)) return value;
-  return num > 0 ? `+${num}%` : `${num}%`;
+function formatModifier(rule: PricingRule): string {
+  const num = parseFloat(rule.price_modifier);
+  if (isNaN(num)) return rule.price_modifier;
+  const formatted = num > 0 ? `+${num}` : `${num}`;
+  return rule.is_percentage ? `${formatted}%` : `${formatted} USD`;
 }
 
-function getAdjustmentColor(value: string): string {
+function getModifierColor(value: string): string {
   const num = parseFloat(value);
   if (isNaN(num)) return "var(--foreground)";
   return num > 0 ? "#22c55e" : "#ef4444";
 }
 
+const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 function getRuleDescriptor(rule: PricingRule): string | null {
-  if (rule.days) return rule.days;
-  if (rule.min_stay) return `> ${rule.min_stay} Days`;
+  if (rule.days_of_week.length > 0) {
+    return rule.days_of_week.map((d) => DAY_NAMES[d] ?? d).join(", ");
+  }
+  if (rule.min_nights) return `> ${rule.min_nights} nights`;
   return null;
 }
 
@@ -103,7 +108,7 @@ export function ActiveRulesSection({
                   className="text-sm font-semibold"
                   style={{ color: "var(--foreground)" }}
                 >
-                  {rule.name}
+                  {rule.rule_type.replace("_", " ")}
                 </p>
                 {getRuleDescriptor(rule) && (
                   <p className="label-caps mt-0.5">{getRuleDescriptor(rule)}</p>
@@ -111,9 +116,9 @@ export function ActiveRulesSection({
               </div>
               <span
                 className="text-sm font-semibold tabular-nums"
-                style={{ color: getAdjustmentColor(rule.adjustment_percent) }}
+                style={{ color: getModifierColor(rule.price_modifier) }}
               >
-                {formatAdjustment(rule.adjustment_percent)}
+                {formatModifier(rule)}
               </span>
             </div>
           ))

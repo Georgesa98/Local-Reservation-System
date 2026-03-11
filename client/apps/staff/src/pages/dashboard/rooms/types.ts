@@ -45,13 +45,24 @@ export interface PaginatedRooms {
   results: Room[];
 }
 
-/** Pricing rule returned by GET /api/rooms/<id>/pricing-rules/ */
+/** Rule type choices — mirrors backend RuleType.choices */
+export type RuleType = "weekend" | "holiday" | "seasonal" | "length_of_stay";
+
+/**
+ * Pricing rule — mirrors backend PricingRuleSerializer exactly.
+ * Source of truth: backend/api/room/serializers.py → PricingRuleSerializer
+ */
 export interface PricingRule {
   id: number;
-  name: string;
-  days?: string;           // e.g. "Fri, Sat" — human-readable label
-  min_stay?: number;       // minimum stay in nights (if applicable)
-  adjustment_percent: string; // DecimalField as string — positive = increase, negative = decrease
+  rule_type: RuleType;
+  price_modifier: string;    // DecimalField as string — positive = surcharge, negative = discount
+  is_percentage: boolean;    // true = modifier is a %, false = flat amount
+  start_date: string | null; // ISO date — null for non-seasonal rules
+  end_date: string | null;   // ISO date — null for non-seasonal rules
+  min_nights: number | null; // minimum stay in nights (length_of_stay rules)
+  days_of_week: number[];    // e.g. [5, 6] for Fri–Sat (0=Mon … 6=Sun)
+  is_active: boolean;
+  priority: number;
 }
 
 /** Paginated envelope for pricing rules */
@@ -60,6 +71,19 @@ export interface PaginatedPricingRules {
   next: string | null;
   previous: string | null;
   results: PricingRule[];
+}
+
+/** Writable fields for POST/PATCH /api/rooms/<id>/pricing-rules/ */
+export interface PricingRulePayload {
+  rule_type: RuleType;
+  price_modifier: string;
+  is_percentage: boolean;
+  start_date?: string | null;
+  end_date?: string | null;
+  min_nights?: number | null;
+  days_of_week?: number[];
+  is_active?: boolean;
+  priority?: number;
 }
 
 /** Writable fields for PATCH /api/rooms/<id>/ */

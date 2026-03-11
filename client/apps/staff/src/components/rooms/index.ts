@@ -7,3 +7,7 @@ export { MainImageSection } from "./MainImageSection";
 export { ActiveRulesSection } from "./ActiveRulesSection";
 export { SectionHeading } from "./SectionHeading";
 export { RoomDetailSkeleton } from "./RoomDetailSkeleton";
+export { PricingTabSection } from "./PricingTabSection";
+export { PricingRulesTable } from "./PricingRulesTable";
+export { PricingSidebar } from "./PricingSidebar";
+export { PricingRuleForm } from "./PricingRuleForm";

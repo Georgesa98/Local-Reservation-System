@@ -12,6 +12,7 @@
     "build": "pnpm build:web && pnpm build:electron",
     "start": "cross-env NODE_ENV=production electron dist/electron/main.js",
     "dist": "pnpm build && electron-builder",
+    "dist:linux": "pnpm build:electron && electron-builder",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit"
   },
@@ -49,5 +50,23 @@
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "wait-on": "^9.0.4"
+  },
+  "build": {
+    "appId": "com.localreservation.staff",
+    "productName": "Staff",
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "executableArgs": [
+        "--ozone-platform=wayland",
+        "--disable-features=WaylandWindowDecorations"
+      ]
+    }
   }
 }

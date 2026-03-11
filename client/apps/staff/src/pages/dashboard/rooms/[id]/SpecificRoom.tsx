@@ -33,6 +33,7 @@ import {
   MainImageSection,
   ActiveRulesSection,
   RoomDetailSkeleton,
+  PricingTabSection,
 } from "../../../../components/rooms";
 
 // ─── Form state shape ─────────────────────────────────────────────────────────
@@ -166,8 +167,8 @@ export function SpecificRoomPage() {
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
-  const pricingRules = rulesData?.results ?? [];
-  const totalRulesCount = rulesData?.count ?? 0;
+  const pricingRules = rulesData ?? [];
+  const totalRulesCount = rulesData?.length ?? 0;
 
   // is_active is read by the header — watch it so the header re-renders on change
   const isActive = watch("is_active");
@@ -297,8 +298,19 @@ export function SpecificRoomPage() {
             )}
           </TabsContent>
 
+          {/* ── Pricing tab ────────────────────────────────────────────── */}
+          <TabsContent
+            value="pricing"
+            className="flex-1 min-h-0 overflow-auto m-0"
+          >
+            <PricingTabSection
+              roomId={roomId}
+              basePrice={room?.base_price_per_night}
+            />
+          </TabsContent>
+
           {/* ── Stub tabs ──────────────────────────────────────────────────── */}
-          {(["images", "pricing", "availability", "reviews"] as const).map(
+          {(["images", "availability", "reviews"] as const).map(
             (tab) => (
               <TabsContent
                 key={tab}
