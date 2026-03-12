@@ -17,3 +17,6 @@ export { AvailabilityBlockedTable } from "./AvailabilityBlockedTable";
 export { AvailabilityBlockForm } from "./AvailabilityBlockForm";
 export { ImageGrid } from "./ImageGrid";
 export { ImageStatsBar } from "./ImageStatsBar";
+export { ReviewsTabSection } from "./ReviewsTabSection";
+export { ReviewsStatsBar } from "./ReviewsStatsBar";
+export { ReviewsTable } from "./ReviewsTable";

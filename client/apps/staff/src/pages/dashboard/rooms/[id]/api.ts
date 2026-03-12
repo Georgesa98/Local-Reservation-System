@@ -7,6 +7,8 @@ import type {
   PricingRule,
   PricingRulePayload,
   UpdateRoomPayload,
+  Review,
+  PaginatedReviews,
 } from "../types";
 
 // ── Fetch single room ─────────────────────────────────────────────────────────
@@ -142,4 +144,33 @@ export async function deletePricingRule(
   ruleId: number
 ): Promise<void> {
   await axiosClient.delete(`/api/rooms/${roomId}/pricing-rules/${ruleId}/`);
+}
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/bookings/rooms/<room_id>/reviews/?page=<n>&page_size=<n>
+ * Returns paginated reviews for a room. Managers see all; guests see published only.
+ */
+export async function fetchRoomReviews(
+  roomId: number,
+  page = 1,
+  pageSize = 10
+): Promise<PaginatedReviews> {
+  const response = await axiosClient.get<PaginatedReviews>(
+    `/api/bookings/rooms/${roomId}/reviews/`,
+    { params: { page, page_size: pageSize } }
+  );
+  return response.data;
+}
+
+/**
+ * PATCH /api/bookings/reviews/<id>/publish/
+ * Toggles the review's is_published status (manager only).
+ */
+export async function toggleReviewPublish(reviewId: number): Promise<Review> {
+  const response = await axiosClient.patch<Review>(
+    `/api/bookings/reviews/${reviewId}/publish/`
+  );
+  return response.data;
 }

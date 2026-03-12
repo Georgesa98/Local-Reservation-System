@@ -390,6 +390,27 @@ const ar: Translation = {
       saved: "تم حفظ الغرفة",
       saveFailed: "فشل حفظ الغرفة",
     },
+    reviews: {
+      title: "تقييمات الضيوف",
+      averageRating: "متوسط التقييم: {{value}} / 5.0",
+      exportData: "تصدير البيانات",
+      noReviews: "لا توجد تقييمات بعد",
+      showing: "عرض {{from}} — {{to}} من {{total}} سجل",
+      columns: {
+        guest: "معلومات الضيف",
+        rating: "التقييم",
+        content: "المحتوى",
+        actions: "الإجراءات",
+      },
+      actions: {
+        publish: "نشر",
+        unpublish: "إلغاء النشر",
+      },
+      toast: {
+        toggled: "تم تحديث حالة التقييم",
+        toggleFailed: "فشل تحديث حالة التقييم",
+      },
+    },
   },
 }
 

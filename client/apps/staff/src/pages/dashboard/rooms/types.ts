@@ -125,3 +125,35 @@ export type UpdateRoomPayload = Partial<
     | "is_active"
   >
 >;
+
+// ── Reviews ──────────────────────────────────────────────────────────────────
+
+/** Guest shape embedded in ReviewSerializer */
+export interface ReviewGuest {
+  id: number;
+  first_name: string;
+  last_name: string;
+  phone: string;
+}
+
+/**
+ * Review — mirrors backend ReviewSerializer exactly.
+ * Source of truth: backend/api/booking/serializers.py → ReviewSerializer
+ */
+export interface Review {
+  id: number;
+  guest: ReviewGuest;
+  room: { id: number; title: string };
+  rating: number;          // 1–5
+  comment: string;
+  is_published: boolean;   // read-only on this serializer
+  created_at: string;      // ISO 8601
+}
+
+/** Paginated envelope for reviews */
+export interface PaginatedReviews {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Review[];
+}

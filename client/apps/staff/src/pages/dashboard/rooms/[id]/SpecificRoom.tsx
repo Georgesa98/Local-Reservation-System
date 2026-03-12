@@ -36,6 +36,7 @@ import {
   ImageTabSection,
   PricingTabSection,
   AvailabilityTabSection,
+  ReviewsTabSection,
 } from "../../../../components/rooms";
 
 // ─── Form state shape ─────────────────────────────────────────────────────────
@@ -335,23 +336,16 @@ export function SpecificRoomPage() {
             )}
           </TabsContent>
 
-          {/* ── Stub tabs ──────────────────────────────────────────────────── */}
-          {(["reviews"] as const).map(
-            (tab) => (
-              <TabsContent
-                key={tab}
-                value={tab}
-                className="flex-1 min-h-0 overflow-auto m-0 flex items-center justify-center"
-              >
-                <p
-                  className="label-caps"
-                  style={{ color: "var(--muted-foreground)" }}
-                >
-                  {t(`room.tabs.${tab}`)} — {t("common.comingSoon")}
-                </p>
-              </TabsContent>
-            ),
-          )}
+          {/* ── Reviews tab ────────────────────────────────────────────── */}
+          <TabsContent
+            value="reviews"
+            className="flex-1 min-h-0 overflow-auto m-0"
+          >
+            <ReviewsTabSection
+              roomId={roomId}
+              averageRating={room?.average_rating}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>

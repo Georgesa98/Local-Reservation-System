@@ -388,6 +388,27 @@ const en = {
       saved: "Room saved",
       saveFailed: "Failed to save room",
     },
+    reviews: {
+      title: "Guest Reviews",
+      averageRating: "Average Rating: {{value}} / 5.0",
+      exportData: "Export Data",
+      noReviews: "No reviews yet",
+      showing: "Showing {{from}} — {{to}} of {{total}} records",
+      columns: {
+        guest: "Guest Info",
+        rating: "Rating",
+        content: "Content",
+        actions: "Actions",
+      },
+      actions: {
+        publish: "Publish",
+        unpublish: "Unpublish",
+      },
+      toast: {
+        toggled: "Review status updated",
+        toggleFailed: "Failed to update review status",
+      },
+    },
   },
 } as const
 

@@ -19,6 +19,7 @@ from .serializers import (
 from .services import BookingService
 from .services import ReviewService
 from .permissions import IsGuest, IsReviewOwner, CanViewReview, IsReviewRoomManager
+from .pagination import ReviewPagination
 
 
 class BookingListCreateView(APIView):
@@ -308,7 +309,7 @@ class ReviewPublishView(APIView):
 
 
 class RoomReviewListView(APIView):
-    """List reviews for a specific room."""
+    """List reviews for a specific room (paginated)."""
 
     permission_classes = []  # Public endpoint
 
@@ -328,6 +329,12 @@ class RoomReviewListView(APIView):
             reviews = ReviewService.list_reviews_for_room(
                 room_id, published_only=published_only
             )
+
+            paginator = ReviewPagination()
+            page = paginator.paginate_queryset(reviews, request)
+            if page is not None:
+                serializer = ReviewSerializer(page, many=True)
+                return paginator.get_paginated_response(serializer.data)
 
             serializer = ReviewSerializer(reviews, many=True)
             return Response(serializer.data)
