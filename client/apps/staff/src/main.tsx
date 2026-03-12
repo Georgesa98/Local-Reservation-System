@@ -10,7 +10,17 @@ import { ThemeProvider } from "@workspace/ui/components/theme-provider";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { DirectionProvider } from "@workspace/ui/components/direction";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      retry: (failureCount, error) => {
+        const status = (error as { status?: number })?.status;
+        return status !== 401 && failureCount < 2;
+      },
+    },
+  },
+});
 
 function DynamicDirectionProvider({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();

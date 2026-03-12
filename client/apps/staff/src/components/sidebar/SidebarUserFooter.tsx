@@ -4,17 +4,21 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from "@workspace/ui/components/sidebar";
-import { clearTokens } from "../../lib/tokenManager";
+import { useAuth } from "../../hooks/useAuth";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { useQueryClient } from "@tanstack/react-query";
 import LangToggle from "../LangToggle";
 
 export default function SidebarUserFooter() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, isLoading } = useCurrentUser();
+  const { logout } = useAuth();
+  const queryClient = useQueryClient();
+  const { data: user, isLoading } = useCurrentUser();
 
   async function handleLogout() {
-    await clearTokens();
+    await logout();
+    queryClient.clear();
     navigate("/login", { replace: true });
   }
 

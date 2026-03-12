@@ -1,4 +1,4 @@
-import { HashRouter, Route, Routes } from "react-router";
+import { HashRouter, Navigate, Route, Routes } from "react-router";
 import { DevRouteBar } from "./components/DevRouteBar";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LoginPage } from "./pages/login";
@@ -12,6 +12,9 @@ function App() {
     <>
       <HashRouter>
         <Routes>
+          {/* Root redirect */}
+          <Route path="/" element={<Navigate to="/dashboard/rooms" replace />} />
+
           {/* Protected routes */}
           <Route
             path="/dashboard"
@@ -22,7 +25,7 @@ function App() {
             }
           />
           <Route
-            path="rooms"
+            path="/rooms"
             element={
               <ProtectedRoute>
                 <RoomsPage />

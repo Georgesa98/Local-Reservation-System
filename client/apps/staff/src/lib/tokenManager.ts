@@ -112,6 +112,7 @@ export async function refreshTokens(refresh: string): Promise<boolean> {
   }
 }
 
-export function isAuthenticated(): boolean {
-  return cachedTokens !== null
+export async function isAuthenticated(): Promise<boolean> {
+  const tokens = await getTokens();
+  return tokens !== null;
 }

@@ -160,6 +160,13 @@ export function OtpForm({
             >
               {t("otp.resend")}
             </button>
+            <button
+              type="button"
+              onClick={() => setDialogOpen(true)}
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 uppercase tracking-widest"
+            >
+              {t("otp.tryDifferent")}
+            </button>
             <Link
               to="/login"
               className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 uppercase tracking-widest"

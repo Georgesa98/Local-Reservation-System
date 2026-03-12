@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@workspace/ui/components/table";
-import { roomColumns } from "./columns";
+import { useRoomColumns } from "./columns";
 import type { Room } from "./types";
 
 interface RoomsDataTableProps {
@@ -25,9 +25,10 @@ export function RoomsDataTable({
   onDeleteRoom,
 }: RoomsDataTableProps) {
   const { t } = useTranslation();
+  const columns = useRoomColumns();
   const table = useReactTable({
     data,
-    columns: roomColumns,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     meta: { onDeleteRoom },
   });
@@ -76,7 +77,7 @@ export function RoomsDataTable({
         {table.getRowModel().rows.length === 0 ? (
           <TableRow>
             <TableCell
-              colSpan={roomColumns.length}
+            colSpan={columns.length}
               className="text-center py-12"
             >
               <span className="label-caps">{t("rooms.noRoomsFound")}</span>

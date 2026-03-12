@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { axiosClient } from "../lib/axiosClient";
 
 export interface CurrentUser {
@@ -11,36 +11,15 @@ export interface CurrentUser {
   last_name: string;
 }
 
-interface UseCurrentUserResult {
-  user: CurrentUser | null;
-  isLoading: boolean;
-  error: string | null;
+async function fetchCurrentUser(): Promise<CurrentUser> {
+  const response = await axiosClient.get<CurrentUser>("/api/auth/users/me/");
+  return response.data;
 }
 
-export function useCurrentUser(): UseCurrentUserResult {
-  const [user, setUser] = useState<CurrentUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    axiosClient
-      .get<CurrentUser>("/api/auth/users/me/")
-      .then((res) => {
-        if (!cancelled) setUser(res.data);
-      })
-      .catch(() => {
-        if (!cancelled) setError("Failed to load user");
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { user, isLoading, error };
+export function useCurrentUser() {
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: fetchCurrentUser,
+    staleTime: 5 * 60 * 1000,
+  });
 }

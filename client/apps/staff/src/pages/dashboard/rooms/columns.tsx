@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -119,122 +119,114 @@ function RoomActionsCell({
 
 const col = createColumnHelper<Room>();
 
-export const roomColumns = [
-  col.display({
-    id: "property",
-    header: () => {
-      const { t } = useTranslation();
-      return t("rooms.columns.property");
-    },
-    cell: ({ row }) => {
-      const room = row.original;
-      const mainImage = room.images.find((img) => img.is_main) ?? room.images[0];
-      const dim = !room.is_active;
-      const navigate = useNavigate();
-      return (
-        <div
-          className="flex items-center gap-3 cursor-pointer"
-          onClick={() => navigate(`/rooms/${room.id}`)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && navigate(`/rooms/${room.id}`)}
-        >
-          {mainImage ? (
-            <img
-              src={mainImage.image}
-              alt={mainImage.alt_text}
-              className="w-[60px] h-[60px] object-cover shrink-0"
-              style={{ opacity: dim ? 0.45 : 1 }}
-            />
-          ) : (
+export function useRoomColumns() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  return useMemo(
+    () => [
+      col.display({
+        id: "property",
+        header: () => t("rooms.columns.property"),
+        cell: ({ row }) => {
+          const room = row.original;
+          const mainImage = room.images.find((img) => img.is_main) ?? room.images[0];
+          const dim = !room.is_active;
+          return (
             <div
-              className="w-[60px] h-[60px] shrink-0"
-              style={{ background: "var(--muted)" }}
-            />
-          )}
-          <div>
-            <p
-              className="text-sm font-semibold leading-tight"
-              style={{
-                color: dim ? "var(--muted-foreground)" : "var(--foreground)",
-              }}
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => navigate(`/rooms/${room.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === "Enter" && navigate(`/rooms/${room.id}`)}
             >
-              {room.title}
-            </p>
-            <p className="label-caps mt-0.5">{room.location}</p>
+              {mainImage ? (
+                <img
+                  src={mainImage.image}
+                  alt={mainImage.alt_text}
+                  className="w-[60px] h-[60px] object-cover shrink-0"
+                  style={{ opacity: dim ? 0.45 : 1 }}
+                />
+              ) : (
+                <div
+                  className="w-[60px] h-[60px] shrink-0"
+                  style={{ background: "var(--muted)" }}
+                />
+              )}
+              <div>
+                <p
+                  className="text-sm font-semibold leading-tight"
+                  style={{
+                    color: dim ? "var(--muted-foreground)" : "var(--foreground)",
+                  }}
+                >
+                  {room.title}
+                </p>
+                <p className="label-caps mt-0.5">{room.location}</p>
+              </div>
+            </div>
+          );
+        },
+      }),
+
+      col.accessor("capacity", {
+        header: () => t("rooms.columns.capacity"),
+        cell: ({ getValue }) => (
+          <div
+            className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium"
+            style={{ border: "1px solid var(--border)", color: "var(--foreground)" }}
+          >
+            <Users size={12} strokeWidth={1.5} />
+            {getValue()}
           </div>
-        </div>
-      );
-    },
-  }),
+        ),
+      }),
 
-  col.accessor("capacity", {
-    header: () => {
-      const { t } = useTranslation();
-      return t("rooms.columns.capacity");
-    },
-    cell: ({ getValue }) => (
-      <div
-        className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium"
-        style={{ border: "1px solid var(--border)", color: "var(--foreground)" }}
-      >
-        <Users size={12} strokeWidth={1.5} />
-        {getValue()}
-      </div>
-    ),
-  }),
+      col.accessor("base_price_per_night", {
+        header: () => t("rooms.columns.rate"),
+        cell: ({ getValue, row }) => (
+          <span
+            className="text-sm tabular-nums"
+            style={{
+              color: row.original.is_active
+                ? "var(--foreground)"
+                : "var(--muted-foreground)",
+            }}
+          >
+            {formatRate(getValue())}
+          </span>
+        ),
+      }),
 
-  col.accessor("base_price_per_night", {
-    header: () => {
-      const { t } = useTranslation();
-      return t("rooms.columns.rate");
-    },
-    cell: ({ getValue, row }) => (
-      <span
-        className="text-sm tabular-nums"
-        style={{
-          color: row.original.is_active
-            ? "var(--foreground)"
-            : "var(--muted-foreground)",
-        }}
-      >
-        {formatRate(getValue())}
-      </span>
-    ),
-  }),
+      col.accessor("is_active", {
+        header: () => t("rooms.columns.status"),
+        cell: ({ getValue }) => (
+          <span
+            className="inline-block w-3 h-3 rounded-full"
+            style={{
+              background: getValue() ? "#22c55e" : "var(--muted-foreground)",
+            }}
+            title={getValue() ? "Active" : "Inactive"}
+          />
+        ),
+      }),
 
-  col.accessor("is_active", {
-    header: () => {
-      const { t } = useTranslation();
-      return t("rooms.columns.status");
-    },
-    cell: ({ getValue }) => (
-      <span
-        className="inline-block w-3 h-3 rounded-full"
-        style={{
-          background: getValue() ? "#22c55e" : "var(--muted-foreground)",
-        }}
-        title={getValue() ? "Active" : "Inactive"}
-      />
-    ),
-  }),
-
-  col.display({
-    id: "actions",
-    header: () => {
-      const { t } = useTranslation();
-      return t("rooms.columns.actions");
-    },
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as RoomsTableMeta | undefined;
-      if (!meta?.onDeleteRoom) return null;
-      return (
-        <RoomActionsCell
-          room={row.original}
-          onDeleteRoom={meta.onDeleteRoom}
-        />
-      );
-    },
-  }),
-];
+      col.display({
+        id: "actions",
+        header: () => t("rooms.columns.actions"),
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as RoomsTableMeta | undefined;
+          if (!meta?.onDeleteRoom) return null;
+          return (
+            <RoomActionsCell
+              room={row.original}
+              onDeleteRoom={meta.onDeleteRoom}
+            />
+          );
+        },
+      }),
+    ],
+    [t, navigate]
+  );
+}
 
