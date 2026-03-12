@@ -410,6 +410,50 @@ const en = {
       },
     },
   },
+  newRoom: {
+    breadcrumb: {
+      back: "< Back",
+      label: "New Room",
+    },
+    section: {
+      generalInfo: "General Information",
+      occupancy: "Occupancy & Base Rate",
+      descriptionAmenities: "Description & Amenities",
+    },
+    field: {
+      roomTitle: "Room Title",
+      roomTitlePlaceholder: "E.G. DELUXE SUITE 402",
+      description: "Description",
+      descriptionPlaceholder: "Describe the property features and amenities...",
+      location: "City / Location",
+      locationPlaceholder: "Berlin, DE",
+      fullAddress: "Full Address",
+      fullAddressPlaceholder: "Street Name, 123",
+      capacity: "Guest Capacity",
+      basePrice: "Base Price / Night",
+      services: "Services & Amenities",
+      servicesPlaceholder: "Type and press Enter to add...",
+    },
+    visibility: {
+      label: "Visibility Status",
+      hint: "Set the room as active and bookable immediately",
+    },
+    actions: {
+      submit: "Create Room",
+      saveDraft: "Save Draft",
+      cancel: "Cancel",
+    },
+    footer: {
+      bestPracticeTitle: "Grid/OS Best Practice",
+      bestPracticeText: "High-quality titles should be concise and include specific room identifiers. Ensure price data is accurate as per seasonal adjustments.",
+      supportTitle: "Support",
+      supportText: "Need help setting up a multi-unit property? Contact our technical integration team.",
+    },
+    toast: {
+      created: "Room created",
+      createFailed: "Failed to create room",
+    },
+  },
 } as const
 
 export default en

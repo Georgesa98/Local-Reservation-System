@@ -1,13 +1,19 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Search, LayoutList, LayoutGrid } from "lucide-react";
 import DashboardLayout from "../layout";
 import { fetchRooms, deleteRoom } from "./api";
 import { RoomsDataTable } from "./data-table";
+import { useNavigate } from "react-router";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -17,6 +23,7 @@ const PAGE_SIZE = 10;
 
 export function RoomsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showInactive, setShowInactive] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -86,7 +93,12 @@ export function RoomsPage() {
           style={{ borderBottom: "1px solid var(--border)" }}
         >
           <h1 className="auth-heading">{t("rooms.title")}</h1>
-          <Button className="px-5 py-2 text-xs font-bold tracking-widest uppercase">
+          <Button
+            className="px-5 py-2 text-xs font-bold tracking-widest uppercase"
+            onClick={() => {
+              navigate("/rooms/new");
+            }}
+          >
             {t("rooms.addRoom")}&nbsp;+
           </Button>
         </div>
@@ -126,7 +138,9 @@ export function RoomsPage() {
               className="w-4 h-4 cursor-pointer"
               style={{ accentColor: "var(--foreground)" }}
             />
-            <span className="label-caps whitespace-nowrap">{t("rooms.showInactive")}</span>
+            <span className="label-caps whitespace-nowrap">
+              {t("rooms.showInactive")}
+            </span>
           </label>
 
           {/* View mode */}
@@ -135,8 +149,12 @@ export function RoomsPage() {
               onClick={() => setViewMode("list")}
               className="flex items-center justify-center w-10 h-10 transition-colors"
               style={{
-                background: viewMode === "list" ? "var(--foreground)" : "transparent",
-                color: viewMode === "list" ? "var(--card)" : "var(--muted-foreground)",
+                background:
+                  viewMode === "list" ? "var(--foreground)" : "transparent",
+                color:
+                  viewMode === "list"
+                    ? "var(--card)"
+                    : "var(--muted-foreground)",
                 borderRight: "1px solid var(--border)",
               }}
               title="List view"
@@ -147,8 +165,12 @@ export function RoomsPage() {
               onClick={() => setViewMode("grid")}
               className="flex items-center justify-center w-10 h-10 transition-colors"
               style={{
-                background: viewMode === "grid" ? "var(--foreground)" : "transparent",
-                color: viewMode === "grid" ? "var(--card)" : "var(--muted-foreground)",
+                background:
+                  viewMode === "grid" ? "var(--foreground)" : "transparent",
+                color:
+                  viewMode === "grid"
+                    ? "var(--card)"
+                    : "var(--muted-foreground)",
               }}
               title="Grid view"
             >
@@ -181,7 +203,11 @@ export function RoomsPage() {
           <span className="label-caps">
             {totalCount === 0
               ? t("rooms.noRooms")
-              : t("rooms.showing", { start: rangeStart, end: rangeEnd, total: totalCount })}
+              : t("rooms.showing", {
+                  start: rangeStart,
+                  end: rangeEnd,
+                  total: totalCount,
+                })}
           </span>
 
           <div className="flex items-center">

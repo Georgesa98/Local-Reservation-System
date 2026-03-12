@@ -412,6 +412,50 @@ const ar: Translation = {
       },
     },
   },
+  newRoom: {
+    breadcrumb: {
+      back: "< رجوع",
+      label: "غرفة جديدة",
+    },
+    section: {
+      generalInfo: "المعلومات العامة",
+      occupancy: "الإشغال والسعر الأساسي",
+      descriptionAmenities: "الوصف والمرافق",
+    },
+    field: {
+      roomTitle: "عنوان الغرفة",
+      roomTitlePlaceholder: "مثال: جناح ديلوكس 402",
+      description: "الوصف",
+      descriptionPlaceholder: "اذكر مميزات العقار والمرافق...",
+      location: "المدينة / الموقع",
+      locationPlaceholder: "برلين، ألمانيا",
+      fullAddress: "العنوان الكامل",
+      fullAddressPlaceholder: "اسم الشارع، 123",
+      capacity: "سعة الضيوف",
+      basePrice: "السعر الأساسي / الليلة",
+      services: "الخدمات والمرافق",
+      servicesPlaceholder: "اكتب واضغط Enter للإضافة...",
+    },
+    visibility: {
+      label: "حالة الظهور",
+      hint: "تعيين الغرفة كنشطة وقابلة للحجز فوراً",
+    },
+    actions: {
+      submit: "إنشاء الغرفة",
+      saveDraft: "حفظ كمسودة",
+      cancel: "إلغاء",
+    },
+    footer: {
+      bestPracticeTitle: "أفضل ممارسات Grid/OS",
+      bestPracticeText: "يجب أن تكون العناوين عالية الجودة موجزة وتتضمن معرّفات الغرفة المحددة. تأكد من دقة بيانات السعر وفقاً للتعديلات الموسمية.",
+      supportTitle: "الدعم الفني",
+      supportText: "هل تحتاج مساعدة في إعداد عقار متعدد الوحدات؟ تواصل مع فريق التكامل التقني لدينا.",
+    },
+    toast: {
+      created: "تم إنشاء الغرفة",
+      createFailed: "فشل إنشاء الغرفة",
+    },
+  },
 }
 
 export default ar

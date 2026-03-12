@@ -110,6 +110,22 @@
   --sidebar-ring:       oklch(0.55 0 0);
 }
 
+/* ─── Switch overrides ──────────────────────────────────────────────────────── */
+/*
+ * Force square geometry on the switch track and thumb — the component
+ * hardcodes rounded-full via Tailwind utilities which --radius cannot override.
+ * Thumb is set to pure white so it reads clearly on both the light (unchecked)
+ * and black (checked) track backgrounds.
+ */
+[data-slot="switch"] {
+  border-radius: 0 !important;
+}
+
+[data-slot="switch-thumb"] {
+  border-radius: 0 !important;
+  background-color: oklch(1 0 0);
+}
+
 /* ─── Typography layer ──────────────────────────────────────────────────────── */
 /*
  * Applied via @layer base so Tailwind utilities can still override when needed.
