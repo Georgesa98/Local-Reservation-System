@@ -412,6 +412,44 @@ const ar: Translation = {
       },
     },
   },
+  bookings: {
+    title: "الحجوزات",
+    subtitle: "إدارة الحجوزات وتسجيل الدخول والمدفوعات.",
+    searchPlaceholder: "البحث بالضيف أو المعرّف أو المرجع...",
+    filter: "تصفية",
+    exportCsv: "تصدير CSV",
+    newBooking: "حجز جديد",
+    loading: "جارٍ التحميل…",
+    errorLoading: "فشل تحميل الحجوزات. حاول مرة أخرى.",
+    noBookings: "لا توجد حجوزات",
+    noBookingsFound: "لم يُعثر على حجوزات",
+    showing: "عرض {{start}}–{{end}} من {{total}} سجل",
+    prev: "السابق",
+    next: "التالي",
+    night: "{{count}} ليلة",
+    nights: "{{count}} ليالٍ",
+    columns: {
+      idRef: "المعرّف / المرجع",
+      guestDetails: "بيانات الضيف",
+      datesDuration: "التواريخ والمدة",
+      status: "الحالة",
+      total: "الإجمالي",
+      action: "الإجراء",
+    },
+    actions: {
+      view: "عرض",
+    },
+    payment: {
+      paid: "مدفوع",
+      depositOnly: "عربون فقط",
+      unpaid: "غير مدفوع",
+      refunded: "مُسترد",
+    },
+    stats: {
+      totalBookings: "إجمالي الحجوزات",
+    },
+  },
+
   newRoom: {
     breadcrumb: {
       back: "< رجوع",

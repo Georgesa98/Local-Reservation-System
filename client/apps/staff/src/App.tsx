@@ -5,7 +5,7 @@ import { LoginPage } from "./pages/login";
 import { SignupPage } from "./pages/signup";
 import { OtpPage } from "./pages/otp";
 import { ForgotPasswordPage } from "./pages/forgot-password";
-import { DashboardPage, RoomsPage, SpecificRoomPage, NewRoomPage } from "./pages/dashboard";
+import { DashboardPage, RoomsPage, SpecificRoomPage, NewRoomPage, BookingsPage } from "./pages/dashboard";
 
 function App() {
   return (
@@ -45,6 +45,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SpecificRoomPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings"
+            element={
+              <ProtectedRoute>
+                <BookingsPage />
               </ProtectedRoute>
             }
           />

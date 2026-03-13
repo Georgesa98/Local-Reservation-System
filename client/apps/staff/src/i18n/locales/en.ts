@@ -410,6 +410,44 @@ const en = {
       },
     },
   },
+  bookings: {
+    title: "Bookings",
+    subtitle: "Manage reservations, check-ins, and payments.",
+    searchPlaceholder: "Search guest, ID, or ref...",
+    filter: "Filter",
+    exportCsv: "Export CSV",
+    newBooking: "New Booking",
+    loading: "Loading…",
+    errorLoading: "Failed to load bookings. Please try again.",
+    noBookings: "No bookings",
+    noBookingsFound: "No bookings found",
+    showing: "Showing {{start}}–{{end}} of {{total}} records",
+    prev: "Prev",
+    next: "Next",
+    night: "{{count}} Night",
+    nights: "{{count}} Nights",
+    columns: {
+      idRef: "ID / Ref",
+      guestDetails: "Guest Details",
+      datesDuration: "Dates & Duration",
+      status: "Status",
+      total: "Total",
+      action: "Action",
+    },
+    actions: {
+      view: "View",
+    },
+    payment: {
+      paid: "Paid",
+      depositOnly: "Deposit Only",
+      unpaid: "Unpaid",
+      refunded: "Refunded",
+    },
+    stats: {
+      totalBookings: "Total Bookings",
+    },
+  },
+
   newRoom: {
     breadcrumb: {
       back: "< Back",

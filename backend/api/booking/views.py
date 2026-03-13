@@ -19,7 +19,7 @@ from .serializers import (
 from .services import BookingService
 from .services import ReviewService
 from .permissions import IsGuest, IsReviewOwner, CanViewReview, IsReviewRoomManager
-from .pagination import ReviewPagination
+from .pagination import ReviewPagination, BookingPagination
 
 
 class BookingListCreateView(APIView):
@@ -35,6 +35,13 @@ class BookingListCreateView(APIView):
             filters["check_in_date"] = request.GET["check_in_date"]
 
         bookings = BookingService.list_bookings(filters=filters)
+
+        paginator = BookingPagination()
+        page = paginator.paginate_queryset(bookings, request)
+        if page is not None:
+            serializer = BookingSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
         serializer = BookingSerializer(bookings, many=True)
         return Response(serializer.data)
 
