@@ -1,24 +1,13 @@
 from auditlog.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import status
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.accounts.models import Role
+from api.common.permissions import IsAdminOrManager
 
 from .serializers import LogEntrySerializer
-
-
-class IsAdminOrManager(BasePermission):
-    """Allow access only to users with ADMIN or MANAGER role."""
-
-    def has_permission(self, request, view):
-        return (
-            request.user
-            and request.user.is_authenticated
-            and request.user.role in (Role.ADMIN, Role.MANAGER)
-        )
 
 
 class AuditLogListView(APIView):

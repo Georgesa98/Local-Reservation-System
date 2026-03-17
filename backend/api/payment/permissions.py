@@ -3,20 +3,6 @@ from rest_framework.permissions import BasePermission
 from api.accounts.models import Admin, Manager
 
 
-class IsAdmin(BasePermission):
-    """Admins only."""
-
-    def has_permission(self, request, view):
-        return isinstance(request.user, Admin)
-
-
-class IsAdminOrManager(BasePermission):
-    """Admins and Managers."""
-
-    def has_permission(self, request, view):
-        return isinstance(request.user, (Admin, Manager))
-
-
 class IsPaymentBookingOwnerOrStaff(BasePermission):
     """
     Object-level: guest can see payments for their own bookings.

@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
+from api.common.permissions import IsAdmin
 from ..serializers import RoomSerializer
 from ..services import RoomService
-from ..permissions import IsAdmin
 from .pagination import RoomPagination
 
 

@@ -13,17 +13,6 @@ class IsManager(BasePermission):
         )
 
 
-class IsAdmin(BasePermission):
-    """Allows access only to users whose role is ADMIN."""
-
-    def has_permission(self, request, view):
-        return bool(
-            request.user
-            and request.user.is_authenticated
-            and request.user.role == Role.ADMIN
-        )
-
-
 class IsStaff(BasePermission):
     """Allows access to users who are Staff (Manager, Admin, or Agent)."""
 

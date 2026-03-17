@@ -2,10 +2,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from api.common.permissions import IsAdminOrManager
 from config.utils import ErrorResponse, SuccessResponse
 
 from ..models import Notification
-from ..permissions import IsAdminOrManager, IsNotificationOwnerOrStaff
+from ..permissions import IsNotificationOwnerOrStaff
 from ..serializers import NotificationFilterSerializer, NotificationSerializer
 from ..services.NotificationService import get_user_notifications
 

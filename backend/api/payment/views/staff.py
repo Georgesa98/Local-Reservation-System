@@ -2,11 +2,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from api.common.permissions import IsAdminOrManager
 from config.utils import ErrorResponse, SuccessResponse
 
 from ..models import Payout
 from ..permissions import (
-    IsAdminOrManager,
     IsBankAccountOwnerOrAdmin,
     IsPayoutOwnerOrAdmin,
 )
@@ -79,8 +79,14 @@ class BankAccountDetailView(APIView):
 
     def patch(self, request, pk):
         try:
-            account = PayoutService.update_bank_account(pk, request.user, request.data)
-            return SuccessResponse(data=ManagerBankAccountSerializer(account).data)
+            # Fetch account first to check permissions
+            from ..models import ManagerBankAccount
+            account = ManagerBankAccount.objects.get(pk=pk)
+            self.check_object_permissions(request, account)
+            
+            # Now proceed with update
+            updated_account = PayoutService.update_bank_account(pk, request.user, request.data)
+            return SuccessResponse(data=ManagerBankAccountSerializer(updated_account).data)
         except Exception as e:
             return ErrorResponse(
                 message=str(e), status_code=status.HTTP_400_BAD_REQUEST
@@ -88,6 +94,12 @@ class BankAccountDetailView(APIView):
 
     def delete(self, request, pk):
         try:
+            # Fetch account first to check permissions
+            from ..models import ManagerBankAccount
+            account = ManagerBankAccount.objects.get(pk=pk)
+            self.check_object_permissions(request, account)
+            
+            # Now proceed with delete
             PayoutService.delete_bank_account(pk, request.user)
             return SuccessResponse(message="Bank account deleted.")
         except ValueError as e:

@@ -3,10 +3,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from api.common.permissions import IsAdmin
 from config.utils import ErrorResponse, SuccessResponse
 
 from ..models import Payment
-from ..permissions import IsAdmin, IsPaymentBookingOwnerOrStaff
+from ..permissions import IsPaymentBookingOwnerOrStaff
 from ..serializers import (
     CreateRefundSerializer,
     PaymentSerializer,

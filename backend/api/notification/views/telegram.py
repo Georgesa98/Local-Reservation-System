@@ -2,9 +2,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from api.common.permissions import IsAdminOrManager
 from config.utils import ErrorResponse, SuccessResponse
-
-from ..permissions import IsAdminOrManager
 
 
 class TelegramRegisterView(APIView):

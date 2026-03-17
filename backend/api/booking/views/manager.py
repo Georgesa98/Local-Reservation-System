@@ -21,9 +21,11 @@ class BookingListCreateView(APIView):
     """
     List and create bookings.
     
-    Manager role: Can see all bookings and create bookings (walk-in/phone).
-    This endpoint currently has NO role-based queryset scoping - intentional
-    for the staff desktop app where managers need to see all bookings.
+    Role-based access:
+    - Guest: Can see only their own bookings
+    - Manager/Admin: Can see all bookings and create bookings (walk-in/phone)
+    
+    Queryset is scoped by user role for security.
     """
     permission_classes = [IsAuthenticated]
 
@@ -37,6 +39,13 @@ class BookingListCreateView(APIView):
             filters["check_in_date"] = request.GET["check_in_date"]
 
         bookings = BookingService.list_bookings(filters=filters)
+        
+        # Role-based queryset scoping
+        from api.accounts.models import Admin, Manager
+        if not isinstance(request.user, (Admin, Manager)):
+            # Guest: see only own bookings
+            bookings = bookings.filter(guest_id=request.user.id)
+        # Admin and Manager: see all bookings (no additional filtering)
 
         paginator = BookingPagination()
         page = paginator.paginate_queryset(bookings, request)
