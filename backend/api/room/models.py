@@ -2,7 +2,8 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Manager, Staff
 from auditlog.registry import auditlog
-from safedelete.models import SafeDeleteModel, SOFT_DELETE, SOFT_DELETE_CASCADE
+from safedelete.models import SafeDeleteModel
+from safedelete.config import SOFT_DELETE, SOFT_DELETE_CASCADE
 
 
 class Room(SafeDeleteModel):
@@ -48,7 +49,7 @@ class Room(SafeDeleteModel):
             models.Index(fields=["is_active"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.title
 
 
@@ -61,7 +62,7 @@ class RoomImage(models.Model):
     class Meta:
         unique_together = ("room", "is_main")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Image for {self.room.title}"
 
 
@@ -102,7 +103,7 @@ class PricingRule(SafeDeleteModel):
             models.Index(fields=["priority"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.rule_type} for {self.room.title}"
 
 
@@ -132,5 +133,5 @@ class RoomAvailability(models.Model):
             models.Index(fields=["room", "start_date", "end_date"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Blocked {self.start_date} to {self.end_date} for {self.room.title}"

@@ -3,7 +3,8 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 from auditlog.registry import auditlog
-from safedelete.models import SafeDeleteModel, SOFT_DELETE_CASCADE
+from safedelete.models import SafeDeleteModel
+from safedelete.config import SOFT_DELETE_CASCADE
 from safedelete.managers import SafeDeleteManager
 
 

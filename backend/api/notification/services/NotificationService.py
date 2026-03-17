@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 from django.conf import settings
 from django.utils import timezone
@@ -5,7 +7,7 @@ from django.utils import timezone
 from api.notification.models import Channel, Notification, Status
 
 
-def _send_whapi_message(recipient: any, message: str) -> dict:
+def _send_whapi_message(recipient: Any, message: str) -> dict:
     """Make the raw HTTP call to the WHAPI endpoint. Returns the response dict."""
     url = f"{settings.WHAPI_BASE_URL}/messages/text"
     headers = {

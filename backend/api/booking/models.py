@@ -1,9 +1,11 @@
+from typing import TYPE_CHECKING
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from api.accounts.models import Guest, User
 from api.room.models import Room
 from auditlog.registry import auditlog
-from safedelete.models import SafeDeleteModel, SOFT_DELETE, SOFT_DELETE_CASCADE
+from safedelete.models import SafeDeleteModel
+from safedelete.config import SOFT_DELETE, SOFT_DELETE_CASCADE
 
 
 class BookingStatus(models.TextChoices):
@@ -23,6 +25,10 @@ class BookingSource(models.TextChoices):
 
 class Booking(SafeDeleteModel):
     _safedelete_policy = SOFT_DELETE_CASCADE
+    
+    if TYPE_CHECKING:
+        # Help type checker understand Django's auto-generated id field
+        id: int
 
     guest = models.ForeignKey(Guest, on_delete=models.CASCADE, related_name="bookings")
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="bookings")
@@ -59,7 +65,7 @@ class Booking(SafeDeleteModel):
             models.Index(fields=["status"]),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Booking {self.id} - {self.guest} for {self.room}"
 
 
