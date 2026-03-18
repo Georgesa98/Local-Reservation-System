@@ -126,6 +126,62 @@ export type UpdateRoomPayload = Partial<
   >
 >;
 
+// ── Bookings ─────────────────────────────────────────────────────────────────
+
+/** Booking status choices — mirrors backend BookingStatus.choices */
+export type BookingStatus = "pending" | "confirmed" | "checked_in" | "completed" | "cancelled";
+
+/** Booking source choices */
+export type BookingSource = "direct" | "platform";
+
+/** Payment method choices */
+export type PaymentMethod = "cash" | "gateway";
+
+/** Guest shape embedded in BookingSerializer */
+export interface BookingGuest {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+}
+
+/** Room shape embedded in BookingSerializer */
+export interface BookingRoom {
+  id: number;
+  title: string;
+  location: string;
+}
+
+/**
+ * Booking — mirrors backend BookingSerializer exactly.
+ * Source of truth: backend/api/booking/serializers.py → BookingSerializer
+ */
+export interface Booking {
+  id: string;                     // UUID
+  guest: BookingGuest;
+  room: BookingRoom;
+  check_in_date: string;          // ISO date "YYYY-MM-DD"
+  check_out_date: string;         // ISO date "YYYY-MM-DD"
+  number_of_nights: number;       // read-only, auto-calculated
+  number_of_guests: number;
+  status: BookingStatus;
+  booking_source: BookingSource;
+  total_price: string;            // DecimalField as string
+  payment_method: PaymentMethod;
+  special_requests: string;
+  created_at: string;             // ISO 8601
+  updated_at: string;             // ISO 8601
+}
+
+/** Paginated envelope for bookings */
+export interface PaginatedBookings {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Booking[];
+}
+
 // ── Reviews ──────────────────────────────────────────────────────────────────
 
 /** Guest shape embedded in ReviewSerializer */

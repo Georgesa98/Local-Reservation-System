@@ -8,10 +8,13 @@
  *   2. Stats strip — Total Blocked YTD / Availability Rate.
  *
  * Purely presentational for the stats; mutation pending state is passed in.
+ * Accepts initialDate prop to pre-fill the form when clicking calendar dates.
  */
 
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
+import { format } from "date-fns";
 import { CalendarOff } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
@@ -32,6 +35,7 @@ interface AvailabilityBlockFormProps {
   availabilities: RoomAvailability[];
   isPending: boolean;
   onSubmit: (data: AvailabilityPayload) => void;
+  initialDate?: Date | null; // Pre-fill form with this date when calendar date is clicked
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -60,6 +64,7 @@ export function AvailabilityBlockForm({
   availabilities,
   isPending,
   onSubmit,
+  initialDate,
 }: AvailabilityBlockFormProps) {
   const { t } = useTranslation();
 
@@ -68,10 +73,21 @@ export function AvailabilityBlockForm({
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<AvailabilityPayload>({
     defaultValues: { reason: "maintenance", notes: "" },
   });
+
+  // ── Pre-fill form when calendar date is clicked ─────────────────────────────
+
+  useEffect(() => {
+    if (initialDate) {
+      const dateString = format(initialDate, "yyyy-MM-dd");
+      setValue("start_date", dateString);
+      setValue("end_date", dateString);
+    }
+  }, [initialDate, setValue]);
 
   function handleFormSubmit(data: AvailabilityPayload) {
     onSubmit(data);

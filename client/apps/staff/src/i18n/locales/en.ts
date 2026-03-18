@@ -265,12 +265,26 @@ const en = {
       },
     },
     availability: {
+      calendarView: "Calendar View",
+      tableView: "Blocked Periods",
       currentlyBlocked: "Currently Blocked",
       activeRanges: "{{count}} Active Ranges",
       availabilityLog: "Availability Log",
       newBlock: "New Block Exception",
       syncNotice: "Immediate sync to all global booking channels.",
       noBlocked: "No blocked ranges",
+      legend: {
+        title: "Legend",
+        available: "Available",
+        booked: "Booked",
+        pending: "Pending",
+        blocked: "Blocked",
+      },
+      navigation: {
+        today: "Today",
+        previousMonth: "Previous Month",
+        nextMonth: "Next Month",
+      },
       columns: {
         dateRange: "Date Range",
         reason: "Reason",

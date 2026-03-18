@@ -9,6 +9,8 @@ import type {
   UpdateRoomPayload,
   Review,
   PaginatedReviews,
+  Booking,
+  PaginatedBookings,
 } from "../types";
 
 // ── Fetch single room ─────────────────────────────────────────────────────────
@@ -173,4 +175,30 @@ export async function toggleReviewPublish(reviewId: number): Promise<Review> {
     `/api/bookings/reviews/${reviewId}/publish/`
   );
   return response.data;
+}
+
+// ── Bookings ──────────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/bookings/?room_id=<id>&check_in_date__gte=<start>&check_out_date__lte=<end>
+ * Fetches bookings for a specific room within a date range.
+ * Used by calendar to show booked/pending dates.
+ */
+export async function fetchRoomBookings(
+  roomId: number,
+  startDate: string, // ISO date "YYYY-MM-DD"
+  endDate: string    // ISO date "YYYY-MM-DD"
+): Promise<Booking[]> {
+  const response = await axiosClient.get<PaginatedBookings>(
+    `/api/bookings/`,
+    {
+      params: {
+        room_id: roomId,
+        check_in_date__gte: startDate,
+        check_out_date__lte: endDate,
+        page_size: 100, // Get all bookings in range (max 100)
+      },
+    }
+  );
+  return response.data.results;
 }

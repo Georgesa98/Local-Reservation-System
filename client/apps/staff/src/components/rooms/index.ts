@@ -15,6 +15,8 @@ export { PricingRuleForm } from "./PricingRuleForm";
 export { AvailabilityTabSection } from "./AvailabilityTabSection";
 export { AvailabilityBlockedTable } from "./AvailabilityBlockedTable";
 export { AvailabilityBlockForm } from "./AvailabilityBlockForm";
+export { AvailabilityCalendarView } from "./AvailabilityCalendarView";
+export { CalendarLegend } from "./CalendarLegend";
 export { ImageGrid } from "./ImageGrid";
 export { ImageStatsBar } from "./ImageStatsBar";
 export { ReviewsTabSection } from "./ReviewsTabSection";

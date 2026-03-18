@@ -267,12 +267,26 @@ const ar: Translation = {
       },
     },
     availability: {
+      calendarView: "عرض التقويم",
+      tableView: "الفترات المحجوبة",
       currentlyBlocked: "الفترات المحجوبة",
       activeRanges: "{{count}} نطاق نشط",
       availabilityLog: "سجل التوفر",
       newBlock: "استثناء حجب جديد",
       syncNotice: "مزامنة فورية مع جميع قنوات الحجز العالمية.",
       noBlocked: "لا توجد فترات محجوبة",
+      legend: {
+        title: "المفتاح",
+        available: "متاح",
+        booked: "محجوز",
+        pending: "قيد الانتظار",
+        blocked: "محجوب",
+      },
+      navigation: {
+        today: "اليوم",
+        previousMonth: "الشهر السابق",
+        nextMonth: "الشهر التالي",
+      },
       columns: {
         dateRange: "نطاق التاريخ",
         reason: "السبب",
