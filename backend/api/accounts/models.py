@@ -66,6 +66,27 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self) -> str:
         return str(self.phone_number)
+    
+    # Role checking helper methods
+    def is_admin(self) -> bool:
+        """Check if user has ADMIN role."""
+        return self.role == Role.ADMIN
+    
+    def is_manager(self) -> bool:
+        """Check if user has MANAGER role."""
+        return self.role == Role.MANAGER
+    
+    def is_guest(self) -> bool:
+        """Check if user has USER (guest) role."""
+        return self.role == Role.USER
+    
+    def is_agent(self) -> bool:
+        """Check if user has AGENT role."""
+        return self.role == Role.AGENT
+    
+    def is_staff_member(self) -> bool:
+        """Check if user has any staff role (ADMIN, MANAGER, or AGENT)."""
+        return self.role in [Role.ADMIN, Role.MANAGER, Role.AGENT]
 
 
 class GuestManager(SafeDeleteManager, UserManager):

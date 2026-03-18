@@ -169,6 +169,54 @@ def list_bookings(filters=None):
     return queryset.order_by("-created_at")
 
 
+def list_bookings_for_user(user, filters=None):
+    """
+    List bookings scoped by user role with optional filters.
+    
+    Args:
+        user: The authenticated user (with role field)
+        filters: Optional dict of additional filters (status, room_id, check_in_date)
+    
+    Returns:
+        QuerySet of Booking instances scoped by role
+        
+    Role-based filtering:
+        - ADMIN role: sees all bookings
+        - MANAGER role: sees only bookings for rooms they manage
+        - USER role (Guest): sees only their own bookings
+        - Unknown role: returns empty queryset
+    """
+    from api.accounts.models import Role
+    
+    # Start with base queryset
+    queryset = Booking.objects.select_related("guest", "room", "created_by")
+    
+    # Apply role-based filtering using role field (not isinstance)
+    if user.role == Role.ADMIN:
+        # Admin: no filtering, see all bookings
+        pass
+    elif user.role == Role.MANAGER:
+        # Manager: see only bookings for rooms they manage
+        queryset = queryset.filter(room__manager_id=user.id)
+    elif user.role == Role.USER:
+        # Guest: see only their own bookings
+        queryset = queryset.filter(guest_id=user.id)
+    else:
+        # Unknown role: return empty queryset
+        return queryset.none()
+    
+    # Apply additional filters
+    if filters:
+        if "status" in filters:
+            queryset = queryset.filter(status=filters["status"])
+        if "room_id" in filters:
+            queryset = queryset.filter(room_id=filters["room_id"])
+        if "check_in_date" in filters:
+            queryset = queryset.filter(check_in_date=filters["check_in_date"])
+    
+    return queryset.order_by("-created_at")
+
+
 @transaction.atomic
 def update_booking(booking_id, updates):
     """Update a booking."""

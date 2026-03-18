@@ -15,6 +15,7 @@ from ..serializers import (
 )
 from ..services import BookingService
 from ..pagination import BookingPagination
+from ..permissions import CanViewBooking, CanModifyBooking, IsAdminOrManager
 
 
 class BookingListCreateView(APIView):
@@ -38,14 +39,8 @@ class BookingListCreateView(APIView):
         if "check_in_date" in request.GET:
             filters["check_in_date"] = request.GET["check_in_date"]
 
-        bookings = BookingService.list_bookings(filters=filters)
-        
-        # Role-based queryset scoping
-        from api.accounts.models import Admin, Manager
-        if not isinstance(request.user, (Admin, Manager)):
-            # Guest: see only own bookings
-            bookings = bookings.filter(guest_id=request.user.id)
-        # Admin and Manager: see all bookings (no additional filtering)
+        # Use service layer method with role-based filtering
+        bookings = BookingService.list_bookings_for_user(request.user, filters=filters)
 
         paginator = BookingPagination()
         page = paginator.paginate_queryset(bookings, request)
@@ -99,13 +94,22 @@ class BookingListCreateView(APIView):
 
 
 class BookingDetailView(APIView):
-    """Retrieve and update a specific booking."""
+    """
+    Retrieve and update a specific booking.
     
-    permission_classes = [IsAuthenticated]
+    Role-based access:
+    - Admin: can view/update any booking
+    - Manager: can view/update bookings for their managed rooms
+    - Guest: can view only their own bookings (cannot update)
+    """
+    
+    permission_classes = [IsAuthenticated, CanViewBooking]
 
     def get(self, request, pk):
         try:
             booking = BookingService.get_booking(pk)
+            # Check object-level permission
+            self.check_object_permissions(request, booking)
             serializer = BookingSerializer(booking)
             return Response(serializer.data)
         except Booking.DoesNotExist:
@@ -116,6 +120,14 @@ class BookingDetailView(APIView):
     def patch(self, request, pk):
         try:
             booking = BookingService.get_booking(pk)
+            # Check if user can modify this booking
+            modify_permission = CanModifyBooking()
+            if not modify_permission.has_object_permission(request, self, booking):
+                return Response(
+                    {"error": "You do not have permission to modify this booking."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
             serializer = BookingUpdateSerializer(data=request.data, partial=True)
             if serializer.is_valid():
                 updated_booking = BookingService.update_booking(
@@ -133,12 +145,38 @@ class BookingDetailView(APIView):
 
 
 class BookingCancelView(APIView):
-    """Cancel a booking."""
+    """
+    Cancel a booking.
+    
+    Role-based access:
+    - Admin: can cancel any booking
+    - Manager: can cancel bookings for their managed rooms
+    - Guest: can cancel only their own bookings
+    """
     
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
         try:
+            booking = BookingService.get_booking(pk)
+            
+            # Check permission: Admin, Manager (for their rooms), or booking owner
+            from api.accounts.models import Role
+            
+            has_permission = False
+            if request.user.role == Role.ADMIN:
+                has_permission = True
+            elif request.user.role == Role.MANAGER:
+                has_permission = booking.room.manager_id == request.user.id
+            elif request.user.role == Role.USER:
+                has_permission = booking.guest_id == request.user.id
+            
+            if not has_permission:
+                return Response(
+                    {"error": "You do not have permission to cancel this booking."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
             serializer = CancelBookingSerializer(data=request.data)
             if serializer.is_valid():
                 cancel_data = {"reason": serializer.validated_data.get("reason", "")}
@@ -155,12 +193,29 @@ class BookingCancelView(APIView):
 
 
 class BookingConfirmView(APIView):
-    """Confirm a booking (admin/manager action)."""
+    """
+    Confirm a booking (admin/manager action).
     
-    permission_classes = [IsAuthenticated]
+    Role-based access:
+    - Admin: can confirm any booking
+    - Manager: can confirm bookings for their managed rooms only
+    """
+    
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
 
     def post(self, request, pk):
         try:
+            booking = BookingService.get_booking(pk)
+            
+            # Check if manager can access this booking
+            from api.accounts.models import Role
+            if request.user.role == Role.MANAGER:
+                if booking.room.manager_id != request.user.id:
+                    return Response(
+                        {"error": "You do not have permission to confirm this booking."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            
             booking = BookingService.confirm_booking(pk)
             serializer = BookingSerializer(booking)
             return Response(serializer.data)
@@ -173,12 +228,29 @@ class BookingConfirmView(APIView):
 
 
 class BookingCheckInView(APIView):
-    """Check in a booking (manager action)."""
+    """
+    Check in a booking (admin/manager action).
     
-    permission_classes = [IsAuthenticated]
+    Role-based access:
+    - Admin: can check in any booking
+    - Manager: can check in bookings for their managed rooms only
+    """
+    
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
 
     def post(self, request, pk):
         try:
+            booking = BookingService.get_booking(pk)
+            
+            # Check if manager can access this booking
+            from api.accounts.models import Role
+            if request.user.role == Role.MANAGER:
+                if booking.room.manager_id != request.user.id:
+                    return Response(
+                        {"error": "You do not have permission to check in this booking."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            
             booking = BookingService.check_in_booking(pk)
             serializer = BookingSerializer(booking)
             return Response(serializer.data)
@@ -191,12 +263,29 @@ class BookingCheckInView(APIView):
 
 
 class BookingCompleteView(APIView):
-    """Mark a booking as completed (manager action)."""
+    """
+    Mark a booking as completed (admin/manager action).
     
-    permission_classes = [IsAuthenticated]
+    Role-based access:
+    - Admin: can complete any booking
+    - Manager: can complete bookings for their managed rooms only
+    """
+    
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
 
     def post(self, request, pk):
         try:
+            booking = BookingService.get_booking(pk)
+            
+            # Check if manager can access this booking
+            from api.accounts.models import Role
+            if request.user.role == Role.MANAGER:
+                if booking.room.manager_id != request.user.id:
+                    return Response(
+                        {"error": "You do not have permission to complete this booking."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            
             booking = BookingService.complete_booking(pk)
             serializer = BookingSerializer(booking)
             return Response(serializer.data)
