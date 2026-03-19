@@ -506,6 +506,67 @@ const en = {
       createFailed: "Failed to create room",
     },
   },
+
+  booking: {
+    new: {
+      title: "New Booking",
+      subtitle: "Create a walk-in or phone booking",
+    },
+    type: {
+      title: "Booking Type",
+      walkIn: {
+        label: "Walk-In",
+        description: "Guest is present at the property",
+      },
+      phone: {
+        label: "Phone / Remote",
+        description: "Booking made via phone or online",
+      },
+    },
+    guest: {
+      title: "Guest Information",
+      firstName: "First Name",
+      firstNamePlaceholder: "John",
+      lastName: "Last Name",
+      lastNamePlaceholder: "Doe",
+      email: "Email Address",
+      emailPlaceholder: "john@example.com",
+      phone: "Phone Number",
+      phonePlaceholder: "+1234567890",
+    },
+    roomDate: {
+      title: "Room & Dates",
+      room: "Select Room",
+      selectRoom: "Choose a room",
+      checkIn: "Check-In Date",
+      checkOut: "Check-Out Date",
+      guests: "Number of Guests",
+      capacity: "Capacity",
+    },
+    payment: {
+      title: "Payment Details",
+      method: "Payment Method",
+      cash: "Cash",
+      gateway: "Payment Gateway",
+      specialRequests: "Special Requests",
+      specialRequestsPlaceholder: "Any special requirements or notes...",
+    },
+    summary: {
+      checkIn: "Check-In",
+      checkOut: "Check-Out",
+      total: "Total",
+    },
+    create: "Create Booking",
+    creating: "Creating...",
+    createSuccess: "Booking created successfully",
+    createError: "Failed to create booking",
+    validation: {
+      guestInfoRequired: "Please fill in all guest information",
+      roomRequired: "Please select a room",
+      datesRequired: "Please select check-in and check-out dates",
+      invalidDateRange: "Check-out must be after check-in",
+    },
+  },
 } as const
 
 export default en

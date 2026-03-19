@@ -5,7 +5,14 @@ import { LoginPage } from "./pages/login";
 import { SignupPage } from "./pages/signup";
 import { OtpPage } from "./pages/otp";
 import { ForgotPasswordPage } from "./pages/forgot-password";
-import { DashboardPage, RoomsPage, SpecificRoomPage, NewRoomPage, BookingsPage } from "./pages/dashboard";
+import {
+  DashboardPage,
+  RoomsPage,
+  SpecificRoomPage,
+  NewRoomPage,
+  NewBooking,
+  BookingsPage,
+} from "./pages/dashboard";
 
 function App() {
   return (
@@ -13,7 +20,10 @@ function App() {
       <HashRouter>
         <Routes>
           {/* Root redirect */}
-          <Route path="/" element={<Navigate to="/dashboard/rooms" replace />} />
+          <Route
+            path="/"
+            element={<Navigate to="/dashboard/rooms" replace />}
+          />
 
           {/* Protected routes */}
           <Route
@@ -53,6 +63,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <BookingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookings/new"
+            element={
+              <ProtectedRoute>
+                <NewBooking />
               </ProtectedRoute>
             }
           />

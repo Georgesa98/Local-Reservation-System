@@ -508,6 +508,67 @@ const ar: Translation = {
       createFailed: "فشل إنشاء الغرفة",
     },
   },
-}
+
+  booking: {
+    new: {
+      title: "حجز جديد",
+      subtitle: "إنشاء حجز مباشر أو عبر الهاتف",
+    },
+    type: {
+      title: "نوع الحجز",
+      walkIn: {
+        label: "مباشر",
+        description: "الضيف موجود في العقار",
+      },
+      phone: {
+        label: "هاتف / عن بُعد",
+        description: "حجز تم عبر الهاتف أو الإنترنت",
+      },
+    },
+    guest: {
+      title: "معلومات الضيف",
+      firstName: "الاسم الأول",
+      firstNamePlaceholder: "أحمد",
+      lastName: "اسم العائلة",
+      lastNamePlaceholder: "محمد",
+      email: "البريد الإلكتروني",
+      emailPlaceholder: "ahmad@example.com",
+      phone: "رقم الهاتف",
+      phonePlaceholder: "+966501234567",
+    },
+    roomDate: {
+      title: "الغرفة والتواريخ",
+      room: "اختر الغرفة",
+      selectRoom: "اختر غرفة",
+      checkIn: "تاريخ الوصول",
+      checkOut: "تاريخ المغادرة",
+      guests: "عدد الضيوف",
+      capacity: "السعة",
+    },
+    payment: {
+      title: "تفاصيل الدفع",
+      method: "طريقة الدفع",
+      cash: "نقداً",
+      gateway: "بوابة الدفع",
+      specialRequests: "طلبات خاصة",
+      specialRequestsPlaceholder: "أي متطلبات أو ملاحظات خاصة...",
+    },
+    summary: {
+      checkIn: "الوصول",
+      checkOut: "المغادرة",
+      total: "الإجمالي",
+    },
+    create: "إنشاء الحجز",
+    creating: "جارٍ الإنشاء...",
+    createSuccess: "تم إنشاء الحجز بنجاح",
+    createError: "فشل إنشاء الحجز",
+    validation: {
+      guestInfoRequired: "يرجى ملء جميع معلومات الضيف",
+      roomRequired: "يرجى اختيار غرفة",
+      datesRequired: "يرجى اختيار تواريخ الوصول والمغادرة",
+      invalidDateRange: "يجب أن يكون تاريخ المغادرة بعد تاريخ الوصول",
+    },
+  },
+} as const
 
 export default ar
