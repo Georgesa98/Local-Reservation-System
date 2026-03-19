@@ -89,6 +89,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.role in [Role.ADMIN, Role.MANAGER, Role.AGENT]
 
 
+class GuestSource(models.TextChoices):
+    """Source of guest creation: self-registered or staff-created shadow guest."""
+    SELF_REGISTERED = "self_registered", "Self Registered"
+    STAFF_CREATED = "staff_created", "Staff Created"
+
+
 class GuestManager(SafeDeleteManager, UserManager):
     """Manager combining soft-delete queryset with UserManager's create_user."""
 
@@ -98,6 +104,14 @@ class GuestManager(SafeDeleteManager, UserManager):
 class Guest(SafeDeleteModel, User):
     _safedelete_policy = SOFT_DELETE_CASCADE
     objects = GuestManager()
+    
+    source = models.CharField(
+        max_length=20,
+        choices=GuestSource.choices,
+        default=GuestSource.STAFF_CREATED,
+        editable=False,  # Immutable after creation
+        help_text="Source of guest creation (self-registered or staff-created)"
+    )
 
     def save(self, *args, **kwargs):
         self.role = Role.USER

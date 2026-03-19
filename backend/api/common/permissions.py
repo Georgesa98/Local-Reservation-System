@@ -7,13 +7,13 @@ consistent authorization logic throughout the application.
 
 from rest_framework.permissions import BasePermission
 
-from api.accounts.models import Admin, Manager
+from api.accounts.models import Admin, Manager, Role
 
 
 class IsAdmin(BasePermission):
     """
     Allows access only to Admin users.
-    
+
     Used for admin-only endpoints like payment provider management,
     system configuration, and global operations.
     """
@@ -25,10 +25,11 @@ class IsAdmin(BasePermission):
 class IsAdminOrManager(BasePermission):
     """
     Allows access to both Admin and Manager users (staff roles).
-    
+
     Used for staff-level endpoints like payouts, bank accounts,
     notifications management, and reporting.
     """
 
     def has_permission(self, request, view):
-        return isinstance(request.user, (Admin, Manager))
+        role = request.user.role
+        return role == Role.ADMIN or role == Role.MANAGER

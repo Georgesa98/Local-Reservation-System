@@ -113,6 +113,12 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "accounts.User"
 
+# Authentication backends - use custom backend to block unverified users
+AUTHENTICATION_BACKENDS = [
+    'api.accounts.authentication.VerifiedUserBackend',
+    'django.contrib.auth.backends.ModelBackend',  # Fallback
+]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
