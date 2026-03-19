@@ -1,25 +1,23 @@
 /**
  * Booking Type Selection Section
  * Neo-Swiss design: Radio cards for walk-in vs phone/remote booking
+ * Uses react-hook-form context
  */
 
+import { useFormContext, useController } from "react-hook-form";
 import { Label } from "@workspace/ui/components/label";
-import type { BookingType } from "../../pages/dashboard/booking/new/types";
+import type { BookingType, BookingFormState } from "../../pages/dashboard/booking/new/types";
 import { useTranslation } from "react-i18next";
 import { User, Phone } from "lucide-react";
 
-interface BookingTypeSectionProps {
-  value: BookingType;
-  onChange: (type: BookingType) => void;
-  error?: string;
-}
-
-export function BookingTypeSection({
-  value,
-  onChange,
-  error,
-}: BookingTypeSectionProps) {
+export function BookingTypeSection() {
   const { t } = useTranslation();
+  const { field, fieldState } = useController<BookingFormState, "booking_type">({
+    name: "booking_type",
+  });
+  
+  const value = field.value;
+  const error = fieldState.error?.message;
 
   const options: Array<{
     value: BookingType;
@@ -57,7 +55,7 @@ export function BookingTypeSection({
             <button
               key={option.value}
               type="button"
-              onClick={() => onChange(option.value)}
+              onClick={() => field.onChange(option.value)}
               className={`
                 relative flex flex-col items-start gap-3 p-6
                 border-2 transition-colors

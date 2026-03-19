@@ -41,6 +41,31 @@ export interface BookingFormData {
   payment: PaymentFormData;
 }
 
+/**
+ * Unified form state for react-hook-form
+ * Flattened structure for easier form management
+ */
+export interface BookingFormState {
+  // Booking type
+  booking_type: BookingType;
+  
+  // Guest information
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  
+  // Room and dates
+  room_id: number | null;
+  check_in_date: string;
+  check_out_date: string;
+  number_of_guests: number;
+  
+  // Payment
+  payment_method: PaymentMethod;
+  special_requests: string;
+}
+
 // ── API Payloads ─────────────────────────────────────────────────────────────
 
 /**
@@ -68,6 +93,47 @@ export interface BookingCalculation {
 }
 
 // ── Guest Search ─────────────────────────────────────────────────────────────
+
+/**
+ * Guest search result from staff guest search endpoint
+ * GET /api/auth/guests/search/?q=<query>
+ */
+export interface GuestSearchResult {
+  id: number;                    // Guest ID (used for booking.guest FK)
+  user_id: number;               // Underlying User ID
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  source: "self_registered" | "staff_created";
+  is_verified: boolean;
+  last_booking_date?: string;    // ISO date of last booking (for "Last Stay" column)
+}
+
+/** Guest search API response */
+export interface GuestSearchResponse {
+  results: GuestSearchResult[];
+}
+
+/**
+ * Guest creation payload for staff-created shadow guests
+ * POST /api/auth/guests/
+ */
+export interface CreateGuestPayload {
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone_number: string;
+}
+
+/**
+ * Guest creation API response
+ * Includes is_existing flag to notify if phone already registered
+ */
+export interface CreateGuestResponse {
+  guest: GuestSearchResult;
+  is_existing: boolean;  // true if phone already existed, false if newly created
+}
 
 /**
  * Guest user shape — subset of User model with role=USER

@@ -9,29 +9,36 @@ import type {
   PaginatedGuests,
   Guest,
   RoomOption,
+  GuestSearchResponse,
+  GuestSearchResult,
+  CreateGuestPayload,
+  CreateGuestResponse,
 } from "./types";
 import type { Booking, PaginatedBookings, PaginatedRooms } from "../../rooms/types";
 
 // ── Guests ───────────────────────────────────────────────────────────────────
 
 /**
- * Search guests by phone or name
- * Since there's no dedicated /api/guests/ endpoint, we use the users endpoint
- * with role filtering. Guests are Users with role="USER".
+ * Search guests by phone, email, or name
+ * GET /api/auth/guests/search/?q=<query>
  * 
- * Note: This assumes the backend provides a way to list users with role filtering.
- * If not available, managers will need to know the guest ID or we need to create
- * guests on-the-fly during booking creation.
+ * Returns up to 10 guests matching the search query.
+ * Staff can use this to find existing guests before creating new ones.
  */
-export async function searchGuests(query: string): Promise<Guest[]> {
+export async function searchGuests(query: string): Promise<GuestSearchResult[]> {
   try {
-    // TODO: Verify the actual endpoint for searching users by role
-    // This might need to be /api/auth/users/ with role=USER filter
-    // or a custom endpoint. For now, returning empty array.
-    // The booking form will allow manual guest info entry.
+    if (!query.trim()) {
+      return [];
+    }
+
+    const response = await axiosClient.get<GuestSearchResponse>(
+      "/api/auth/guests/search/",
+      {
+        params: { q: query },
+      }
+    );
     
-    console.warn("Guest search not yet implemented - backend endpoint TBD");
-    return [];
+    return response.data.results;
   } catch (error) {
     console.error("Failed to search guests:", error);
     throw error;
@@ -39,7 +46,24 @@ export async function searchGuests(query: string): Promise<Guest[]> {
 }
 
 /**
- * Get guest by ID
+ * Create a new shadow guest for staff-initiated bookings
+ * POST /api/auth/guests/
+ * 
+ * Creates a Guest with is_verified=False and source=staff_created.
+ * If phone number already exists, returns existing guest with is_existing=true.
+ * 
+ * Shadow guests cannot login until they self-register and set a password.
+ */
+export async function createGuest(payload: CreateGuestPayload): Promise<CreateGuestResponse> {
+  const response = await axiosClient.post<CreateGuestResponse>(
+    "/api/auth/guests/",
+    payload
+  );
+  return response.data;
+}
+
+/**
+ * Get guest by ID (deprecated - use searchGuests instead)
  * GET /api/auth/users/{id}/ (if available)
  */
 export async function getGuestById(guestId: number): Promise<Guest | null> {
