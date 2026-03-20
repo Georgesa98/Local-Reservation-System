@@ -232,4 +232,13 @@
     opacity: 0.6;
     pointer-events: none;
   }
+
+  /* ─── Grid view utilities ────────────────────────────────────────────────── */
+  /*
+   * Aspect ratio utility for room card images in grid view.
+   * 4:3 ratio matches the Stitch design specification.
+   */
+  .aspect-4-3 {
+    aspect-ratio: 4 / 3;
+  }
 }

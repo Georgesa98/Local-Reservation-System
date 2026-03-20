@@ -13,6 +13,7 @@ import { Search, LayoutList, LayoutGrid } from "lucide-react";
 import DashboardLayout from "../layout";
 import { fetchRooms, deleteRoom } from "./api";
 import { RoomsDataTable } from "./data-table";
+import { RoomsGridView } from "./rooms-grid-view";
 import { useNavigate } from "react-router";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -182,9 +183,12 @@ export function RoomsPage() {
         {/* ── Content ────────────────────────────────────────────────────── */}
         <div className="flex-1 min-h-0 overflow-auto">
           {viewMode === "grid" ? (
-            <div className="flex items-center justify-center h-full py-20">
-              <p className="label-caps">{t("rooms.gridComingSoon")}</p>
-            </div>
+            <RoomsGridView
+              data={rooms}
+              isLoading={isLoading}
+              isError={isError}
+              onDeleteRoom={(id) => deleteMutation.mutate(id)}
+            />
           ) : (
             <RoomsDataTable
               data={rooms}

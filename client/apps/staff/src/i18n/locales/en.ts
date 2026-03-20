@@ -150,6 +150,13 @@ const en = {
     loading: "Loading…",
     errorLoading: "Failed to load rooms. Please try again.",
     noRoomsFound: "No rooms found",
+    loadError: "Failed to load rooms",
+    noImage: "No Image",
+    rate: "Rate",
+    capacity: "Cap",
+    edit: "Edit",
+    delete: "Delete",
+    confirmDelete: "Are you sure you want to delete {{title}}?",
     toast: {
       deleted: "Room deleted",
       deleteFailed: "Failed to delete room",

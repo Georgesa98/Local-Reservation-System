@@ -152,6 +152,13 @@ const ar: Translation = {
     loading: "جارٍ التحميل…",
     errorLoading: "فشل تحميل الغرف. حاول مرة أخرى.",
     noRoomsFound: "لا توجد غرف",
+    loadError: "فشل تحميل الغرف",
+    noImage: "لا توجد صورة",
+    rate: "السعر",
+    capacity: "السعة",
+    edit: "تعديل",
+    delete: "حذف",
+    confirmDelete: "هل أنت متأكد أنك تريد حذف {{title}}؟",
     toast: {
       deleted: "تم حذف الغرفة",
       deleteFailed: "فشل حذف الغرفة",
