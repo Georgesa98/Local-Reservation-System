@@ -9,6 +9,8 @@ import type {
   PaginatedBankAccounts,
   Payout,
   BankAccount,
+  StripeConnectStatus,
+  StripeOnboardingResponse,
 } from "./types";
 
 interface ApiEnvelope<T> {
@@ -196,4 +198,34 @@ export async function fetchBankAccounts(): Promise<PaginatedBankAccounts> {
     previous: payload?.previous ?? null,
     results: payload?.results ?? [],
   };
+}
+
+// ---------------------------------------------------------------------------
+// Stripe Connect API
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch Stripe Connect account status for the authenticated manager.
+ * GET /api/payments/stripe/connect/status/
+ */
+export async function fetchStripeConnectStatus(): Promise<StripeConnectStatus> {
+  const response = await axiosClient.get<ApiEnvelope<StripeConnectStatus>>(
+    "/api/payments/stripe/connect/status/"
+  );
+  return response.data.data;
+}
+
+/**
+ * Start Stripe Connect onboarding flow.
+ * POST /api/payments/stripe/connect/onboard/
+ */
+export async function startStripeOnboarding(params: {
+  refresh_url?: string;
+  return_url?: string;
+}): Promise<StripeOnboardingResponse> {
+  const response = await axiosClient.post<ApiEnvelope<StripeOnboardingResponse>>(
+    "/api/payments/stripe/connect/onboard/",
+    params
+  );
+  return response.data.data;
 }

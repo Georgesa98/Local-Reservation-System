@@ -136,3 +136,27 @@ export interface PaginatedBankAccounts {
   previous: string | null;
   results: BankAccount[];
 }
+
+// ---------------------------------------------------------------------------
+// Stripe Connect Types
+// ---------------------------------------------------------------------------
+
+export interface StripeConnectStatus {
+  has_account: boolean;
+  account_id?: string;
+  onboarding_complete: boolean;
+  charges_enabled: boolean;
+  payouts_enabled: boolean;
+  enabled: boolean;
+  requirements?: {
+    currently_due?: string[];
+    eventually_due?: string[];
+    past_due?: string[];
+    pending_verification?: string[];
+  };
+}
+
+export interface StripeOnboardingResponse {
+  onboarding_url: string;
+  expires_at: number; // Unix timestamp
+}

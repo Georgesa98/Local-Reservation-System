@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchPayoutStatistics, fetchPayouts, fetchBankAccounts } from "./api";
+import {
+  fetchPayoutStatistics,
+  fetchPayouts,
+  fetchBankAccounts,
+  fetchStripeConnectStatus,
+} from "../../pages/dashboard/finance/api";
 import { Badge } from "@workspace/ui/components/badge";
+import { Alert, AlertDescription } from "@workspace/ui/components/alert";
+import { CheckCircle2, AlertCircle } from "lucide-react";
 
 export function PayoutTab() {
   // Fetch payout statistics
@@ -19,6 +26,12 @@ export function PayoutTab() {
   const { data: bankAccounts, isLoading: bankAccountsLoading } = useQuery({
     queryKey: ["bank-accounts"],
     queryFn: fetchBankAccounts,
+  });
+
+  // Fetch Stripe Connect status
+  const { data: stripeStatus } = useQuery({
+    queryKey: ["stripeConnectStatus"],
+    queryFn: fetchStripeConnectStatus,
   });
 
   const formatCurrency = (amount: string) => {
@@ -47,6 +60,32 @@ export function PayoutTab() {
 
   return (
     <div className="space-y-6">
+      {/* Stripe Connect Status Banner */}
+      {stripeStatus &&
+        stripeStatus.charges_enabled &&
+        stripeStatus.payouts_enabled && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-sm text-green-900">
+              <span className="font-medium">Stripe Connect Active</span> —
+              Payments are automatically transferred to your connected account.
+              Manual payouts below are for non-Stripe payment methods only.
+            </AlertDescription>
+          </Alert>
+        )}
+
+      {stripeStatus &&
+        stripeStatus.has_account &&
+        !stripeStatus.charges_enabled && (
+          <Alert className="border-yellow-200 bg-yellow-50">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-sm text-yellow-900">
+              <span className="font-medium">Stripe Setup Incomplete</span> —
+              Complete your Stripe onboarding in the Payment Methods tab to
+              enable automatic transfers.
+            </AlertDescription>
+          </Alert>
+        )}
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Pending Balance Card */}

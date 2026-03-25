@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { CommissionTab } from "./CommissionTab";
-import { PayoutTab } from "./PayoutTab";
+import { CommissionTab } from "../../../components/finance/CommissionTab";
+import { PayoutTab } from "../../../components/finance/PayoutTab";
+import { PaymentMethodsTab } from "../../../components/finance/PaymentMethodsTab";
 import DashboardLayout from "../layout";
 
-type TabType = "commissions" | "payouts";
+type TabType = "commissions" | "payouts" | "payment-methods";
 
 export function FinancePage() {
   const [activeTab, setActiveTab] = useState<TabType>("commissions");
@@ -15,7 +16,7 @@ export function FinancePage() {
         <div className="border-b border-black pb-4">
           <h1 className="text-3xl font-bold">Finance</h1>
           <p className="text-gray-600 mt-1">
-            Manage commissions, payouts, and bank accounts
+            Manage commissions, payouts, and payment methods
           </p>
         </div>
 
@@ -42,6 +43,16 @@ export function FinancePage() {
             >
               Payouts & Banks
             </button>
+            <button
+              onClick={() => setActiveTab("payment-methods")}
+              className={`px-6 py-3 font-medium border-b-2 transition-colors ${
+                activeTab === "payment-methods"
+                  ? "border-black text-black"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Payment Methods
+            </button>
           </div>
         </div>
 
@@ -49,6 +60,7 @@ export function FinancePage() {
         <div className="mt-6">
           {activeTab === "commissions" && <CommissionTab />}
           {activeTab === "payouts" && <PayoutTab />}
+          {activeTab === "payment-methods" && <PaymentMethodsTab />}
         </div>
       </div>
     </DashboardLayout>

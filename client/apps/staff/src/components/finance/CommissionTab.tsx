@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { fetchPaymentStatistics, fetchPayments } from "./api";
-import type { PaymentFilters } from "./types";
-import { PaymentsDataTable } from "./data-table";
+import {
+  fetchPaymentStatistics,
+  fetchPayments,
+} from "../../pages/dashboard/finance/api";
+import type { PaymentFilters } from "../../pages/dashboard/finance/types";
+import { PaymentsDataTable } from "../../pages/dashboard/finance/data-table";
 
 export function CommissionTab() {
   const [filters, setFilters] = useState<PaymentFilters>({

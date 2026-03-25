@@ -49,7 +49,7 @@ export function usePaymentColumns() {
 
       col.display({
         id: "booking_reference",
-        header: () => "Booking Reference",
+        header: () => "Booking Ref",
         cell: ({ row }) => {
           const payment = row.original;
           return (
@@ -62,7 +62,7 @@ export function usePaymentColumns() {
 
       col.display({
         id: "guest_name",
-        header: () => "Guest Name",
+        header: () => "Guest",
         cell: ({ row }) => {
           const guestName = row.original.guest_name;
           return <span className="text-sm">{guestName ?? "-"}</span>;
@@ -78,13 +78,6 @@ export function usePaymentColumns() {
 
       col.accessor("platform_fee", {
         header: () => "Platform Fee",
-        cell: ({ getValue }) => (
-          <span className="font-mono text-sm">{formatCurrency(getValue())}</span>
-        ),
-      }),
-
-      col.accessor("final_amount", {
-        header: () => "Final Amount",
         cell: ({ getValue }) => (
           <span className="font-mono text-sm">{formatCurrency(getValue())}</span>
         ),
