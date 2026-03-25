@@ -15,6 +15,7 @@ import {
   BookingsPage,
 } from "./pages/dashboard";
 import { AdminDashboardPage } from "./pages/admin";
+import { SettingsPage } from "./pages/settings/Settings";
 
 function App() {
   return (
@@ -70,6 +71,14 @@ function App() {
             element={
               <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
                 <NewBooking />
+              </RoleBasedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/settings"
+            element={
+              <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+                <SettingsPage />
               </RoleBasedRoute>
             }
           />

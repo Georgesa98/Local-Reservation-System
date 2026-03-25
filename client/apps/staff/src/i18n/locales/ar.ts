@@ -135,7 +135,7 @@ const ar: Translation = {
     rooms: "الغرف",
     bookings: "الحجوزات",
     finance: "المالية",
-    system: "النظام",
+    settings: "النظام",
     logout: "تسجيل الخروج",
   },
 

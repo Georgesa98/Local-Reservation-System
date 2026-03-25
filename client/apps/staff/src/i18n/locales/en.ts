@@ -133,7 +133,7 @@ const en = {
     rooms: "Rooms",
     bookings: "Bookings",
     finance: "Finance",
-    system: "System",
+    settings: "Settings",
     logout: "Logout",
   },
 

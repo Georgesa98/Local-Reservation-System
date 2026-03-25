@@ -20,7 +20,7 @@ const navItems = [
   { key: "rooms" as const, path: "/dashboard/rooms", icon: DoorOpen },
   { key: "bookings" as const, path: "/dashboard/bookings", icon: CalendarDays },
   { key: "finance" as const, path: "/dashboard/finance", icon: DollarSign },
-  { key: "system" as const, path: "/dashboard/system", icon: Settings },
+  { key: "settings" as const, path: "/dashboard/settings", icon: Settings },
 ];
 
 export default function SidebarNav() {
