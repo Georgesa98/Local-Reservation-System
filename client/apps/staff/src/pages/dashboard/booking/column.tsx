@@ -261,49 +261,6 @@ export function useBookingColumns() {
           );
         },
       }),
-
-      // Action
-      columnHelper.display({
-        id: "action",
-        header: () => (
-          <div style={{ textAlign: "right" }}>
-            {t("bookings.columns.action")}
-          </div>
-        ),
-        cell: ({ row }) => {
-          const { id, status } = row.original;
-          const isCancelled = status === "cancelled";
-          return (
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button
-                onClick={() => navigate(`/bookings/${id}`)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 4,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  fontFamily: "var(--font-mono, monospace)",
-                  fontSize: "0.75rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
-                  color: isCancelled
-                    ? "var(--muted-foreground)"
-                    : "var(--foreground)",
-                  textDecoration: "underline",
-                  textUnderlineOffset: 3,
-                }}
-              >
-                {t("bookings.actions.view")}
-                <span style={{ fontSize: "1em" }}>→</span>
-              </button>
-            </div>
-          );
-        },
-      }),
     ],
     [t, navigate],
   );

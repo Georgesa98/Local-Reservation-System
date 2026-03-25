@@ -92,7 +92,6 @@ export function BookingsPage() {
           className="flex items-center justify-between px-8 py-3 shrink-0"
           style={{
             borderBottom: "1px solid var(--border)",
-            background: "var(--secondary)",
           }}
         >
           {/* Left: Search + Filter button */}
