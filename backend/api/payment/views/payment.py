@@ -1,9 +1,12 @@
+from datetime import datetime
+
 from api.accounts.models import Admin, Manager
+from django.core.paginator import EmptyPage, Paginator
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from api.common.permissions import IsAdmin
+from api.common.permissions import IsAdmin, IsAdminOrManager
 from config.utils import ErrorResponse, SuccessResponse
 
 from ..models import Payment
@@ -19,6 +22,90 @@ from ..services import PaymentService, ProviderService, RefundService
 # ---------------------------------------------------------------------------
 # Payments
 # ---------------------------------------------------------------------------
+
+
+class PaymentListView(APIView):
+    """
+    GET /api/payments/
+    
+    List all payments with filters and pagination.
+    Query params:
+      - date_from: ISO date (optional)
+      - date_to: ISO date (optional)
+      - status: pending|completed|failed|refunded (optional)
+      - payment_type: gateway|cash (optional)
+      - ordering: field to order by (default: -created_at)
+      - page: page number (default: 1)
+      - page_size: items per page (default: 20, max: 100)
+    
+    Managers see only payments for their rooms. Admins see all.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
+
+    def get(self, request):
+        # Base queryset
+        payments_qs = Payment.objects.select_related(
+            "booking__guest", "booking__room", "provider"
+        ).all()
+
+        # Scope by manager if not admin
+        if isinstance(request.user, Manager):
+            payments_qs = payments_qs.filter(booking__room__manager=request.user)
+
+        # Filters
+        date_from_str = request.query_params.get("date_from")
+        date_to_str = request.query_params.get("date_to")
+        status_filter = request.query_params.get("status")
+        payment_type_filter = request.query_params.get("payment_type")
+
+        if date_from_str:
+            try:
+                date_from = datetime.fromisoformat(date_from_str)
+                payments_qs = payments_qs.filter(created_at__gte=date_from)
+            except ValueError:
+                pass
+
+        if date_to_str:
+            try:
+                date_to = datetime.fromisoformat(date_to_str)
+                payments_qs = payments_qs.filter(created_at__lte=date_to)
+            except ValueError:
+                pass
+
+        if status_filter:
+            payments_qs = payments_qs.filter(status=status_filter)
+
+        if payment_type_filter:
+            payments_qs = payments_qs.filter(payment_type=payment_type_filter)
+
+        # Ordering
+        ordering = request.query_params.get("ordering", "-created_at")
+        payments_qs = payments_qs.order_by(ordering)
+
+        # Pagination
+        page_number = int(request.query_params.get("page", 1))
+        page_size = min(int(request.query_params.get("page_size", 20)), 100)
+
+        paginator = Paginator(payments_qs, page_size)
+        try:
+            page_obj = paginator.page(page_number)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
+        serializer = PaymentSerializer(page_obj.object_list, many=True)
+
+        return SuccessResponse(
+            data={
+                "results": serializer.data,
+                "pagination": {
+                    "page": page_obj.number,
+                    "page_size": page_size,
+                    "total_pages": paginator.num_pages,
+                    "total_count": paginator.count,
+                },
+            }
+        )
 
 
 class BookingPaymentListView(APIView):

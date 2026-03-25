@@ -5,12 +5,15 @@ from .views import (
     BankAccountListView,
     BookingPaymentListView,
     PaymentDetailView,
+    PaymentListView,
     PaymentProviderConfigView,
     PaymentProviderDetailView,
     PaymentProviderListView,
     PaymentProviderSetActiveView,
+    PaymentStatisticsView,
     PayoutDetailView,
     PayoutListView,
+    PayoutStatisticsView,
     RefundCreateView,
     StripeWebhookView,
 )
@@ -34,6 +37,12 @@ urlpatterns = [
         name="provider-config",
     ),
     # Payments
+    path("payments/", PaymentListView.as_view(), name="payment-list"),
+    path(
+        "payments/statistics/",
+        PaymentStatisticsView.as_view(),
+        name="payment-statistics",
+    ),
     path(
         "bookings/<int:booking_id>/",
         BookingPaymentListView.as_view(),
@@ -45,6 +54,11 @@ urlpatterns = [
     path("webhook/stripe/", StripeWebhookView.as_view(), name="stripe-webhook"),
     # Payouts
     path("payouts/", PayoutListView.as_view(), name="payout-list"),
+    path(
+        "payouts/statistics/",
+        PayoutStatisticsView.as_view(),
+        name="payout-statistics",
+    ),
     path("payouts/<int:pk>/", PayoutDetailView.as_view(), name="payout-detail"),
     # Bank accounts
     path("bank-accounts/", BankAccountListView.as_view(), name="bank-account-list"),

@@ -3,6 +3,7 @@ from . import (
     PayoutService,
     ProviderService,
     RefundService,
+    StatisticsService,
     WebhookService,
 )
 
@@ -11,5 +12,6 @@ __all__ = [
     "PayoutService",
     "ProviderService",
     "RefundService",
+    "StatisticsService",
     "WebhookService",
 ]
