@@ -10,6 +10,48 @@ from .models import (
 )
 
 
+# ---------------------------------------------------------------------------
+# Stripe Connect Serializers
+# ---------------------------------------------------------------------------
+
+
+class StripeConnectStatusSerializer(serializers.Serializer):
+    """Read-only serializer for Stripe Connect account status."""
+
+    has_account = serializers.BooleanField()
+    account_id = serializers.CharField(allow_null=True)
+    onboarding_complete = serializers.BooleanField()
+    charges_enabled = serializers.BooleanField()
+    payouts_enabled = serializers.BooleanField()
+    requirements = serializers.DictField(allow_null=True)
+
+
+class StripeOnboardingRequestSerializer(serializers.Serializer):
+    """Request serializer for starting Stripe Connect onboarding."""
+
+    return_url = serializers.URLField(
+        required=False,
+        help_text="URL to redirect to after onboarding completes"
+    )
+    refresh_url = serializers.URLField(
+        required=False,
+        help_text="URL to redirect to if the link expires"
+    )
+
+
+class StripeOnboardingResponseSerializer(serializers.Serializer):
+    """Response serializer for Stripe Connect onboarding link."""
+
+    onboarding_url = serializers.URLField()
+    expires_at = serializers.IntegerField(help_text="Unix timestamp")
+
+
+class StripeDashboardLinkSerializer(serializers.Serializer):
+    """Response serializer for Stripe Express Dashboard link."""
+
+    dashboard_url = serializers.URLField()
+
+
 class PaymentProviderSerializer(serializers.ModelSerializer):
     """Full representation for admins. Never exposes _configuration directly."""
 

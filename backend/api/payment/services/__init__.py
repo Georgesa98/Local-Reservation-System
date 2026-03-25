@@ -4,6 +4,7 @@ from . import (
     ProviderService,
     RefundService,
     StatisticsService,
+    StripeConnectService,
     WebhookService,
 )
 
@@ -13,5 +14,6 @@ __all__ = [
     "ProviderService",
     "RefundService",
     "StatisticsService",
+    "StripeConnectService",
     "WebhookService",
 ]

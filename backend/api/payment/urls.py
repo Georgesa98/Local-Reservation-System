@@ -15,6 +15,9 @@ from .views import (
     PayoutListView,
     PayoutStatisticsView,
     RefundCreateView,
+    StripeConnectDashboardView,
+    StripeConnectOnboardView,
+    StripeConnectStatusView,
     StripeWebhookView,
 )
 
@@ -52,6 +55,22 @@ urlpatterns = [
     path("<int:pk>/refund/", RefundCreateView.as_view(), name="payment-refund"),
     # Webhook
     path("webhook/stripe/", StripeWebhookView.as_view(), name="stripe-webhook"),
+    # Stripe Connect
+    path(
+        "stripe/connect/status/",
+        StripeConnectStatusView.as_view(),
+        name="stripe-connect-status",
+    ),
+    path(
+        "stripe/connect/onboard/",
+        StripeConnectOnboardView.as_view(),
+        name="stripe-connect-onboard",
+    ),
+    path(
+        "stripe/connect/dashboard/",
+        StripeConnectDashboardView.as_view(),
+        name="stripe-connect-dashboard",
+    ),
     # Payouts
     path("payouts/", PayoutListView.as_view(), name="payout-list"),
     path(

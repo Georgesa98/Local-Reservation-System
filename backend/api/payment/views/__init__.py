@@ -18,6 +18,11 @@ from .staff import (
     PayoutListView,
 )
 from .statistics import PaymentStatisticsView, PayoutStatisticsView
+from .stripe_connect import (
+    StripeConnectDashboardView,
+    StripeConnectOnboardView,
+    StripeConnectStatusView,
+)
 
 __all__ = [
     # Admin views - Provider management
@@ -40,4 +45,8 @@ __all__ = [
     # Statistics views
     "PaymentStatisticsView",
     "PayoutStatisticsView",
+    # Stripe Connect views
+    "StripeConnectStatusView",
+    "StripeConnectOnboardView",
+    "StripeConnectDashboardView",
 ]
