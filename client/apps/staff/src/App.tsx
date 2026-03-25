@@ -1,6 +1,7 @@
-import { HashRouter, Navigate, Route, Routes } from "react-router";
+import { HashRouter, Route, Routes } from "react-router";
 import { DevRouteBar } from "./components/DevRouteBar";
 import { RoleBasedRoute } from "./components/RoleBasedRoute";
+import { RootRedirect } from "./components/RootRedirect";
 import { LoginPage } from "./pages/login";
 import { SignupPage } from "./pages/signup";
 import { OtpPage } from "./pages/otp";
@@ -13,63 +14,61 @@ import {
   NewBooking,
   BookingsPage,
 } from "./pages/dashboard";
+import { AdminDashboardPage } from "./pages/admin";
 
 function App() {
   return (
     <>
       <HashRouter>
         <Routes>
-          {/* Root redirect */}
-          <Route
-            path="/"
-            element={<Navigate to="/dashboard/rooms" replace />}
-          />
+          {/* Root redirect - smart routing based on auth and role */}
+          <Route path="/" element={<RootRedirect />} />
 
-          {/* Protected routes - Manager and Admin only */}
+          {/* Manager routes - Under /dashboard prefix */}
           <Route
             path="/dashboard"
             element={
-              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+              <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
                 <DashboardPage />
               </RoleBasedRoute>
             }
           />
           <Route
-            path="/rooms"
+            path="/dashboard/rooms"
             element={
-              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+              <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
                 <RoomsPage />
               </RoleBasedRoute>
             }
           />
           <Route
-            path="/rooms/new"
+            path="/dashboard/rooms/new"
             element={
-              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+              <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
                 <NewRoomPage />
               </RoleBasedRoute>
             }
           />
           <Route
-            path="/rooms/:id"
+            path="/dashboard/rooms/:id"
             element={
-              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+              <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
                 <SpecificRoomPage />
               </RoleBasedRoute>
             }
           />
           <Route
-            path="/bookings"
+            path="/dashboard/bookings"
             element={
-              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+              <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
                 <BookingsPage />
               </RoleBasedRoute>
             }
           />
           <Route
-            path="/bookings/new"
+            path="/dashboard/bookings/new"
             element={
-              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+              <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
                 <NewBooking />
               </RoleBasedRoute>
             }

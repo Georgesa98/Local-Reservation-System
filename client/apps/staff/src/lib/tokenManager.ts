@@ -134,3 +134,31 @@ export async function getCurrentUser(): Promise<UserFromToken | null> {
   
   return decodeUser(accessToken)
 }
+
+/**
+ * Refresh tokens if the access token is expired but refresh token is valid.
+ * 
+ * This is useful for app launch scenarios where the access token may have
+ * expired during a session gap, but the refresh token is still valid.
+ * 
+ * @returns true if tokens were refreshed or already valid, false if refresh failed
+ */
+export async function refreshIfNeeded(): Promise<boolean> {
+  try {
+    const tokens = await getTokens()
+    if (!tokens) {
+      return false
+    }
+
+    // Check if access token is still valid
+    if (!isTokenExpiringSoon(tokens.access)) {
+      return true // Already valid, no refresh needed
+    }
+
+    // Access token expired/expiring, try to refresh
+    const refreshed = await refreshTokens(tokens.refresh)
+    return refreshed
+  } catch {
+    return false
+  }
+}
