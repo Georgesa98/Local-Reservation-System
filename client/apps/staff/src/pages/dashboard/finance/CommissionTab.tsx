@@ -2,16 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { fetchPaymentStatistics, fetchPayments } from "./api";
 import type { PaymentFilters } from "./types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table";
-import { Badge } from "@workspace/ui/components/badge";
-import { Button } from "@workspace/ui/components/button";
+import { PaymentsDataTable } from "./data-table";
 
 export function CommissionTab() {
   const [filters, setFilters] = useState<PaymentFilters>({
@@ -41,23 +32,8 @@ export function CommissionTab() {
     return `${sign}${percent.toFixed(1)}%`;
   };
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "default";
-      case "pending":
-        return "secondary";
-      case "processing":
-        return "secondary";
-      case "failed":
-        return "destructive";
-      case "refunded":
-        return "outline";
-      case "cancelled":
-        return "outline";
-      default:
-        return "default";
-    }
+  const handlePageChange = (page: number) => {
+    setFilters((prev) => ({ ...prev, page }));
   };
 
   return (
@@ -139,104 +115,22 @@ export function CommissionTab() {
       </div>
 
       {/* Payments Table */}
-      <div className="border border-black">
-        <div className="p-4 border-b border-black">
-          <h2 className="text-lg font-bold">Transactions</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Transaction ID</TableHead>
-                <TableHead>Booking Reference</TableHead>
-                <TableHead>Guest Name</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Platform Fee</TableHead>
-                <TableHead>Final Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paymentsLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    Loading transactions...
-                  </TableCell>
-                </TableRow>
-              ) : (payments?.results?.length ?? 0) > 0 ? (
-                payments.results.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell className="font-mono">{payment.id}</TableCell>
-                    <TableCell className="font-mono">
-                      {payment.booking_reference ?? `BK-${payment.booking}`}
-                    </TableCell>
-                    <TableCell>{payment.guest_name ?? "-"}</TableCell>
-                    <TableCell className="font-mono">
-                      {formatCurrency(payment.amount)}
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {formatCurrency(payment.platform_fee)}
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {formatCurrency(payment.final_amount)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(payment.status)}>
-                        {payment.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono">
-                      {payment.paid_at
-                        ? new Date(payment.paid_at).toLocaleDateString()
-                        : "N/A"}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    No transactions found
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Pagination */}
-        {(payments?.count ?? 0) > 0 && (
-          <div className="p-4 border-t border-black flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Showing {(filters.page! - 1) * filters.page_size! + 1} to{" "}
-              {Math.min(filters.page! * filters.page_size!, payments?.count ?? 0)} of{" "}
-              {payments?.count ?? 0} transactions
-            </p>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, page: prev.page! - 1 }))
-                }
-                disabled={!payments?.previous}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, page: prev.page! + 1 }))
-                }
-                disabled={!payments?.next}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      <PaymentsDataTable
+        data={payments?.results ?? []}
+        isLoading={paymentsLoading}
+        pagination={
+          payments
+            ? {
+                page: filters.page!,
+                pageSize: filters.page_size!,
+                totalCount: payments.count,
+                hasNext: !!payments.next,
+                hasPrevious: !!payments.previous,
+              }
+            : undefined
+        }
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
