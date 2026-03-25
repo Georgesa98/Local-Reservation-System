@@ -1,6 +1,6 @@
 import { HashRouter, Navigate, Route, Routes } from "react-router";
 import { DevRouteBar } from "./components/DevRouteBar";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { RoleBasedRoute } from "./components/RoleBasedRoute";
 import { LoginPage } from "./pages/login";
 import { SignupPage } from "./pages/signup";
 import { OtpPage } from "./pages/otp";
@@ -25,53 +25,53 @@ function App() {
             element={<Navigate to="/dashboard/rooms" replace />}
           />
 
-          {/* Protected routes */}
+          {/* Protected routes - Manager and Admin only */}
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <DashboardPage />
-              </ProtectedRoute>
+              </RoleBasedRoute>
             }
           />
           <Route
             path="/rooms"
             element={
-              <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <RoomsPage />
-              </ProtectedRoute>
+              </RoleBasedRoute>
             }
           />
           <Route
             path="/rooms/new"
             element={
-              <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <NewRoomPage />
-              </ProtectedRoute>
+              </RoleBasedRoute>
             }
           />
           <Route
             path="/rooms/:id"
             element={
-              <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <SpecificRoomPage />
-              </ProtectedRoute>
+              </RoleBasedRoute>
             }
           />
           <Route
             path="/bookings"
             element={
-              <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <BookingsPage />
-              </ProtectedRoute>
+              </RoleBasedRoute>
             }
           />
           <Route
             path="/bookings/new"
             element={
-              <ProtectedRoute>
+              <RoleBasedRoute allowedRoles={['ADMIN', 'MANAGER']}>
                 <NewBooking />
-              </ProtectedRoute>
+              </RoleBasedRoute>
             }
           />
 

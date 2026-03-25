@@ -4,6 +4,7 @@ import {
   SidebarFooter,
   SidebarSeparator,
 } from "@workspace/ui/components/sidebar";
+import { Badge } from "@workspace/ui/components/badge";
 import { useAuth } from "../../hooks/useAuth";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,6 +27,20 @@ export default function SidebarUserFooter() {
     ? [user.first_name, user.last_name].filter(Boolean).join(" ") || user.role
     : null;
 
+  // Get role badge variant
+  const getRoleBadgeVariant = (role?: string) => {
+    switch (role) {
+      case 'ADMIN':
+        return 'destructive' as const
+      case 'MANAGER':
+        return 'default' as const
+      case 'AGENT':
+        return 'secondary' as const
+      default:
+        return 'outline' as const
+    }
+  }
+
   return (
     <SidebarFooter className="p-0">
       <SidebarSeparator />
@@ -36,10 +51,17 @@ export default function SidebarUserFooter() {
           <div className="h-3 w-20 rounded bg-muted animate-pulse" />
         ) : (
           <>
-            <span className="text-xs font-bold tracking-widest uppercase truncate leading-tight">
-              {displayName ?? user?.role ?? "—"}
-            </span>
-            <span className="text-xs text-muted-foreground tabular-nums tracking-wider mt-0.5">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold tracking-widest uppercase truncate leading-tight">
+                {displayName ?? user?.role ?? "—"}
+              </span>
+              {user?.role && (
+                <Badge variant={getRoleBadgeVariant(user.role)} className="text-[10px] px-1.5 py-0">
+                  {user.role}
+                </Badge>
+              )}
+            </div>
+            <span className="text-xs text-muted-foreground tabular-nums tracking-wider">
               {user?.phone_number ?? ""}
             </span>
           </>

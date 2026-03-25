@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getUserFromToken as decodeUser, type UserFromToken } from './jwtUtils'
 
 export interface Tokens {
   access: string
@@ -115,4 +116,21 @@ export async function refreshTokens(refresh: string): Promise<boolean> {
 export async function isAuthenticated(): Promise<boolean> {
   const tokens = await getTokens();
   return tokens !== null;
+}
+
+/**
+ * Get user information from the current access token.
+ * 
+ * This decodes the JWT payload to extract user data without making an API call.
+ * Returns null if no token exists or the token is invalid/expired.
+ * 
+ * @returns User data from token or null
+ */
+export async function getCurrentUser(): Promise<UserFromToken | null> {
+  const accessToken = await getAccessToken()
+  if (!accessToken) {
+    return null
+  }
+  
+  return decodeUser(accessToken)
 }

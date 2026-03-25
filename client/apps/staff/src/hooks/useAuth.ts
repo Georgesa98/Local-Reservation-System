@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getTokens, clearTokens, refreshTokens } from '../lib/tokenManager'
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
-
+export type Role = 'ADMIN' | 'MANAGER';
 export interface UseAuthResult {
   status: AuthStatus
   isLoading: boolean
