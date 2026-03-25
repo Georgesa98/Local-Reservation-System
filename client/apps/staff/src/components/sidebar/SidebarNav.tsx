@@ -2,7 +2,6 @@ import { NavLink, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
-  Package,
   CalendarDays,
   DollarSign,
   Settings,
@@ -18,10 +17,10 @@ import {
 
 const navItems = [
   { key: "dashboard" as const, path: "/dashboard", icon: LayoutDashboard },
-  { key: "rooms" as const, path: "/rooms", icon: DoorOpen },
-  { key: "bookings" as const, path: "/bookings", icon: CalendarDays },
-  { key: "finance" as const, path: "/finance", icon: DollarSign },
-  { key: "system" as const, path: "/system", icon: Settings },
+  { key: "rooms" as const, path: "/dashboard/rooms", icon: DoorOpen },
+  { key: "bookings" as const, path: "/dashboard/bookings", icon: CalendarDays },
+  { key: "finance" as const, path: "/dashboard/finance", icon: DollarSign },
+  { key: "system" as const, path: "/dashboard/system", icon: Settings },
 ];
 
 export default function SidebarNav() {
@@ -32,7 +31,7 @@ export default function SidebarNav() {
     <SidebarContent className="px-0 py-4">
       <SidebarMenu>
         {navItems.map(({ key, path, icon: Icon }) => {
-          const isActive = location.pathname.startsWith(path);
+          const isActive = location.pathname.endsWith(path);
           return (
             <SidebarMenuItem key={key}>
               <SidebarMenuButton
