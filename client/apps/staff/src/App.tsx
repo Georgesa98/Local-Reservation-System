@@ -14,6 +14,7 @@ import {
   NewBooking,
   BookingsPage,
   FinancePage,
+  DashboardHome,
 } from "./pages/dashboard";
 import { AdminDashboardPage } from "./pages/admin";
 import { SettingsPage } from "./pages/settings/Settings";
@@ -31,7 +32,7 @@ function App() {
             path="/dashboard"
             element={
               <RoleBasedRoute allowedRoles={["ADMIN", "MANAGER"]}>
-                <DashboardPage />
+                <DashboardHome />
               </RoleBasedRoute>
             }
           />
