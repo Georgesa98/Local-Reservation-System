@@ -1,30 +1,31 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import { Plus_Jakarta_Sans, Work_Sans } from "next/font/google";
 
-import "@workspace/ui/globals.css"
-import { Providers } from "@/components/providers"
+import "@workspace/ui/globals.css";
+import "../src/styles/theme.css";
+import { Providers } from "@/components/providers";
 
-const fontSans = Geist({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
-})
+  variable: "--font-plus-jakarta-sans",
+  display: "swap",
+});
 
-const fontMono = Geist_Mono({
+const workSans = Work_Sans({
   subsets: ["latin"],
-  variable: "--font-mono",
-})
+  variable: "--font-work-sans",
+  display: "swap",
+});
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased `}
-      >
+      <body className={`${plusJakartaSans.variable} ${workSans.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>
-  )
+  );
 }

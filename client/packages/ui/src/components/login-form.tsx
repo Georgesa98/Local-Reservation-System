@@ -8,13 +8,11 @@ import {
   FieldSeparator,
 } from "@workspace/ui/components/field";
 import { Input } from "@workspace/ui/components/input";
-import { useLink } from "../context/UIProvider.js";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const Link = useLink();
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
@@ -69,9 +67,9 @@ export function LoginForm({
           </Button>
           <FieldDescription className="text-center">
             Don&apos;t have an account?{" "}
-            <Link href="#" className="underline underline-offset-4">
+            <a href="#" className="underline underline-offset-4">
               Sign up
-            </Link>
+            </a>
           </FieldDescription>
         </Field>
       </FieldGroup>

@@ -1,0 +1,626 @@
+/**
+ * Web App — Azure Meridian "Elevated Booking Experience" Design System
+ *
+ * Creative North Star: "The Digital Concierge"
+ * A high-end editorial magazine crossed with a precision instrument.
+ *
+ * Web-app-only token overrides. Imported after @workspace/ui/globals.css
+ * in layout.tsx so these values cascade on top without touching packages/ui.
+ *
+ * CRITICAL RULES:
+ * 1. NO 1px borders for sectioning — use surface hierarchy only
+ * 2. Glassmorphism for floating elements (backdrop-blur: 20px, 80% opacity)
+ * 3. Primary is a surgical tool, not a paint bucket (90% white space rule)
+ * 4. Use on-surface (#282f3f) for text, never pure black
+ * 5. Minimum radius: sm (0.25rem) — no sharp corners
+ */
+
+/* ─── Font overrides ────────────────────────────────────────────────────────── */
+/*
+ * Override fonts to match the Elevated Booking aesthetic:
+ * - Plus Jakarta Sans: Editorial Voice (geometric, premium, architectural)
+ * - Work Sans: Functional Voice (exceptional legibility at small sizes)
+ *
+ * --font-geist is the variable globals.css wires to body { font-family }, so
+ * reassigning it here to Plus Jakarta Sans creates the editorial headline feel.
+ *
+ * Arabic companion: Noto Sans Arabic harmonizes with Work Sans proportions
+ * and provides better editorial/display characteristics for RTL.
+ */
+:root {
+  --font-geist: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif;
+  --font-body: var(--font-work-sans), 'Work Sans', sans-serif;
+}
+
+:root:is([dir="rtl"]) body {
+  font-family: 'Noto Sans Arabic', 'Work Sans', sans-serif;
+}
+
+/* ─── Light mode: Azure Meridian Color System ───────────────────────────────── */
+:root {
+  /* ─── Geometry: Soft Tech aesthetic (12px base radius) ─────────────────── */
+  --radius: 0.75rem; /* 12px - base radius for "rounded but refined" */
+
+  /* ─── Primary: Vibrant Ocean Blue (navigational beacon) ────────────────── */
+  /* #0052d0 → oklch conversion for precision color manipulation */
+  --primary:            oklch(0.48 0.18 265);
+  --primary-foreground: oklch(1 0 0); /* Pure white text on blue */
+
+  /* Primary Container: Lighter blue for gradients and hover states */
+  /* #799dff → oklch */
+  --primary-container:            oklch(0.68 0.14 265);
+  --primary-container-foreground: oklch(0.15 0.02 265); /* Dark blue text */
+
+  /* ─── Secondary: Periwinkle/Lavender Blue ──────────────────────────────── */
+  /* #626DD5 → oklch */
+  --secondary:            oklch(0.52 0.15 275);
+  --secondary-foreground: oklch(1 0 0);
+
+  /* ─── Tertiary: Emerald Green (for "Available", "Eco-Friendly" badges) ─ */
+  /* #10B981 → oklch */
+  --tertiary:            oklch(0.65 0.17 160);
+  --tertiary-foreground: oklch(0.15 0.02 160);
+
+  /* Tertiary Container: Soft green for badges */
+  /* #69f6b8 → oklch */
+  --tertiary-container:            oklch(0.88 0.12 155);
+  --tertiary-container-foreground: oklch(0.20 0.08 155);
+
+  /* ─── Surface Hierarchy: The "No-Line" Rule ────────────────────────────── */
+  /*
+   * Boundaries defined solely through background color shifts.
+   * Think of these as physical layers — stacked sheets of fine paper.
+   */
+
+  /* Base Layer: Soft blue-grey wash */
+  /* #f5f6ff → oklch */
+  --background:         oklch(0.98 0.01 265);
+  --foreground:         oklch(0.22 0.02 245); /* on-surface: #282f3f (not black) */
+
+  /* Secondary Sectioning: Slightly deeper blue-grey */
+  /* #edf0ff → oklch */
+  --surface-container-low: oklch(0.96 0.02 265);
+
+  /* Interactive/Floating Cards: Pure white */
+  /* #ffffff */
+  --card:               oklch(1 0 0);
+  --card-foreground:    oklch(0.22 0.02 245);
+
+  --popover:            oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.02 245);
+
+  /* Deep Insets: Richer blue-grey for nested sections */
+  /* #d9e2fd → oklch */
+  --surface-container-high: oklch(0.91 0.04 265);
+
+  /* Muted: For secondary text and disabled states */
+  --muted:              oklch(0.96 0.02 265);
+  --muted-foreground:   oklch(0.50 0.02 245);
+
+  /* Accent: Matches surface-container-low */
+  --accent:             oklch(0.96 0.02 265);
+  --accent-foreground:  oklch(0.22 0.02 245);
+
+  /* ─── Borders: Ghost Border Fallback ───────────────────────────────────── */
+  /*
+   * The "No-Line" Rule: Borders should be transparent or match surface.
+   * Ghost borders (outline-variant at 15% opacity) for extreme accessibility only.
+   */
+  --border:             oklch(0.71 0.02 245 / 0.15); /* #a6adc1 at 15% */
+  --input:              oklch(1 0 0); /* Pure white background for inputs */
+  --ring:               oklch(0.48 0.18 265 / 0.40); /* Primary at 40% for focus */
+
+  /* Outline Variant: For ghost borders */
+  /* #a6adc1 → oklch */
+  --outline-variant:    oklch(0.71 0.02 245);
+
+  /* ─── Destructive: Error states ────────────────────────────────────────── */
+  --destructive:            oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* ─── Sidebar tokens (if applicable) ────────────────────────────────────── */
+  --sidebar:            oklch(1 0 0);
+  --sidebar-foreground: oklch(0.22 0.02 245);
+  --sidebar-primary:    oklch(0.48 0.18 265);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent:     oklch(0.96 0.02 265);
+  --sidebar-accent-foreground:  oklch(0.22 0.02 245);
+  --sidebar-border:     oklch(0.71 0.02 245 / 0.15);
+  --sidebar-ring:       oklch(0.48 0.18 265 / 0.40);
+}
+
+/* ─── Dark mode: [TODO - Requires Design Specification] ─────────────────────── */
+/*
+ * Dark mode tokens need proper design specification.
+ * When implementing, maintain the same principles:
+ * - Surface hierarchy (darker base → lighter cards)
+ * - No 1px borders (use surface shifts)
+ * - Glassmorphism on floating elements
+ * - Ghost borders at 15% opacity for accessibility
+ * - Ambient shadows with adjusted opacity
+ *
+ * Placeholder tokens below are estimated based on light mode logic
+ * and MUST be reviewed by design before production use.
+ */
+.dark {
+  /* TODO: Design review required for dark mode color palette */
+  --background:         oklch(0.15 0.02 245);
+  --foreground:         oklch(0.95 0 0);
+
+  --card:               oklch(0.20 0.02 245);
+  --card-foreground:    oklch(0.95 0 0);
+
+  --popover:            oklch(0.20 0.02 245);
+  --popover-foreground: oklch(0.95 0 0);
+
+  --primary:            oklch(0.68 0.14 265);
+  --primary-foreground: oklch(0.15 0.02 265);
+
+  --secondary:          oklch(0.52 0.15 275);
+  --secondary-foreground: oklch(0.95 0 0);
+
+  --muted:              oklch(0.25 0.02 245);
+  --muted-foreground:   oklch(0.60 0.02 245);
+
+  --accent:             oklch(0.25 0.02 245);
+  --accent-foreground:  oklch(0.95 0 0);
+
+  --destructive:        oklch(0.45 0.20 25);
+  --destructive-foreground: oklch(0.95 0 0);
+
+  --border:             oklch(0.71 0.02 245 / 0.15);
+  --input:              oklch(0.20 0.02 245);
+  --ring:               oklch(0.68 0.14 265 / 0.40);
+
+  --surface-container-low: oklch(0.18 0.02 245);
+  --surface-container-high: oklch(0.25 0.03 265);
+
+  --sidebar:            oklch(0.18 0.02 245);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary:    oklch(0.68 0.14 265);
+  --sidebar-primary-foreground: oklch(0.15 0.02 265);
+  --sidebar-accent:     oklch(0.25 0.02 245);
+  --sidebar-accent-foreground:  oklch(0.95 0 0);
+  --sidebar-border:     oklch(0.71 0.02 245 / 0.15);
+  --sidebar-ring:       oklch(0.68 0.14 265 / 0.40);
+}
+
+/* ─── Typography layer ──────────────────────────────────────────────────────── */
+/*
+ * Applied via @layer base so Tailwind utilities can override when needed.
+ * Creates tension between geometric authority (Plus Jakarta Sans) and
+ * humanistic readability (Work Sans).
+ */
+@layer base {
+  /* Body text: Work Sans for functional readability */
+  body {
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums; /* Critical for pricing, dates, counts */
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ─── Display & Headlines: Editorial Voice ────────────────────────────── */
+
+  /* Hero property titles — creates immediate sense of scale */
+  .display-lg {
+    font-family: var(--font-geist); /* Plus Jakarta Sans */
+    font-size: 3.5rem;        /* 56px */
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--foreground);
+  }
+
+  .display-md {
+    font-family: var(--font-geist);
+    font-size: 2.5rem;        /* 40px */
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.15;
+    color: var(--foreground);
+  }
+
+  /* Section titles — geometric and architectural */
+  .headline-lg {
+    font-family: var(--font-geist);
+    font-size: 2rem;          /* 32px */
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--foreground);
+  }
+
+  .headline-md {
+    font-family: var(--font-geist);
+    font-size: 1.5rem;        /* 24px */
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: var(--foreground);
+  }
+
+  .headline-sm {
+    font-family: var(--font-geist);
+    font-size: 1.25rem;       /* 20px */
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    line-height: 1.4;
+    color: var(--foreground);
+  }
+
+  /* ─── Body Text: Functional Voice ──────────────────────────────────────── */
+
+  .body-lg {
+    font-family: var(--font-body); /* Work Sans */
+    font-size: 1.125rem;      /* 18px */
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--foreground);
+  }
+
+  .body-md {
+    font-family: var(--font-body);
+    font-size: 1rem;          /* 16px */
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--foreground);
+  }
+
+  /* Pricing details, booking terms — exceptional legibility at small sizes */
+  .body-sm {
+    font-family: var(--font-body);
+    font-size: 0.875rem;      /* 14px */
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--foreground);
+  }
+
+  /* ─── Labels: Wayfinding Voice ─────────────────────────────────────────── */
+
+  /* All-caps primary labels — "LOCATION DETAILS", "AMENITIES" */
+  .label-md {
+    font-family: var(--font-body);
+    font-size: 0.875rem;      /* 14px */
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+
+  .label-sm {
+    font-family: var(--font-body);
+    font-size: 0.75rem;       /* 12px */
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+
+  /* Muted label for secondary wayfinding */
+  .label-muted {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+}
+
+/* ─── Elevation & Depth System ──────────────────────────────────────────────── */
+/*
+ * Depth is organic, not artificial. Prefer stacked surfaces over shadows.
+ * When floating effect required, use ambient shadows that mimic natural light.
+ */
+@layer base {
+  /* Extra-Diffused Shadow: For sticky bars, floating nav, modals */
+  /* X: 0, Y: 8, Blur: 30, Color: on-surface at 4% opacity */
+  .ambient-shadow {
+    box-shadow: 0 8px 30px oklch(0.22 0.02 245 / 0.04);
+  }
+
+  /* Elevated shadow for cards that need more lift */
+  .ambient-shadow-md {
+    box-shadow: 0 12px 40px oklch(0.22 0.02 245 / 0.06);
+  }
+
+  /* Ghost Border: Fallback for extreme accessibility (high-contrast mode) */
+  /* outline-variant (#a6adc1) at 15% opacity */
+  .ghost-border {
+    border: 1px solid oklch(0.71 0.02 245 / 0.15);
+  }
+
+  /* Ghost Border on focus: Primary at 40% opacity */
+  .ghost-border-focus {
+    border: 2px solid oklch(0.48 0.18 265 / 0.40);
+  }
+}
+
+/* ─── Glassmorphism System ───────────────────────────────────────────────────── */
+/*
+ * For floating navigation bars and modal overlays.
+ * Tech-Forward feel with backdrop-blur and 80% opacity.
+ */
+@layer base {
+  /* Base glass surface: 80% opacity + 20px blur */
+  .glass-surface {
+    background-color: oklch(0.98 0.01 265 / 0.80);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px); /* Safari support */
+  }
+
+  /* Glass navigation: Specific for nav bars */
+  .glass-nav {
+    background-color: oklch(1 0 0 / 0.80);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid oklch(0.71 0.02 245 / 0.10);
+  }
+
+  /* Glass modal overlay */
+  .glass-modal {
+    background-color: oklch(0.22 0.02 245 / 0.60);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Dark mode glass variants */
+  .dark .glass-surface {
+    background-color: oklch(0.15 0.02 245 / 0.80);
+  }
+
+  .dark .glass-nav {
+    background-color: oklch(0.20 0.02 245 / 0.80);
+    border-bottom: 1px solid oklch(0.71 0.02 245 / 0.15);
+  }
+
+  .dark .glass-modal {
+    background-color: oklch(0.10 0.02 245 / 0.70);
+  }
+}
+
+/* ─── Component Overrides ───────────────────────────────────────────────────── */
+/*
+ * Override Shadcn components to match Elevated Booking aesthetic.
+ * These selectors target data-slot attributes from @workspace/ui components.
+ */
+@layer base {
+  /* ─── Buttons ────────────────────────────────────────────────────────── */
+
+  /* Primary Button: Gradient from primary → primary-container at 135deg */
+  .btn-primary-gradient {
+    background: linear-gradient(135deg, 
+      oklch(0.48 0.18 265), 
+      oklch(0.68 0.14 265)
+    );
+    color: oklch(1 0 0);
+    border-radius: 1rem; /* 16px for buttons — more pronounced than base */
+    border: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .btn-primary-gradient:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px oklch(0.48 0.18 265 / 0.25);
+  }
+
+  .btn-primary-gradient:active {
+    transform: translateY(0);
+  }
+
+  /* Secondary Button: surface-container-low background with primary text */
+  [data-slot="button"][data-variant="secondary"] {
+    background-color: var(--surface-container-low, var(--secondary));
+    color: oklch(0.48 0.18 265);
+    border: none;
+    border-radius: 1rem;
+    font-weight: 600;
+  }
+
+  /* Tertiary Button: Transparent with primary text */
+  [data-slot="button"][data-variant="tertiary"],
+  [data-slot="button"][data-variant="ghost"] {
+    background-color: transparent;
+    color: oklch(0.48 0.18 265);
+    border: none;
+    font-weight: 600;
+  }
+
+  /* ─── Input Fields ───────────────────────────────────────────────────── */
+
+  /* Input: Pure white background, 8px radius (md) */
+  [data-slot="input"] {
+    background-color: oklch(1 0 0);
+    border-radius: 0.5rem; /* 8px — md radius */
+    border: 1px solid oklch(0.71 0.02 245 / 0.15);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  /* Focus state: Ghost border of primary at 40% opacity */
+  [data-slot="input"]:focus {
+    outline: none;
+    border: 2px solid oklch(0.48 0.18 265 / 0.40);
+    box-shadow: 0 0 0 3px oklch(0.48 0.18 265 / 0.10);
+  }
+
+  /* ─── Cards ───────────────────────────────────────────────────────────── */
+
+  /* Card: Pure white surface, NO borders (use surface layering instead) */
+  [data-slot="card"] {
+    background-color: oklch(1 0 0);
+    border-radius: var(--radius); /* 12px base */
+    border: none; /* NO-LINE RULE */
+    padding: 1.5rem; /* spacing-6 equivalent */
+  }
+
+  /* Card on surface-container-low creates natural lift without shadow */
+  .card-stacked {
+    background-color: oklch(1 0 0);
+    /* Parent should be surface-container-low for contrast */
+  }
+
+  /* ─── Badges & Chips ─────────────────────────────────────────────────── */
+
+  /* Badge: Tertiary container for "Available", "Eco-Friendly" */
+  .badge-available,
+  .badge-eco {
+    background-color: oklch(0.88 0.12 155); /* tertiary-container */
+    color: oklch(0.20 0.08 155);
+    border-radius: 0.5rem; /* 8px */
+    padding: 0.25rem 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border: none;
+  }
+
+  /* Badge: Primary for high-intent labels */
+  .badge-primary {
+    background-color: oklch(0.48 0.18 265);
+    color: oklch(1 0 0);
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border: none;
+  }
+
+  /* ─── Dividers: PROHIBITED ──────────────────────────────────────────── */
+  /*
+   * DO NOT use <hr> or 1px borders to separate list items.
+   * Use spacing-6 (2rem = 32px) vertical white space instead.
+   * If grouping needed, use surface-container shifts.
+   */
+
+  /* Override any accidental dividers to be invisible */
+  hr,
+  [data-slot="separator"] {
+    border: none;
+    height: 2rem; /* spacing-6 */
+    background: transparent;
+  }
+}
+
+/* ─── Spacing Utilities ─────────────────────────────────────────────────────── */
+/*
+ * Document the spacing scale for card separation and layout breathing room.
+ * The spec emphasizes "generous negative space" = luxury.
+ */
+@layer utilities {
+  /* Vertical card separation: spacing-6 (2rem) */
+  .card-spacing {
+    margin-bottom: 2rem; /* spacing-6 */
+  }
+
+  /* Generous section spacing: spacing-8 (4rem) */
+  .section-spacing {
+    margin-bottom: 4rem; /* spacing-8 */
+  }
+
+  /* Content padding for breathing room */
+  .content-padding {
+    padding: 2rem; /* spacing-6 */
+  }
+
+  .content-padding-lg {
+    padding: 3rem; /* spacing-7 */
+  }
+}
+
+/* ─── Layout Patterns ────────────────────────────────────────────────────────── */
+/*
+ * Common patterns for asymmetrical layouts mentioned in design spec.
+ * "One large photo on left, two smaller stacked on right."
+ */
+@layer utilities {
+  /* Asymmetric image grid: 2:1 ratio */
+  .asymmetric-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+  }
+
+  /* Asymmetric with stacked right column */
+  .asymmetric-grid-stacked {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .asymmetric-grid-stacked > :first-child {
+    grid-row: 1 / -1; /* Span all rows */
+  }
+
+  /* Image aspect ratios for property photos */
+  .aspect-property-hero {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-property-card {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* ─── Accessibility Overrides ───────────────────────────────────────────────── */
+/*
+ * High-contrast mode: Enable ghost borders for visibility.
+ */
+@media (prefers-contrast: high) {
+  [data-slot="card"],
+  [data-slot="input"] {
+    border: 1px solid var(--outline-variant);
+  }
+}
+
+/* ─── Animation & Transitions ────────────────────────────────────────────────── */
+/*
+ * Smooth, organic transitions — not snappy or mechanical.
+ * "Premium feel" = slightly slower easing.
+ */
+@layer base {
+  * {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); /* ease-in-out */
+  }
+
+  /* Hover lift for interactive cards */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px oklch(0.22 0.02 245 / 0.08);
+  }
+}
+
+/* ─── Responsive Breakpoints ─────────────────────────────────────────────────── */
+/*
+ * Mobile-first adjustments for typography scale and spacing.
+ */
+@media (max-width: 768px) {
+  .display-lg {
+    font-size: 2.5rem; /* 40px on mobile */
+  }
+
+  .display-md {
+    font-size: 2rem; /* 32px on mobile */
+  }
+
+  .headline-lg {
+    font-size: 1.75rem; /* 28px on mobile */
+  }
+
+  .asymmetric-grid,
+  .asymmetric-grid-stacked {
+    grid-template-columns: 1fr; /* Stack on mobile */
+  }
+
+  .content-padding-lg {
+    padding: 1.5rem; /* Reduce on mobile */
+  }
+}
