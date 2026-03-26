@@ -13,10 +13,14 @@ from .views import (
     AdminRoomDetailView,
     RoomPublicListView,
     RoomPublicDetailView,
+    DashboardMetricsView,
 )
 
 
 urlpatterns = [
+    # Dashboard — IsAuthenticated + IsManager | IsAdmin
+    path("dashboard/metrics/", DashboardMetricsView.as_view(), name="dashboard-metrics"),
+
     # Public — no auth required
     path("public/", RoomPublicListView.as_view(), name="room-public-list"),
     path("public/<int:pk>/", RoomPublicDetailView.as_view(), name="room-public-detail"),

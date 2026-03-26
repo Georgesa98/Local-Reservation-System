@@ -11,6 +11,7 @@ from .manager import (
 )
 from .admin import AdminRoomListView, AdminRoomDetailView
 from .public import RoomPublicListView, RoomPublicDetailView
+from .dashboard import DashboardMetricsView
 
 __all__ = [
     "RoomListCreateView",
@@ -26,4 +27,5 @@ __all__ = [
     "AdminRoomDetailView",
     "RoomPublicListView",
     "RoomPublicDetailView",
+    "DashboardMetricsView",
 ]

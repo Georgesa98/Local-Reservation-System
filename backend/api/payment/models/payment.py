@@ -15,6 +15,7 @@ class PaymentType(models.TextChoices):
 class PaymentStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     COMPLETED = "completed", "Completed"
+    PROCESSING = "processing", "Processing"
     FAILED = "failed", "Failed"
     REFUNDED = "refunded", "Refunded"
 

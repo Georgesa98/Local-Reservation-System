@@ -19,7 +19,21 @@ class IsAdmin(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return isinstance(request.user, Admin)
+        role = request.user.role
+        return role == Role.ADMIN
+
+
+class IsManager(BasePermission):
+    """
+    Allows access only to Manager users.
+
+    Used for manager-level endpoints like room management, booking oversight,
+    and staff operations.
+    """
+
+    def has_permission(self, request, view):
+        role = request.user.role
+        return role == Role.MANAGER
 
 
 class IsAdminOrManager(BasePermission):
