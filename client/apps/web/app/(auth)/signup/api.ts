@@ -1,5 +1,31 @@
 import axiosInstance from "@/lib/axios";
+import { maskPhoneNumber, maskEmail } from "@/lib/mask";
 import type { SignupFormData } from "./schema";
+
+/**
+ * API integration for user signup
+ * 
+ * Endpoint: POST /api/auth/users/ (PUBLIC)
+ * 
+ * Request body shape:
+ * {
+ *   phone_number: "+963XXXXXXXXX",
+ *   password: "secure_password",
+ *   first_name: "John",      // optional
+ *   last_name: "Doe",         // optional
+ *   email: "john@example.com" // optional
+ * }
+ * 
+ * Response shape:
+ * {
+ *   id: 1,
+ *   phone_number: "+963XXXXXXXXX",
+ *   email: "john@example.com",
+ *   first_name: "John",
+ *   last_name: "Doe",
+ *   otp_sent: true
+ * }
+ */
 
 export interface SignupRequest {
   phone_number: string;
@@ -47,9 +73,19 @@ export async function signup(data: SignupFormData): Promise<SignupResponse> {
     }
 
     const response = await axiosInstance.post<SignupResponse>(
-      "auth/users/",
+      "/auth/users/",
       payload
     );
+
+    // Store masked phone/email data in localStorage for OTP verification
+    if (typeof window !== "undefined") {
+      localStorage.setItem("otpPhone", maskPhoneNumber(response.data.phone_number));
+      localStorage.setItem("otpPhoneFull", response.data.phone_number);
+      
+      if (response.data.email) {
+        localStorage.setItem("otpEmail", maskEmail(response.data.email));
+      }
+    }
 
     return response.data;
   } catch (error: any) {

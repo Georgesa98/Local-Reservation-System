@@ -52,8 +52,8 @@ export default function SignupPage() {
       const response = await signup(data);
 
       // Signup successful - OTP sent
-      // For now, redirect to home (later: redirect to OTP verification page)
-      router.push("/");
+      // Redirect to OTP verification page
+      router.push("/otp");
     } catch (error: any) {
       setIsLoading(false);
 

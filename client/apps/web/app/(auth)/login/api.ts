@@ -1,5 +1,5 @@
 import axiosInstance, { tokenManager, type TokenResponse } from '@/lib/axios';
-import { type AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import type { LoginFormData } from './schema';
 
 export async function login(credentials: LoginFormData): Promise<TokenResponse> {
