@@ -22,8 +22,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${plusJakartaSans.variable} ${workSans.variable}`}>
+    <html
+      className={`${plusJakartaSans.variable} ${workSans.variable} `}
+      lang="en"
+      suppressHydrationWarning
+    >
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>
