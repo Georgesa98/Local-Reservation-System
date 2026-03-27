@@ -11,7 +11,6 @@ import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { signupSchema, type SignupFormData } from "./schema";
 import { signup } from "./api";
-import { isAuthenticated } from "../login/api";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -36,13 +35,6 @@ export default function SignupPage() {
       confirmPassword: "",
     },
   });
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated()) {
-      router.push("/");
-    }
-  }, [router]);
 
   const onSubmit = async (data: SignupFormData) => {
     setApiError("");

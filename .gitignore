@@ -5,6 +5,7 @@ AGENTS.md
 docs
 __pycache__/
 .vscode
+.zed
 .obsidian
 node_modules
 dist

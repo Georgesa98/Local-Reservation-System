@@ -23,7 +23,6 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { otpSchema, type OTPFormData } from "./schema";
 import { verifyOTP, resendOTP, getOTPData, clearOTPData } from "./api";
-import { isAuthenticated } from "../login/api";
 import { SiTelegram, SiWhatsapp } from "@icons-pack/react-simple-icons";
 
 type Channel = "whatsapp" | "telegram" | "email";
@@ -65,14 +64,8 @@ export default function OTPVerificationPage() {
     resolver: zodResolver(otpSchema),
   });
 
-  // Initialize OTP data and redirect checks
+  // Initialize OTP data
   useEffect(() => {
-    // Redirect if already authenticated
-    if (isAuthenticated()) {
-      router.push("/");
-      return;
-    }
-
     // Get OTP data from localStorage
     const { isValid, data } = getOTPData();
 

@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { getCookie, setCookie, deleteCookie, ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from './cookies';
 
 // Types
 interface TokenResponse {
@@ -26,14 +27,11 @@ interface JWTPayload {
   first_name: string;
   last_name: string;
   phone_number: string;
+  is_verified: boolean;
   exp: number;
   iat: number;
   jti: string;
 }
-
-// Token storage keys
-const ACCESS_TOKEN_KEY = 'access_token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -47,24 +45,26 @@ const axiosInstance = axios.create({
 export const tokenManager = {
   getAccessToken: (): string | null => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
+    return getCookie(ACCESS_TOKEN_COOKIE);
   },
   
   getRefreshToken: (): string | null => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
+    return getCookie(REFRESH_TOKEN_COOKIE);
   },
   
   setTokens: (access: string, refresh: string): void => {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(ACCESS_TOKEN_KEY, access);
-    localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
+    // Access token expires in 5 minutes
+    setCookie(ACCESS_TOKEN_COOKIE, access, 5 / (24 * 60)); // 5 minutes in days
+    // Refresh token expires in 1 day
+    setCookie(REFRESH_TOKEN_COOKIE, refresh, 1);
   },
   
   clearTokens: (): void => {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    deleteCookie(ACCESS_TOKEN_COOKIE);
+    deleteCookie(REFRESH_TOKEN_COOKIE);
   },
   
   isTokenExpired: (token: string): boolean => {

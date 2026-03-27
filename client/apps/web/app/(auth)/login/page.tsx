@@ -10,7 +10,7 @@ import { SiGoogle, SiApple } from "@icons-pack/react-simple-icons";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { loginSchema, type LoginFormData } from "./schema";
-import { login, isAuthenticated } from "./api";
+import { login } from "./api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,13 +31,6 @@ export default function LoginPage() {
       password: "",
     },
   });
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated()) {
-      router.push("/");
-    }
-  }, [router]);
 
   const onSubmit = async (data: LoginFormData) => {
     setApiError("");
