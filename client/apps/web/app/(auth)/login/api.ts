@@ -5,7 +5,7 @@ import type { LoginFormData } from './schema';
 export async function login(credentials: LoginFormData): Promise<TokenResponse> {
   try {
     const response = await axiosInstance.post<TokenResponse>(
-      '/api/auth/jwt/create/',
+      'auth/jwt/create/',
       credentials
     );
 
