@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   fetchPayoutStatistics,
   fetchPayouts,
@@ -10,6 +11,7 @@ import { Alert, AlertDescription } from "@workspace/ui/components/alert";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 
 export function PayoutTab() {
+  const { t } = useTranslation();
   // Fetch payout statistics
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["payout-statistics"],
@@ -67,9 +69,8 @@ export function PayoutTab() {
           <Alert className="border-green-200 bg-green-50">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-sm text-green-900">
-              <span className="font-medium">Stripe Connect Active</span> —
-              Payments are automatically transferred to your connected account.
-              Manual payouts below are for non-Stripe payment methods only.
+              <span className="font-medium">{t("finance.payouts.stripe.activeTitle")}</span> —
+              {t("finance.payouts.stripe.activeMessage")}
             </AlertDescription>
           </Alert>
         )}
@@ -80,9 +81,8 @@ export function PayoutTab() {
           <Alert className="border-yellow-200 bg-yellow-50">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-sm text-yellow-900">
-              <span className="font-medium">Stripe Setup Incomplete</span> —
-              Complete your Stripe onboarding in the Payment Methods tab to
-              enable automatic transfers.
+              <span className="font-medium">{t("finance.payouts.stripe.incompleteTitle")}</span> —
+              {t("finance.payouts.stripe.incompleteMessage")}
             </AlertDescription>
           </Alert>
         )}
@@ -90,9 +90,9 @@ export function PayoutTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Pending Balance Card */}
         <div className="border border-black p-4">
-          <p className="text-sm text-gray-600">Pending Balance</p>
+          <p className="text-sm text-gray-600">{t("finance.payouts.stats.pendingBalance")}</p>
           {statsLoading ? (
-            <p className="text-2xl font-mono font-bold mt-2">Loading...</p>
+            <p className="text-2xl font-mono font-bold mt-2">{t("finance.payouts.stats.loading")}</p>
           ) : (
             <p className="text-2xl font-mono font-bold mt-2">
               {stats ? formatCurrency(stats.pending_balance) : "SYP 0"}
@@ -102,9 +102,9 @@ export function PayoutTab() {
 
         {/* Paid Last 30 Days Card */}
         <div className="border border-black p-4">
-          <p className="text-sm text-gray-600">Paid (30 Days)</p>
+          <p className="text-sm text-gray-600">{t("finance.payouts.stats.paid30Days")}</p>
           {statsLoading ? (
-            <p className="text-2xl font-mono font-bold mt-2">Loading...</p>
+            <p className="text-2xl font-mono font-bold mt-2">{t("finance.payouts.stats.loading")}</p>
           ) : (
             <>
               <p className="text-2xl font-mono font-bold mt-2">
@@ -125,9 +125,9 @@ export function PayoutTab() {
 
         {/* Next Payout Card */}
         <div className="border border-black p-4">
-          <p className="text-sm text-gray-600">Next Payout</p>
+          <p className="text-sm text-gray-600">{t("finance.payouts.stats.nextPayout")}</p>
           {statsLoading ? (
-            <p className="text-2xl font-mono font-bold mt-2">Loading...</p>
+            <p className="text-2xl font-mono font-bold mt-2">{t("finance.payouts.stats.loading")}</p>
           ) : stats?.next_payout ? (
             <>
               <p className="text-2xl font-mono font-bold mt-2">
@@ -138,7 +138,7 @@ export function PayoutTab() {
               </p>
             </>
           ) : (
-            <p className="text-sm text-gray-600 mt-2">No pending payouts</p>
+            <p className="text-sm text-gray-600 mt-2">{t("finance.payouts.stats.noPendingPayouts")}</p>
           )}
         </div>
       </div>
@@ -148,11 +148,11 @@ export function PayoutTab() {
         {/* Payouts List (Left Column) */}
         <div className="border border-black">
           <div className="p-4 border-b border-black">
-            <h2 className="text-lg font-bold">Payouts</h2>
+            <h2 className="text-lg font-bold">{t("finance.payouts.payoutsList.title")}</h2>
           </div>
           <div className="p-4 space-y-4">
             {payoutsLoading ? (
-              <p className="text-center py-8">Loading payouts...</p>
+              <p className="text-center py-8">{t("finance.payouts.payoutsList.loading")}</p>
             ) : (payouts?.results?.length ?? 0) > 0 ? (
               payouts.results.map((payout) => (
                 <div
@@ -165,12 +165,12 @@ export function PayoutTab() {
                         {formatCurrency(payout.amount)}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Scheduled:{" "}
+                        {t("finance.payouts.payoutsList.scheduled")}:{" "}
                         {new Date(payout.scheduled_for).toLocaleDateString()}
                       </p>
                       {payout.completed_at && (
                         <p className="text-sm text-gray-600">
-                          Completed:{" "}
+                          {t("finance.payouts.payoutsList.completed")}:{" "}
                           {new Date(payout.completed_at).toLocaleDateString()}
                         </p>
                       )}
@@ -186,7 +186,7 @@ export function PayoutTab() {
                 </div>
               ))
             ) : (
-              <p className="text-center py-8 text-gray-600">No payouts found</p>
+              <p className="text-center py-8 text-gray-600">{t("finance.payouts.payoutsList.noPayouts")}</p>
             )}
           </div>
         </div>
@@ -194,11 +194,11 @@ export function PayoutTab() {
         {/* Bank Accounts List (Right Column) */}
         <div className="border border-black">
           <div className="p-4 border-b border-black">
-            <h2 className="text-lg font-bold">Bank Accounts</h2>
+            <h2 className="text-lg font-bold">{t("finance.payouts.bankAccounts.title")}</h2>
           </div>
           <div className="p-4 space-y-4">
             {bankAccountsLoading ? (
-              <p className="text-center py-8">Loading bank accounts...</p>
+              <p className="text-center py-8">{t("finance.payouts.bankAccounts.loading")}</p>
             ) : (bankAccounts?.results?.length ?? 0) > 0 ? (
               bankAccounts.results.map((account) => (
                 <div
@@ -217,10 +217,10 @@ export function PayoutTab() {
                     </div>
                     <div className="flex flex-col gap-1 items-end">
                       {account.is_verified && (
-                        <Badge variant="default">VERIFIED</Badge>
+                        <Badge variant="default">{t("finance.payouts.bankAccounts.verified")}</Badge>
                       )}
                       {account.is_active && (
-                        <Badge variant="secondary">ACTIVE</Badge>
+                        <Badge variant="secondary">{t("finance.payouts.bankAccounts.active")}</Badge>
                       )}
                     </div>
                   </div>
@@ -228,7 +228,7 @@ export function PayoutTab() {
               ))
             ) : (
               <p className="text-center py-8 text-gray-600">
-                No bank accounts found
+                {t("finance.payouts.bankAccounts.noAccounts")}
               </p>
             )}
           </div>

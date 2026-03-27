@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import { fetchStripeConnectStatus } from "../../pages/dashboard/finance/api";
 import { CreditCard, Building2 } from "lucide-react";
 
 export function PaymentMethodsTab() {
+  const { t } = useTranslation();
   const [showOnboardingDialog, setShowOnboardingDialog] = useState(false);
 
   // Fetch Stripe Connect status
@@ -33,10 +35,10 @@ export function PaymentMethodsTab() {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-semibold tracking-tight">
-          Payment Methods
+          {t("finance.paymentMethods.header.title")}
         </h2>
         <p className="text-sm text-neutral-600 mt-1">
-          Connect and manage your payment accounts for receiving transfers
+          {t("finance.paymentMethods.header.subtitle")}
         </p>
       </div>
 
@@ -50,7 +52,7 @@ export function PaymentMethodsTab() {
 
       {/* Coming Soon Providers */}
       <div className="space-y-4">
-        <h3 className="text-lg font-medium">Coming Soon</h3>
+        <h3 className="text-lg font-medium">{t("finance.paymentMethods.comingSoon.title")}</h3>
 
         {/* QNB Card */}
         <Card className="border-black border-dashed opacity-60">
@@ -62,10 +64,10 @@ export function PaymentMethodsTab() {
                 </div>
                 <div>
                   <CardTitle className="text-base">
-                    QNB Direct Transfer
+                    {t("finance.paymentMethods.providers.qnb.title")}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Receive payments directly to your QNB account
+                    {t("finance.paymentMethods.providers.qnb.description")}
                   </CardDescription>
                 </div>
               </div>
@@ -73,14 +75,13 @@ export function PaymentMethodsTab() {
                 variant="outline"
                 className="border-neutral-300 text-neutral-600"
               >
-                Coming Soon
+                {t("finance.paymentMethods.comingSoon.badge")}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="text-sm text-neutral-600">
             <p>
-              Manual payout system for QNB accounts will be available in a
-              future update.
+              {t("finance.paymentMethods.providers.qnb.message")}
             </p>
           </CardContent>
         </Card>
@@ -94,9 +95,9 @@ export function PaymentMethodsTab() {
                   <CreditCard className="h-5 w-5 text-neutral-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-base">Visa / Mastercard</CardTitle>
+                  <CardTitle className="text-base">{t("finance.paymentMethods.providers.card.title")}</CardTitle>
                   <CardDescription className="text-xs">
-                    Receive payments to your debit card
+                    {t("finance.paymentMethods.providers.card.description")}
                   </CardDescription>
                 </div>
               </div>
@@ -104,12 +105,12 @@ export function PaymentMethodsTab() {
                 variant="outline"
                 className="border-neutral-300 text-neutral-600"
               >
-                Coming Soon
+                {t("finance.paymentMethods.comingSoon.badge")}
               </Badge>
             </div>
           </CardHeader>
           <CardContent className="text-sm text-neutral-600">
-            <p>Direct card transfers will be available in a future update.</p>
+            <p>{t("finance.paymentMethods.providers.card.message")}</p>
           </CardContent>
         </Card>
       </div>

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   flexRender,
   getCoreRowModel,
@@ -29,6 +30,7 @@ interface ActivityDataTableProps {
 // ---------------------------------------------------------------------------
 
 export function ActivityDataTable({ data, isLoading }: ActivityDataTableProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const columns = useActivityColumns();
   const table = useReactTable({
@@ -44,17 +46,17 @@ export function ActivityDataTable({ data, isLoading }: ActivityDataTableProps) {
         <div className="px-8 py-6 border-b border-gray-200 bg-white sticky top-0 z-10">
           <div className="flex justify-between items-center">
             <h3 className="text-xs font-bold uppercase tracking-widest">
-              Latest Activity
+              {t("dashboardHome.activity.title")}
             </h3>
             <span className="text-[11px] font-bold border-b border-black uppercase cursor-pointer hover:text-blue-600 hover:border-blue-600 transition-colors">
-              View All Bookings →
+              {t("dashboardHome.activity.viewAll")}
             </span>
           </div>
         </div>
 
         {/* Loading State */}
         <div className="flex items-center justify-center py-20">
-          <p className="text-sm text-gray-500">Loading activity...</p>
+          <p className="text-sm text-gray-500">{t("dashboardHome.activity.loading")}</p>
         </div>
       </div>
     );
@@ -66,13 +68,13 @@ export function ActivityDataTable({ data, isLoading }: ActivityDataTableProps) {
       <div className="px-8 py-6 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div className="flex justify-between items-center">
           <h3 className="text-xs font-bold uppercase tracking-widest">
-            Latest Activity
+            {t("dashboardHome.activity.title")}
           </h3>
           <span
             className="text-[11px] font-bold border-b border-black uppercase cursor-pointer hover:text-blue-600 hover:border-blue-600 transition-colors"
             onClick={() => navigate("/dashboard/bookings")}
           >
-            View All Bookings →
+            {t("dashboardHome.activity.viewAll")}
           </span>
         </div>
       </div>
@@ -113,7 +115,7 @@ export function ActivityDataTable({ data, isLoading }: ActivityDataTableProps) {
             <TableRow>
               <TableCell colSpan={columns.length} className="text-center py-12">
                 <span className="text-sm text-gray-500">
-                  No recent activity found
+                  {t("dashboardHome.activity.noActivity")}
                 </span>
               </TableCell>
             </TableRow>

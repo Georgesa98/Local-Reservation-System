@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Badge } from "@workspace/ui/components/badge";
 import { ArrowRight } from "lucide-react";
@@ -73,6 +74,7 @@ export function formatStatus(status: BookingStatus): string {
 const col = createColumnHelper<ActivityBooking>();
 
 export function useActivityColumns() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return useMemo(
@@ -80,7 +82,7 @@ export function useActivityColumns() {
       // Guest column (col-span-4)
       col.display({
         id: "guest",
-        header: () => "Guest",
+        header: () => t("dashboardHome.columns.guest"),
         cell: ({ row }) => {
           const booking = row.original;
           const guest = booking.guest;
@@ -93,7 +95,7 @@ export function useActivityColumns() {
                   {fullName}
                 </span>
                 <span className="text-[10px] text-gray-400 font-mono">
-                  ID: #{guest.id}
+                  {t("dashboardHome.columns.id")}: #{guest.id}
                 </span>
               </div>
             </div>
@@ -105,7 +107,7 @@ export function useActivityColumns() {
       // Room column (col-span-2)
       col.display({
         id: "room",
-        header: () => "Room",
+        header: () => t("dashboardHome.columns.room"),
         cell: ({ row }) => {
           const room = row.original.room;
           return (
@@ -120,7 +122,7 @@ export function useActivityColumns() {
       // Dates column (col-span-3)
       col.display({
         id: "dates",
-        header: () => "Dates",
+        header: () => t("dashboardHome.columns.dates"),
         cell: ({ row }) => {
           const booking = row.original;
           const checkIn = new Date(booking.check_in_date);
@@ -142,7 +144,7 @@ export function useActivityColumns() {
 
       // Status column (col-span-2)
       col.accessor("status", {
-        header: () => "Status",
+        header: () => t("dashboardHome.columns.status"),
         cell: ({ getValue }) => {
           const status = getValue();
           const styles = getStatusBadgeStyles(status);
@@ -161,7 +163,7 @@ export function useActivityColumns() {
       // Action column (col-span-1)
       col.display({
         id: "action",
-        header: () => "Action",
+        header: () => t("dashboardHome.columns.action"),
         cell: ({ row }) => (
           <ArrowRight
             size={16}
@@ -172,6 +174,6 @@ export function useActivityColumns() {
         meta: { className: "col-span-1 text-right" },
       }),
     ],
-    [navigate],
+    [navigate, t],
   );
 }

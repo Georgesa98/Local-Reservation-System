@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   fetchPaymentStatistics,
   fetchPayments,
@@ -8,6 +9,7 @@ import type { PaymentFilters } from "../../pages/dashboard/finance/types";
 import { PaymentsDataTable } from "../../pages/dashboard/finance/data-table";
 
 export function CommissionTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<PaymentFilters>({
     page: 1,
     page_size: 20,
@@ -45,9 +47,9 @@ export function CommissionTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Commissions Card */}
         <div className="border border-black p-4">
-          <p className="text-sm text-gray-600">Commissions (MTD)</p>
+          <p className="text-sm text-gray-600">{t("finance.commissions.stats.commissionsLabel")}</p>
           {statsLoading ? (
-            <p className="text-2xl font-mono font-bold mt-2">Loading...</p>
+            <p className="text-2xl font-mono font-bold mt-2">{t("finance.commissions.stats.loading")}</p>
           ) : (
             <>
               <p className="text-2xl font-mono font-bold mt-2">
@@ -70,9 +72,9 @@ export function CommissionTab() {
 
         {/* Online Bookings Card */}
         <div className="border border-black p-4">
-          <p className="text-sm text-gray-600">Online Bookings (MTD)</p>
+          <p className="text-sm text-gray-600">{t("finance.commissions.stats.onlineBookingsLabel")}</p>
           {statsLoading ? (
-            <p className="text-2xl font-mono font-bold mt-2">Loading...</p>
+            <p className="text-2xl font-mono font-bold mt-2">{t("finance.commissions.stats.loading")}</p>
           ) : (
             <>
               <p className="text-2xl font-mono font-bold mt-2">
@@ -95,9 +97,9 @@ export function CommissionTab() {
 
         {/* Average Order Value Card */}
         <div className="border border-black p-4">
-          <p className="text-sm text-gray-600">Average Order Value</p>
+          <p className="text-sm text-gray-600">{t("finance.commissions.stats.averageOrderValue")}</p>
           {statsLoading ? (
-            <p className="text-2xl font-mono font-bold mt-2">Loading...</p>
+            <p className="text-2xl font-mono font-bold mt-2">{t("finance.commissions.stats.loading")}</p>
           ) : (
             <>
               <p className="text-2xl font-mono font-bold mt-2">

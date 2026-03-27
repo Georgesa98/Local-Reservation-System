@@ -1,4 +1,5 @@
 import { Building2, DoorOpen, CalendarCheck, DollarSign } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { MetricsCard } from "./MetricsCard";
 import type { DashboardMetrics } from "./types";
 
@@ -27,11 +28,13 @@ interface MetricsGridProps {
 }
 
 export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-b border-black">
       {/* Total Rooms */}
       <MetricsCard
-        label="Total Rooms"
+        label={t("dashboardHome.metrics.totalRooms")}
         value={metrics?.total_rooms ?? 0}
         icon={<Building2 size={20} strokeWidth={1.5} />}
         growth={metrics?.total_rooms_growth}
@@ -40,7 +43,7 @@ export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
 
       {/* Active Rooms */}
       <MetricsCard
-        label="Active Rooms"
+        label={t("dashboardHome.metrics.activeRooms")}
         value={metrics?.active_rooms_percent ?? 0}
         suffix="%"
         icon={<DoorOpen size={20} strokeWidth={1.5} />}
@@ -50,12 +53,12 @@ export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
 
       {/* Today's Check-ins */}
       <MetricsCard
-        label="Today's Check-ins"
+        label={t("dashboardHome.metrics.todaysCheckins")}
         value={metrics?.todays_checkins ?? 0}
         icon={<CalendarCheck size={20} strokeWidth={1.5} />}
         growthLabel={
           metrics
-            ? `PENDING: ${metrics.todays_checkins_pending}`
+            ? `${t("dashboardHome.metrics.pending")}: ${metrics.todays_checkins_pending}`
             : undefined
         }
         isLoading={isLoading}
@@ -63,7 +66,7 @@ export function MetricsGrid({ metrics, isLoading }: MetricsGridProps) {
 
       {/* Pending Revenue */}
       <MetricsCard
-        label="Pending Revenue"
+        label={t("dashboardHome.metrics.pendingRevenue")}
         value={metrics ? formatCurrency(metrics.pending_revenue) : "$0"}
         icon={<DollarSign size={20} strokeWidth={1.5} />}
         growth={metrics?.pending_revenue_growth}

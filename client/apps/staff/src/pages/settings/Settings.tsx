@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useState, useEffect, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -80,6 +81,7 @@ const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 // ─── SettingsPage ──────────────────────────────────────────────────────────
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isTelegramDialogOpen, setIsTelegramDialogOpen] = useState(false);
   const [dialogState, setDialogState] = useState<DialogState>("waiting");
@@ -114,12 +116,12 @@ export function SettingsPage() {
     mutationFn: (payload: Partial<UserProfileFormState>) =>
       updateUserProfile(payload),
     onSuccess: (updatedProfile) => {
-      toast.success("Profile updated successfully");
+      toast.success(t("settings.toast.profileUpdated"));
       queryClient.setQueryData(["userProfile"], updatedProfile);
       reset(updatedProfile);
     },
     onError: () => {
-      toast.error("Failed to update profile");
+      toast.error(t("settings.toast.profileUpdateFailed"));
     },
   });
 
@@ -127,18 +129,18 @@ export function SettingsPage() {
   const disconnectMutation = useMutation({
     mutationFn: disconnectTelegram,
     onSuccess: () => {
-      toast.success("Telegram disconnected successfully");
+      toast.success(t("settings.toast.telegramDisconnected"));
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
     },
     onError: () => {
-      toast.error("Failed to disconnect Telegram");
+      toast.error(t("settings.toast.telegramDisconnectFailed"));
     },
   });
 
   // Handle successful connection
   const handleConnectionSuccess = useCallback(() => {
     setDialogState("success");
-    toast.success("Telegram connected successfully!");
+    toast.success(t("settings.toast.telegramConnected"));
 
     // Clear timeout
     if (timeoutId) {
@@ -150,7 +152,7 @@ export function SettingsPage() {
     setTimeout(() => {
       setIsTelegramDialogOpen(false);
     }, 2000);
-  }, [timeoutId]);
+  }, [timeoutId, t]);
 
   // Polling hook - only active when dialog is open and in waiting state
   useTelegramConnectionPolling(
@@ -163,7 +165,7 @@ export function SettingsPage() {
     if (isTelegramDialogOpen && dialogState === "waiting") {
       const id = setTimeout(() => {
         setDialogState("timeout");
-        toast.error("Connection timeout. Please try again.");
+        toast.error(t("settings.toast.connectionTimeout"));
       }, TIMEOUT_MS);
       setTimeoutId(id);
 
@@ -171,7 +173,7 @@ export function SettingsPage() {
         clearTimeout(id);
       };
     }
-  }, [isTelegramDialogOpen, dialogState]);
+  }, [isTelegramDialogOpen, dialogState, t]);
 
   // Reset dialog state when closed
   useEffect(() => {
@@ -211,7 +213,7 @@ export function SettingsPage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full">
-          <p className="font-mono text-sm text-muted-foreground">Loading...</p>
+          <p className="font-mono text-sm text-muted-foreground">{t("settings.loading")}</p>
         </div>
       </DashboardLayout>
     );
@@ -232,15 +234,15 @@ export function SettingsPage() {
               style={{ borderBottom: "1px solid var(--foreground)" }}
             >
               <div className="flex items-center gap-2 font-mono text-xs mb-1">
-                <span style={{ color: "var(--muted-foreground)" }}>SYSTEM</span>
+                <span style={{ color: "var(--muted-foreground)" }}>{t("settings.breadcrumb.system")}</span>
                 <span style={{ color: "var(--muted-foreground)" }}>/</span>
-                <span style={{ color: "var(--foreground)" }}>SETTINGS</span>
+                <span style={{ color: "var(--foreground)" }}>{t("settings.breadcrumb.settings")}</span>
               </div>
               <h2
                 className="text-4xl font-black uppercase tracking-tighter"
                 style={{ color: "var(--foreground)" }}
               >
-                Profile & Notifications
+                {t("settings.header.title")}
               </h2>
             </header>
 
@@ -250,7 +252,7 @@ export function SettingsPage() {
                 className="text-lg font-bold uppercase tracking-tight mb-6"
                 style={{ color: "var(--foreground)" }}
               >
-                User Profile
+                {t("settings.userProfile.title")}
               </h3>
               <form
                 onSubmit={handleSubmit(onSubmit)}
@@ -259,10 +261,10 @@ export function SettingsPage() {
                 <div className="grid grid-cols-2 gap-6">
                   {/* First Name */}
                   <div className="flex flex-col gap-2">
-                    <FieldLabel>First Name</FieldLabel>
+                    <FieldLabel>{t("settings.userProfile.firstName")}</FieldLabel>
                     <Input
                       {...register("first_name")}
-                      placeholder="John"
+                      placeholder={t("settings.userProfile.firstNamePlaceholder")}
                       aria-invalid={!!errors.first_name}
                       className={inputCls}
                       style={{
@@ -275,10 +277,10 @@ export function SettingsPage() {
 
                   {/* Last Name */}
                   <div className="flex flex-col gap-2">
-                    <FieldLabel>Last Name</FieldLabel>
+                    <FieldLabel>{t("settings.userProfile.lastName")}</FieldLabel>
                     <Input
                       {...register("last_name")}
-                      placeholder="Doe"
+                      placeholder={t("settings.userProfile.lastNamePlaceholder")}
                       aria-invalid={!!errors.last_name}
                       className={inputCls}
                       style={{
@@ -293,10 +295,10 @@ export function SettingsPage() {
                 <div className="grid grid-cols-2 gap-6">
                   {/* Phone Number */}
                   <div className="flex flex-col gap-2">
-                    <FieldLabel>Phone Number</FieldLabel>
+                    <FieldLabel>{t("settings.userProfile.phoneNumber")}</FieldLabel>
                     <Input
                       {...register("phone_number")}
-                      placeholder="+963XXXXXXXXX"
+                      placeholder={t("settings.userProfile.phoneNumberPlaceholder")}
                       aria-invalid={!!errors.phone_number}
                       className={inputCls}
                       style={{
@@ -309,11 +311,11 @@ export function SettingsPage() {
 
                   {/* Email */}
                   <div className="flex flex-col gap-2">
-                    <FieldLabel>Email (Optional)</FieldLabel>
+                    <FieldLabel>{t("settings.userProfile.email")}</FieldLabel>
                     <Input
                       {...register("email")}
                       type="email"
-                      placeholder="john@example.com"
+                      placeholder={t("settings.userProfile.emailPlaceholder")}
                       aria-invalid={!!errors.email}
                       className={inputCls}
                       style={{
@@ -332,7 +334,7 @@ export function SettingsPage() {
                     disabled={!isDirty || updateMutation.isPending}
                     className="h-10 px-6 rounded-none font-mono text-xs font-bold uppercase tracking-wider"
                   >
-                    {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                    {updateMutation.isPending ? t("settings.userProfile.saving") : t("settings.userProfile.saveChanges")}
                   </Button>
                 </div>
               </form>
@@ -375,15 +377,13 @@ export function SettingsPage() {
                       className="text-lg font-bold uppercase tracking-tight"
                       style={{ color: "var(--foreground)" }}
                     >
-                      Telegram Integration
+                      {t("settings.telegram.title")}
                     </h3>
                     <p
                       className="text-sm leading-relaxed"
                       style={{ color: "var(--muted-foreground)" }}
                     >
-                      Receive instant operational alerts for new bookings, guest
-                      check-ins, and emergency maintenance requests directly to
-                      your device.
+                      {t("settings.telegram.description")}
                     </p>
                     <div className="mt-2 flex items-center gap-2">
                       {isTelegramConnected ? (
@@ -396,7 +396,7 @@ export function SettingsPage() {
                             className="text-xs font-mono"
                             style={{ color: "var(--muted-foreground)" }}
                           >
-                            CONNECTED
+                            {t("settings.telegram.statusConnected")}
                           </span>
                         </>
                       ) : (
@@ -409,7 +409,7 @@ export function SettingsPage() {
                             className="text-xs font-mono"
                             style={{ color: "var(--muted-foreground)" }}
                           >
-                            DISCONNECTED
+                            {t("settings.telegram.statusDisconnected")}
                           </span>
                         </>
                       )}
@@ -435,15 +435,15 @@ export function SettingsPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold uppercase tracking-tight">
-              Connect Telegram
+              {t("settings.telegramDialog.title")}
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
               {dialogState === "waiting" &&
-                "Scan the QR code with your Telegram app to connect your account."}
+                t("settings.telegramDialog.descriptionWaiting")}
               {dialogState === "success" &&
-                "Successfully connected! Closing dialog..."}
+                t("settings.telegramDialog.descriptionSuccess")}
               {dialogState === "timeout" &&
-                "Connection timeout. Please try again."}
+                t("settings.telegramDialog.descriptionTimeout")}
             </DialogDescription>
           </DialogHeader>
 
@@ -471,7 +471,7 @@ export function SettingsPage() {
               {/* Bot Link */}
               <div className="flex flex-col items-center gap-2 w-full">
                 <p className="text-xs font-mono uppercase text-muted-foreground">
-                  Or open this link:
+                  {t("settings.telegramDialog.orOpenLink")}
                 </p>
                 <a
                   href={generateTelegramBotLink(
@@ -491,7 +491,7 @@ export function SettingsPage() {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span className="text-xs font-mono uppercase">
-                  Waiting for connection...
+                  {t("settings.telegramDialog.waitingForConnection")}
                 </span>
               </div>
 
@@ -504,15 +504,15 @@ export function SettingsPage() {
                 }}
               >
                 <p className="text-xs font-mono leading-relaxed">
-                  <strong>Instructions:</strong>
+                  <strong>{t("settings.telegramDialog.instructionsTitle")}</strong>
                   <br />
-                  1. Scan the QR code or click the link above
+                  {t("settings.telegramDialog.instruction1")}
                   <br />
-                  2. Start a chat with the bot
+                  {t("settings.telegramDialog.instruction2")}
                   <br />
-                  3. Send the /start command
+                  {t("settings.telegramDialog.instruction3")}
                   <br />
-                  4. Your account will be automatically connected
+                  {t("settings.telegramDialog.instruction4")}
                 </p>
               </div>
 
@@ -522,7 +522,7 @@ export function SettingsPage() {
                 className="w-full h-10 rounded-none font-mono text-xs font-bold uppercase tracking-wider"
                 variant="outline"
               >
-                Cancel
+                {t("settings.telegramDialog.cancel")}
               </Button>
             </div>
           )}
@@ -535,10 +535,10 @@ export function SettingsPage() {
                 style={{ color: "#00C853" }}
               />
               <p className="text-lg font-bold uppercase tracking-tight text-center">
-                Successfully Connected!
+                {t("settings.telegramDialog.successTitle")}
               </p>
               <p className="text-sm text-muted-foreground text-center">
-                You will now receive notifications via Telegram.
+                {t("settings.telegramDialog.successMessage")}
               </p>
             </div>
           )}
@@ -548,25 +548,24 @@ export function SettingsPage() {
             <div className="flex flex-col items-center gap-6 py-8">
               <XCircle className="w-16 h-16" style={{ color: "#FF3D00" }} />
               <p className="text-lg font-bold uppercase tracking-tight text-center">
-                Connection Timeout
+                {t("settings.telegramDialog.timeoutTitle")}
               </p>
               <p className="text-sm text-muted-foreground text-center">
-                We didn't receive a connection from your Telegram app. Please
-                try again.
+                {t("settings.telegramDialog.timeoutMessage")}
               </p>
               <div className="flex gap-3 w-full">
                 <Button
                   onClick={handleRetry}
                   className="flex-1 h-10 rounded-none font-mono text-xs font-bold uppercase tracking-wider"
                 >
-                  Retry
+                  {t("settings.telegramDialog.retry")}
                 </Button>
                 <Button
                   onClick={() => setIsTelegramDialogOpen(false)}
                   className="flex-1 h-10 rounded-none font-mono text-xs font-bold uppercase tracking-wider"
                   variant="outline"
                 >
-                  Close
+                  {t("settings.telegramDialog.close")}
                 </Button>
               </div>
             </div>

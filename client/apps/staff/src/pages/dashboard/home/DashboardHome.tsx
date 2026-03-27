@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download, Bell } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@workspace/ui/components/button";
 import { fetchDashboardMetrics, fetchLatestActivity } from "./api";
 import { MetricsGrid } from "./MetricsGrid";
@@ -28,6 +29,8 @@ function formatCurrentDate(): string {
 // ---------------------------------------------------------------------------
 
 export function DashboardHome() {
+  const { t } = useTranslation();
+  
   // Fetch dashboard metrics
   const { data: metrics, isLoading: metricsLoading } = useQuery({
     queryKey: ["dashboard-metrics"],
@@ -47,7 +50,7 @@ export function DashboardHome() {
         <header className="h-20 px-8 flex items-center justify-between border-b border-black bg-white shrink-0">
           <div>
             <h2 className="text-3xl font-bold tracking-tighter uppercase leading-none">
-              Overview
+              {t("dashboardHome.header.title")}
             </h2>
             <p className="font-mono text-[10px] text-gray-500 mt-1 uppercase">
               {formatCurrentDate()}
@@ -60,7 +63,7 @@ export function DashboardHome() {
               className="h-10 px-4 border-black hover:bg-black hover:text-white transition-colors text-xs font-bold uppercase tracking-wide"
             >
               <Download size={16} className="mr-2" />
-              Export Report
+              {t("dashboardHome.header.exportReport")}
             </Button>
             <Button
               variant="outline"
