@@ -172,7 +172,7 @@ export default function OTPVerificationPage() {
     try {
       const response = await verifyOTP(data, otpData.fullPhone);
 
-      if (response.verified) {
+      if (response.data?.verified) {
         // Clear OTP data from localStorage
         clearOTPData();
 
@@ -253,19 +253,19 @@ export default function OTPVerificationPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Main Content */}
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 pt-12 pb-12">
-        {/* Back Button */}
-        <div className="w-full max-w-md mb-8">
-          <Link
-            href="/signup"
-            className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            <span className="font-body text-sm">Back to Sign Up</span>
-          </Link>
-        </div>
+      {/* Back Button - at top, outside centered container */}
+      <header className="w-full max-w-md px-6 pt-6">
+        <Link
+          href="/signup"
+          className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          <span className="font-body text-sm">Back to Sign Up</span>
+        </Link>
+      </header>
 
+      {/* Main Content - centered */}
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 pb-12">
         {/* Header Section */}
         <div className="w-full max-w-md text-center mb-10">
           <h1 className="font-headline font-bold text-4xl text-foreground tracking-tight mb-3">

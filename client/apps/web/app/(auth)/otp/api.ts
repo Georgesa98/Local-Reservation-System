@@ -15,7 +15,11 @@ export interface VerifyOTPRequest {
 }
 
 export interface VerifyOTPResponse {
-  verified: boolean;
+  success: boolean;
+  message: string;
+  data: {
+    verified: boolean;
+  };
 }
 
 export interface ResendOTPRequest {
