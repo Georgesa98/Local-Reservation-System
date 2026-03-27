@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     "api.notification",
     "api.payment",
     "api.admin.audit",
+    "api.admin.user_management",
     "api.seed",
 ]
 
@@ -115,8 +116,8 @@ AUTH_USER_MODEL = "accounts.User"
 
 # Authentication backends - use custom backend to block unverified users
 AUTHENTICATION_BACKENDS = [
-    'api.accounts.authentication.VerifiedUserBackend',
-    'django.contrib.auth.backends.ModelBackend',  # Fallback
+    "api.accounts.authentication.VerifiedUserBackend",
+    "django.contrib.auth.backends.ModelBackend",  # Fallback
 ]
 
 MIDDLEWARE = [
