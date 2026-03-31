@@ -1,14 +1,164 @@
-export default function HomePage() {
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="font-headline text-4xl font-bold text-foreground mb-4">
-          Welcome to LuxeStay
-        </h1>
-        <p className="font-body text-lg text-muted-foreground">
-          Your gateway to luxury accommodations
-        </p>
-      </div>
-    </div>
-  );
+"use client";
+
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Search, SlidersHorizontal, MapIcon } from "lucide-react";
+import Image from "next/image";
+import { Input } from "@workspace/ui/components/input";
+import { Button } from "@workspace/ui/components/button";
+import { PropertyCard } from "@/components/property-card";
+import { fetchFeaturedRooms } from "./api";
+import { cn } from "@workspace/ui/lib/utils";
+
+const categories = [
+    {
+        id: "modern-villas",
+        label: "Modern Villas",
+        icon: "villa",
+        active: true,
+    },
+    { id: "castles", label: "Castles", icon: "castle", active: false },
+    { id: "cabins", label: "Cabins", icon: "cabin", active: false },
+    { id: "penthouses", label: "Penthouses", icon: "apartment", active: false },
+];
+
+export default function LandingPage() {
+    const [searchQuery, setSearchQuery] = useState("");
+    const [activeCategory, setActiveCategory] = useState("modern-villas");
+
+    // Fetch featured rooms
+    const { data, isLoading } = useQuery({
+        queryKey: ["rooms", "featured", { limit: 6 }],
+        queryFn: () => fetchFeaturedRooms({ limit: 6 }),
+    });
+
+    const rooms = data || [];
+
+    return (
+        <>
+            {/* Main Content */}
+            <main className="px-6 pt-24 space-y-10">
+                {/* Hero Section */}
+                <section className="space-y-6">
+                    <div className="space-y-2">
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-primary">
+                            Curated Collections
+                        </p>
+                        <h1 className="font-headline text-4xl font-bold leading-tight tracking-tight text-foreground">
+                            Find your next{" "}
+                            <span className="text-primary">masterpiece</span>{" "}
+                            stay.
+                        </h1>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="flex w-full items-center gap-1 rounded-full bg-card p-1 shadow-[0_8px_30px_rgba(40,47,63,0.04)]">
+                        <div className="flex flex-1 items-center gap-3 px-5">
+                            <Search className="h-5 w-5 text-muted-foreground" />
+                            <Input
+                                type="text"
+                                placeholder="Where to next?"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="border-none bg-transparent text-sm font-medium focus-visible:ring-0"
+                            />
+                        </div>
+                        <Button
+                            size="icon"
+                            className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-container shadow-lg transition-transform active:scale-95"
+                        >
+                            <SlidersHorizontal className="h-5 w-5" />
+                        </Button>
+                    </div>
+                </section>
+
+                {/* Category Chips */}
+                <section className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 no-scrollbar">
+                    {categories.map((category) => (
+                        <Button
+                            key={category.id}
+                            variant={category.active ? "default" : "outline"}
+                            onClick={() => setActiveCategory(category.id)}
+                            className={cn(
+                                "flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold shadow-md",
+                                category.active && "bg-primary text-white",
+                                !category.active &&
+                                    "bg-card text-muted-foreground hover:bg-muted",
+                            )}
+                        >
+                            <span className="text-sm">{category.label}</span>
+                        </Button>
+                    ))}
+                </section>
+
+                {/* Featured Properties */}
+                <section className="space-y-8 pb-12">
+                    <div className="flex items-end justify-between">
+                        <h2 className="font-headline text-2xl font-bold tracking-tight">
+                            Handpicked for you
+                        </h2>
+                        <span className="text-sm font-bold text-primary">
+                            View all
+                        </span>
+                    </div>
+
+                    {/* Loading State */}
+                    {isLoading && (
+                        <div className="flex flex-col gap-8">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="space-y-4">
+                                    <div className="aspect-[4/3] animate-pulse rounded-[32px] bg-muted" />
+                                    <div className="space-y-2">
+                                        <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
+                                        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Property Cards */}
+                    {!isLoading && (
+                        <div className="flex flex-col gap-8">
+                            {rooms.map((room, index) => (
+                                <PropertyCard
+                                    key={room.id}
+                                    room={room}
+                                    badge={
+                                        index === 0
+                                            ? {
+                                                  label: "Rare Find",
+                                                  variant: "tertiary",
+                                              }
+                                            : index === 2
+                                              ? {
+                                                    label: "New Arrival",
+                                                    variant: "secondary",
+                                                }
+                                              : undefined
+                                    }
+                                    onFavoriteClick={() =>
+                                        console.log("Favorite clicked", room.id)
+                                    }
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Empty State */}
+                    {!isLoading && rooms.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <MapIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+                            <h3 className="mb-2 font-headline text-xl font-bold">
+                                No properties found
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Try adjusting your search or check back later.
+                            </p>
+                        </div>
+                    )}
+                </section>
+            </main>
+        </>
+    );
 }
