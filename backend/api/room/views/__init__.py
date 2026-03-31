@@ -10,7 +10,12 @@ from .manager import (
     RoomAvailabilityDetailView,
 )
 from .admin import AdminRoomListView, AdminRoomDetailView
-from .public import RoomPublicListView, RoomPublicDetailView
+from .public import (
+    RoomPublicListView,
+    RoomPublicDetailView,
+    RoomPublicSearchView,
+    RoomPublicFeaturedView,
+)
 from .dashboard import DashboardMetricsView
 
 __all__ = [
@@ -27,5 +32,7 @@ __all__ = [
     "AdminRoomDetailView",
     "RoomPublicListView",
     "RoomPublicDetailView",
+    "RoomPublicSearchView",
+    "RoomPublicFeaturedView",
     "DashboardMetricsView",
 ]

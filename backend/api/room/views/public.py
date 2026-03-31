@@ -1,8 +1,13 @@
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import status
+from api.room.models import Room
+from config.utils import SuccessResponse, ErrorResponse
 
-from ..serializers import PublicRoomSerializer
+from ..serializers import (
+    PublicRoomSerializer,
+    PublicRoomSearchQuerySerializer,
+    FeaturedRoomQuerySerializer,
+)
 from ..services import RoomService
 from .pagination import RoomPagination
 
@@ -15,8 +20,8 @@ class RoomPublicListView(APIView):
     Paginated.
     """
 
-    permission_classes = []  # no auth required
-    authentication_classes = []  # skip session/token authentication entirely
+    permission_classes = []
+    authentication_classes = []
 
     def get(self, request):
         filters = {}
@@ -28,8 +33,6 @@ class RoomPublicListView(APIView):
             filters["capacity"] = request.GET["capacity"]
         if "average_rating" in request.GET:
             filters["average_rating"] = request.GET["average_rating"]
-        # Force is_active=True — guests must never see inactive rooms
-        filters["is_active"] = True
 
         queryset = RoomService.list_rooms(filters=filters)
 
@@ -37,10 +40,10 @@ class RoomPublicListView(APIView):
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
             serializer = PublicRoomSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
+            return SuccessResponse(data=serializer.data)
 
         serializer = PublicRoomSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return SuccessResponse(data=serializer.data)
 
 
 class RoomPublicDetailView(APIView):
@@ -54,10 +57,74 @@ class RoomPublicDetailView(APIView):
     authentication_classes = []
 
     def get(self, request, pk):
-        room = RoomService.get_room(pk)
-        if not room.is_active:
-            return Response(
-                {"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND
+        try:
+            room = RoomService.get_room(pk)
+            if not room.is_active:
+                return ErrorResponse(
+                    message="Not found.", status_code=status.HTTP_404_NOT_FOUND
+                )
+            serializer = PublicRoomSerializer(room)
+            return SuccessResponse(data=serializer.data)
+        except Room.DoesNotExist:
+            return ErrorResponse(
+                message="Not found.", status_code=status.HTTP_404_NOT_FOUND
             )
-        serializer = PublicRoomSerializer(room)
-        return Response(serializer.data)
+
+
+class RoomPublicSearchView(APIView):
+    """
+    GET /api/rooms/public/search/
+    Public room search with optional filters:
+      - location (icontains)
+      - check_in + check_out (availability window)
+      - guests (capacity >= guests)
+      - min_price/max_price
+      - featured (optional featured-only toggle)
+    """
+
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request):
+        query_serializer = PublicRoomSearchQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+        filters = query_serializer.validated_data.copy()
+
+        featured = filters.pop("featured", False)
+        if featured:
+            filters["featured_only"] = True
+
+        queryset = RoomService.search_public_rooms(filters=filters)
+
+        paginator = RoomPagination()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = PublicRoomSerializer(page, many=True)
+            return SuccessResponse(data=serializer.data)
+
+        serializer = PublicRoomSerializer(queryset, many=True)
+        return SuccessResponse(data=serializer.data)
+
+
+class RoomPublicFeaturedView(APIView):
+    """
+    GET /api/rooms/public/featured/
+    Public list of featured active rooms ordered by rating and ratings_count.
+    Supports optional room filters + limit.
+    """
+
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request):
+        query_serializer = FeaturedRoomQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+
+        validated = query_serializer.validated_data.copy()
+        limit = validated.pop("limit", 6)
+
+        queryset = RoomService.list_featured_public_rooms(
+            filters=validated, limit=limit
+        )
+        serializer = PublicRoomSerializer(queryset, many=True)
+        return SuccessResponse(data=serializer.data)

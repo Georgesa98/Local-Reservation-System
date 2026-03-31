@@ -77,6 +77,62 @@ class RoomAvailabilitySerializer(serializers.ModelSerializer):
         return data
 
 
+class PublicRoomFilterQuerySerializer(serializers.Serializer):
+    location = serializers.CharField(required=False, max_length=255)
+    check_in = serializers.DateField(required=False)
+    check_out = serializers.DateField(required=False)
+    guests = serializers.IntegerField(required=False, min_value=1)
+    min_price = serializers.DecimalField(
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+        min_value=0,
+    )
+    max_price = serializers.DecimalField(
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+        min_value=0,
+    )
+
+    def validate(self, attrs):
+        check_in = attrs.get("check_in")
+        check_out = attrs.get("check_out")
+        min_price = attrs.get("min_price")
+        max_price = attrs.get("max_price")
+
+        if bool(check_in) != bool(check_out):
+            raise serializers.ValidationError(
+                "Both check_in and check_out must be provided together."
+            )
+
+        if check_in and check_out and check_out <= check_in:
+            raise serializers.ValidationError(
+                {"check_out": "check_out must be after check_in."}
+            )
+
+        if (
+            min_price is not None
+            and max_price is not None
+            and max_price < min_price
+        ):
+            raise serializers.ValidationError(
+                {
+                    "max_price": "max_price must be greater than or equal to min_price."
+                }
+            )
+
+        return attrs
+
+
+class PublicRoomSearchQuerySerializer(PublicRoomFilterQuerySerializer):
+    featured = serializers.BooleanField(required=False, default=False)
+
+
+class FeaturedRoomQuerySerializer(PublicRoomFilterQuerySerializer):
+    limit = serializers.IntegerField(required=False, min_value=1, max_value=50, default=6)
+
+
 class PublicRoomSerializer(serializers.ModelSerializer):
     """
     Lean serializer for unauthenticated / guest browsing.

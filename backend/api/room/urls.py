@@ -13,6 +13,8 @@ from .views import (
     AdminRoomDetailView,
     RoomPublicListView,
     RoomPublicDetailView,
+    RoomPublicSearchView,
+    RoomPublicFeaturedView,
     DashboardMetricsView,
 )
 
@@ -23,6 +25,12 @@ urlpatterns = [
 
     # Public — no auth required
     path("public/", RoomPublicListView.as_view(), name="room-public-list"),
+    path("public/search/", RoomPublicSearchView.as_view(), name="room-public-search"),
+    path(
+        "public/featured/",
+        RoomPublicFeaturedView.as_view(),
+        name="room-public-featured",
+    ),
     path("public/<int:pk>/", RoomPublicDetailView.as_view(), name="room-public-detail"),
 
     # Admin — IsAuthenticated + IsAdmin, all rooms across managers
