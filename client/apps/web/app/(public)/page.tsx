@@ -44,7 +44,7 @@ export default function LandingPage() {
                         <p className="text-[11px] font-bold uppercase tracking-widest text-primary">
                             Curated Collections
                         </p>
-                        <h1 className="font-headline text-4xl font-bold leading-tight tracking-tight text-foreground">
+                        <h1 className="font-headline text-4xl font-extrabold leading-tight tracking-tight text-foreground">
                             Find your next{" "}
                             <span className="text-primary">masterpiece</span>{" "}
                             stay.
@@ -65,7 +65,7 @@ export default function LandingPage() {
                         </div>
                         <Button
                             size="icon"
-                            className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-container shadow-lg transition-transform active:scale-95"
+                            className="h-12 w-12 rounded-full bg-primary from-primary to-primary-container shadow-lg transition-transform active:scale-95"
                         >
                             <SlidersHorizontal className="h-5 w-5" />
                         </Button>
@@ -73,17 +73,17 @@ export default function LandingPage() {
                 </section>
 
                 {/* Category Chips */}
-                <section className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 no-scrollbar">
+                <section className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {categories.map((category) => (
                         <Button
                             key={category.id}
                             variant={category.active ? "default" : "outline"}
                             onClick={() => setActiveCategory(category.id)}
                             className={cn(
-                                "flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-semibold shadow-md",
+                                "flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3 text-sm font-semibold shadow-md transition-colors",
                                 category.active && "bg-primary text-white",
                                 !category.active &&
-                                    "bg-card text-muted-foreground hover:bg-muted",
+                                    "border-0 bg-card text-muted-foreground hover:bg-muted",
                             )}
                         >
                             <span className="text-sm">{category.label}</span>

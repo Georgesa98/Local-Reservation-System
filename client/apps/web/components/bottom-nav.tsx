@@ -40,7 +40,7 @@ export function BottomNav() {
                         className={cn(
                             "flex flex-col items-center justify-center px-5 py-2 transition-all duration-300 active:scale-90",
                             item.active
-                                ? "rounded-2xl bg-primary/10 text-primary"
+                                ? "rounded-2xl bg-primary/5 text-primary"
                                 : "text-muted-foreground hover:text-primary",
                         )}
                     >
@@ -48,7 +48,7 @@ export function BottomNav() {
                             className="mb-1 h-6 w-6"
                             fill={item.active ? "currentColor" : "none"}
                         />
-                        <span className="font-body text-[11px] font-medium uppercase tracking-widest">
+                        <span className="text-[11px] font-medium uppercase tracking-widest">
                             {item.label}
                         </span>
                     </a>

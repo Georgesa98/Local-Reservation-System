@@ -22,13 +22,20 @@
  * - Work Sans: Functional Voice (exceptional legibility at small sizes)
  *
  * --font-geist is the variable globals.css wires to body { font-family }, so
- * reassigning it here to Plus Jakarta Sans creates the editorial headline feel.
+ * reassigning it here to Work Sans creates the proper body text.
+ * We also need to configure Tailwind v4 @theme for font-headline and font-body classes.
  *
  * Arabic companion: Noto Sans Arabic harmonizes with Work Sans proportions
  * and provides better editorial/display characteristics for RTL.
  */
+@theme {
+  --font-family-headline: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif;
+  --font-family-body: var(--font-work-sans), 'Work Sans', sans-serif;
+}
+
 :root {
-  --font-geist: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif;
+  /* Override the UI package's --font-geist to use Work Sans for body text */
+  --font-geist: var(--font-work-sans), 'Work Sans', sans-serif;
   --font-body: var(--font-work-sans), 'Work Sans', sans-serif;
 }
 
@@ -197,6 +204,16 @@
     font-family: var(--font-body);
     font-variant-numeric: tabular-nums; /* Critical for pricing, dates, counts */
     font-feature-settings: "tnum" 1;
+  }
+
+  /* Headlines should use Plus Jakarta Sans */
+  .font-headline {
+    font-family: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif !important;
+  }
+
+  /* Body text classes should use Work Sans */
+  .font-body {
+    font-family: var(--font-work-sans), 'Work Sans', sans-serif !important;
   }
 
   /* ─── Display & Headlines: Editorial Voice ────────────────────────────── */
