@@ -69,7 +69,7 @@ class UserCreateSerializer(DjoserUserCreateSerializer):
                 email=validated_data.get('email', ''),
                 first_name=validated_data.get('first_name', ''),
                 last_name=validated_data.get('last_name', ''),
-                is_verified=True,  # Self-registered users start as verified (after OTP)
+                is_verified=False,  # Self-registered users must verify via OTP
                 source=GuestSource.SELF_REGISTERED
             )
             

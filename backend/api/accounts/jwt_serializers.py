@@ -36,6 +36,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["last_name"] = user.last_name
         token["phone_number"] = str(user.phone_number)
         token["is_verified"] = user.is_verified
+        token["email"] = user.email
 
         return token
 

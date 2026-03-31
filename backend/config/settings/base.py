@@ -233,13 +233,12 @@ DJOSER = {
     },
 }
 
-# Cache: use Django's built-in DB cache backend so cache is stored in Postgres
+# Cache: use Redis for caching (same as Celery broker)
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-        "LOCATION": "django_cache_table",
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": env("CELERY_BROKER_URL"),
         "TIMEOUT": 300,
-        "OPTIONS": {"MAX_ENTRIES": 10000},
     }
 }
 
@@ -255,6 +254,3 @@ AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
-
-# To create the cache table in the default database run:
-# python manage.py createcachetable
