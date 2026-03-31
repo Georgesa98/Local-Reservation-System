@@ -24,6 +24,7 @@ import { Input } from "@workspace/ui/components/input";
 import { otpSchema, type OTPFormData } from "./schema";
 import { verifyOTP, resendOTP, getOTPData, clearOTPData } from "./api";
 import { SiTelegram, SiWhatsapp } from "@icons-pack/react-simple-icons";
+import { tokenManager } from "@/lib/axios";
 
 type Channel = "whatsapp" | "telegram" | "email";
 
@@ -169,7 +170,15 @@ export default function OTPVerificationPage() {
         // Clear OTP data from localStorage
         clearOTPData();
 
-        // Redirect to home (user is now verified and will be auto-logged in)
+        // Refresh JWT tokens to get updated is_verified claim
+        const refreshed = await tokenManager.refreshTokens();
+        
+        if (!refreshed) {
+          // If refresh fails, user can still proceed but may need to re-login
+          console.warn('Failed to refresh tokens after verification');
+        }
+
+        // Redirect to home (user is now verified with updated JWT)
         router.push("/");
       } else {
         setApiError("Invalid OTP code. Please try again.");
@@ -270,6 +279,11 @@ export default function OTPVerificationPage() {
           <p className="font-body text-lg font-semibold text-foreground">
             {otpData.maskedPhone}
           </p>
+          {otpData.maskedEmail && (
+            <p className="font-body text-sm text-muted-foreground mt-2">
+              and {otpData.maskedEmail}
+            </p>
+          )}
         </div>
 
         {/* OTP Form Container */}

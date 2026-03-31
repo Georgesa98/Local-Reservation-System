@@ -1,4 +1,4 @@
-import axiosInstance from "@/lib/axios";
+import axiosInstance, { tokenManager } from "@/lib/axios";
 import type { OTPFormData } from "./schema";
 
 /**
@@ -133,7 +133,36 @@ export async function resendOTP(phoneNumber: string, channel: "whatsapp" | "emai
 }
 
 /**
- * Check if user has required OTP data in localStorage
+ * Mask phone number for display (e.g., +963 XXX XXX 789)
+ */
+function maskPhoneNumber(phone: string): string {
+  if (!phone) return "";
+  
+  // Keep first 4 chars (+963) and last 3 digits
+  const countryCode = phone.substring(0, 4);
+  const lastDigits = phone.substring(phone.length - 3);
+  
+  return `${countryCode} XXX XXX ${lastDigits}`;
+}
+
+/**
+ * Mask email for display (e.g., u***r@example.com)
+ */
+function maskEmail(email: string): string {
+  if (!email) return "";
+  
+  const [localPart, domain] = email.split("@");
+  if (!localPart || !domain) return email;
+  
+  const visibleStart = localPart.substring(0, 1);
+  const visibleEnd = localPart.substring(localPart.length - 1);
+  
+  return `${visibleStart}***${visibleEnd}@${domain}`;
+}
+
+/**
+ * Get OTP data from JWT token (for logged-in unverified users)
+ * Falls back to localStorage for signup flow
  * @returns Object with validation result and data
  */
 export function getOTPData() {
@@ -141,6 +170,27 @@ export function getOTPData() {
     return { isValid: false, data: null };
   }
 
+  // Try to get data from JWT token first (for logged-in unverified users)
+  const accessToken = tokenManager.getAccessToken();
+  
+  if (accessToken) {
+    const decoded = tokenManager.decodeToken(accessToken);
+    
+    if (decoded && !decoded.is_verified) {
+      // User is logged in but not verified - extract from JWT
+      return {
+        isValid: true,
+        data: {
+          maskedPhone: maskPhoneNumber(decoded.phone_number),
+          fullPhone: decoded.phone_number,
+          maskedEmail: decoded.email ? maskEmail(decoded.email) : null,
+          hasEmail: Boolean(decoded.email),
+        },
+      };
+    }
+  }
+
+  // Fallback to localStorage (for signup flow before login)
   const otpPhone = localStorage.getItem("otpPhone");
   const otpPhoneFull = localStorage.getItem("otpPhoneFull");
   const otpEmail = localStorage.getItem("otpEmail");

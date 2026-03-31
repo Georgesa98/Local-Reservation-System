@@ -28,6 +28,7 @@ interface JWTPayload {
   last_name: string;
   phone_number: string;
   is_verified: boolean;
+  email: string | null;
   exp: number;
   iat: number;
   jti: string;
@@ -82,6 +83,38 @@ export const tokenManager = {
     try {
       return jwtDecode<JWTPayload>(token);
     } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Manually refresh tokens to get updated JWT claims
+   * Useful after user state changes (e.g., OTP verification)
+   */
+  refreshTokens: async (): Promise<{ access: string; refresh: string } | null> => {
+    if (typeof window === 'undefined') return null;
+
+    try {
+      const refreshToken = getCookie(REFRESH_TOKEN_COOKIE);
+      
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await axios.post<RefreshResponse>(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/auth/jwt/refresh/`,
+        { refresh: refreshToken }
+      );
+
+      const { access, refresh } = response.data;
+      
+      // Update tokens in cookies
+      setCookie(ACCESS_TOKEN_COOKIE, access, 5 / (24 * 60)); // 5 minutes
+      setCookie(REFRESH_TOKEN_COOKIE, refresh, 1); // 1 day
+      
+      return { access, refresh };
+    } catch (error) {
+      console.error('Token refresh failed:', error);
       return null;
     }
   },

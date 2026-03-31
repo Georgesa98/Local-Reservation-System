@@ -12,6 +12,7 @@ interface JWTPayload {
   last_name: string;
   phone_number: string;
   is_verified: boolean;
+  email: string | null;
   exp: number;
   iat: number;
   jti: string;
@@ -178,7 +179,17 @@ export async function proxy(request: NextRequest) {
   }
 
   // --- PUBLIC ROUTES ---
-  // Allow access to public routes without any checks
+  // Check if user has token but is not verified
+  if (accessToken && !isTokenExpired(accessToken)) {
+    const decoded = decodeToken(accessToken);
+    
+    // If user is authenticated but not verified, redirect to OTP
+    if (decoded && !decoded.is_verified) {
+      return NextResponse.redirect(new URL('/otp', request.url));
+    }
+  }
+
+  // Allow access to public routes
   return NextResponse.next();
 }
 

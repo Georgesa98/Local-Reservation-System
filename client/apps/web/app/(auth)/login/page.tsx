@@ -11,6 +11,7 @@ import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { loginSchema, type LoginFormData } from "./schema";
 import { login } from "./api";
+import { tokenManager } from "@/lib/axios";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,8 +40,15 @@ export default function LoginPage() {
     try {
       const response = await login(data);
 
-      // Login successful - redirect to home
-      router.push("/");
+      // Decode the access token to check verification status
+      const decoded = tokenManager.decodeToken(response.access);
+      
+      // Redirect based on verification status
+      if (decoded && !decoded.is_verified) {
+        router.push("/otp");
+      } else {
+        router.push("/");
+      }
     } catch (error: any) {
       setIsLoading(false);
 
