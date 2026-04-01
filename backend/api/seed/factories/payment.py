@@ -57,6 +57,31 @@ def _tz_dt(*args, **kwargs):
     return timezone.make_aware(dt, datetime.timezone.utc)
 
 
+def _tz_dt_between_booking(booking):
+    """
+    Return timezone-aware datetime between booking.created_at and check_out_date.
+    Ensures payment happens within the booking lifecycle.
+    """
+    from django.utils import timezone
+    import datetime
+    
+    start_dt = booking.created_at
+    # Convert check_out_date to datetime (end of day)
+    end_dt = timezone.make_aware(
+        datetime.datetime.combine(booking.check_out_date, datetime.time(23, 59, 59)),
+        datetime.timezone.utc
+    )
+    
+    # Ensure start < end (if booking was created after checkout, use created_at + 1 hour)
+    if start_dt >= end_dt:
+        return start_dt + timedelta(hours=1)
+    
+    # Random time between start and end
+    delta = end_dt - start_dt
+    random_seconds = random.randint(0, int(delta.total_seconds()))
+    return start_dt + timedelta(seconds=random_seconds)
+
+
 def _past_dt(days_back_min=10, days_back_max=365):
     from django.utils import timezone
     return timezone.now() - timedelta(days=random.randint(days_back_min, days_back_max))
@@ -180,9 +205,8 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     gateway_response = factory.LazyFunction(
         lambda: {"status": "success", "code": "00"}
     )
-    paid_at = factory.LazyFunction(
-        lambda: _tz_dt(start_date="-180d", end_date="-1d")
-    )
+    # Fixed: paid_at between booking creation and check-out
+    paid_at = factory.LazyAttribute(lambda o: _tz_dt_between_booking(o.booking))
 
     class Meta:
         model = Payment

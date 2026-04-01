@@ -6,10 +6,29 @@ Seed order (respects FK constraints):
   2. Admin users
   3. Manager users  → ManagerBankAccount
   4. Guest users
-  5. Rooms          → RoomImage, PricingRule, RoomAvailability
+  5. Rooms          → RoomImage (from api/seed/assets/), PricingRule, RoomAvailability
   6. Bookings       → Review, Payment → Refund, Notification
   7. GatewayCustomer → SavedPaymentMethod
   8. Payout         → PayoutBooking
+
+Images:
+  - Loads real images from backend/api/seed/assets/ (JPG, PNG)
+  - Copies them to MEDIA_ROOT/room_images/ with unique names
+  - Falls back to Pillow-generated placeholders if no assets exist
+  - Each room gets 1 main image + optional secondary image
+
+Data Consistency Guarantees:
+  - Payment status aligns with booking status (cancelled bookings → refunded/failed payments)
+  - Refunds only created for cancelled bookings
+  - Reviews only for completed bookings
+  - Room ratings computed from actual review data
+  - Payment paid_at timestamp falls between booking creation and check-out
+  - PricingRule end_date always > start_date
+  - GatewayCustomer uniqueness enforced (guest, provider pairs)
+
+Storage:
+  - Dev (config.settings.dev): Uses local FileSystemStorage (backend/media/)
+  - Prod (config.settings.base): Uses Supabase S3
 
 --flush wipes all seeded tables (in reverse FK order) before seeding.
 """
@@ -117,6 +136,7 @@ class Command(BaseCommand):
         )
         from api.booking.models import BookingStatus
         from api.notification.models import Channel
+        from api.payment.models.payment import PaymentStatus
 
         flush   = options["flush"]
         n_admins    = options["admins"]
@@ -172,6 +192,11 @@ class Command(BaseCommand):
             # ----------------------------------------------------------------
             # 5. Rooms
             # ----------------------------------------------------------------
+            self.stdout.write("Loading room images...")
+            from api.seed.image_loader import get_room_images
+            available_images = get_room_images()
+            self.stdout.write(self.style.SUCCESS(f"  {len(available_images)} images loaded"))
+
             self.stdout.write("Creating rooms...")
             rooms = []
             for i in range(n_rooms):
@@ -180,10 +205,14 @@ class Command(BaseCommand):
                 rooms.append(room)
 
                 # Main image (exactly one — respects unique_together)
-                RoomImageFactory(room=room, is_main=True)
+                main_image = random.choice(available_images)
+                RoomImageFactory(room=room, image=main_image, is_main=True)
+                
                 # Optional secondary image (at most one is_main=False per room)
-                if random.random() < 0.6:
-                    RoomImageFactory(room=room, is_main=False)
+                if random.random() < 0.6 and len(available_images) > 1:
+                    # Pick different image for secondary
+                    secondary_image = random.choice([img for img in available_images if img != main_image])
+                    RoomImageFactory(room=room, image=secondary_image, is_main=False)
 
                 # 1 pricing rule per room
                 PricingRuleFactory(room=room)
@@ -228,20 +257,57 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"  {len(reviews)} reviews created"))
 
             # ----------------------------------------------------------------
-            # 9. Payments (1 per booking)
+            # 8b. Update room ratings from actual reviews
+            # ----------------------------------------------------------------
+            self.stdout.write("Computing room ratings...")
+            from django.db.models import Avg, Count
+            from api.room.models import Room
+
+            for room in rooms:
+                stats = room.reviews.aggregate(
+                    avg_rating=Avg('rating'),
+                    count=Count('id')
+                )
+                Room.objects.filter(pk=room.pk).update(
+                    average_rating=stats['avg_rating'] or 0.0,
+                    ratings_count=stats['count']
+                )
+            self.stdout.write(self.style.SUCCESS(f"  Room ratings updated from {len(reviews)} reviews"))
+
+            # ----------------------------------------------------------------
+            # 9. Payments (1 per booking, status aligned)
             # ----------------------------------------------------------------
             self.stdout.write("Creating payments...")
-            payments = [
-                PaymentFactory(booking=b, provider=random.choice(providers))
-                for b in bookings
-            ]
+            payments = []
+            for b in bookings:
+                # Align payment status with booking status
+                if b.status == BookingStatus.CANCELLED:
+                    payment_status = random.choice([PaymentStatus.REFUNDED, PaymentStatus.FAILED])
+                elif b.status in [BookingStatus.COMPLETED, BookingStatus.CHECKED_IN]:
+                    payment_status = PaymentStatus.COMPLETED
+                else:  # pending, confirmed
+                    payment_status = random.choice([PaymentStatus.PENDING, PaymentStatus.PROCESSING])
+                
+                payment = PaymentFactory(
+                    booking=b,
+                    provider=random.choice(providers),
+                    status=payment_status
+                )
+                payments.append(payment)
             self.stdout.write(self.style.SUCCESS(f"  {len(payments)} payments created"))
 
             # ----------------------------------------------------------------
-            # 10. Refunds (~1/6 of payments)
+            # 10. Refunds (only for cancelled bookings)
             # ----------------------------------------------------------------
             self.stdout.write("Creating refunds...")
-            refund_pool = random.sample(payments, k=max(0, len(payments) // 6))
+            cancelled_payments = [
+                p for p in payments if p.booking.status == BookingStatus.CANCELLED
+            ]
+            # Refund ~60% of cancelled bookings
+            refund_pool = random.sample(
+                cancelled_payments,
+                k=max(0, int(len(cancelled_payments) * 0.6))
+            )
             admin_user = admins[0] if admins else None
             refunds = [
                 RefundFactory(payment=p, initiated_by=admin_user)
@@ -268,10 +334,22 @@ class Command(BaseCommand):
             # 12. Gateway customers + saved payment methods
             # ----------------------------------------------------------------
             self.stdout.write("Creating gateway customers...")
-            gateway_customers = [
-                GatewayCustomerFactory(guest=g, provider=random.choice(providers))
-                for g in random.sample(guests, k=max(1, len(guests) // 2))
-            ]
+            gateway_customers = []
+            used_pairs = set()  # Track (guest_id, provider_id) to avoid duplicates
+
+            for g in random.sample(guests, k=max(1, len(guests) // 2)):
+                provider = random.choice(providers)
+                pair = (g.pk, provider.pk)
+                
+                # Skip if duplicate
+                if pair in used_pairs:
+                    continue
+                
+                gateway_customers.append(
+                    GatewayCustomerFactory(guest=g, provider=provider)
+                )
+                used_pairs.add(pair)
+
             self.stdout.write(self.style.SUCCESS(f"  {len(gateway_customers)} gateway customers created"))
 
             # ----------------------------------------------------------------

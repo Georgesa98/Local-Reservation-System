@@ -79,25 +79,23 @@ class RoomFactory(factory.django.DjangoModelFactory):
 
 class RoomImageFactory(factory.django.DjangoModelFactory):
     room = factory.SubFactory(RoomFactory)
-    # We skip uploading a real file — use a fake path string that satisfies
-    # ImageField without hitting storage.  The seed command will leave
-    # image as an empty string for simplicity.
-    image = factory.LazyFunction(lambda: f"room_images/seed_{fake.uuid4()}.jpg")
+    # image must be passed explicitly by caller (e.g., from image_loader.py)
+    image = None
     alt_text = factory.LazyFunction(fake.sentence)
     is_main = False
 
     class Meta:
         model = RoomImage
-        # Skip the file-upload machinery; just store the path string.
-        exclude = []
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
-        # Bypass ImageField validation – insert the path directly via ORM.
+        """Accepts an image path and assigns it properly."""
+        image_path = kwargs.pop('image', None)
+        if not image_path:
+            raise ValueError("RoomImageFactory requires image=<path> parameter")
+        
         obj = model_class(**kwargs)
-        obj.image.name = kwargs.get("image", "")
-        # Use save(update_fields) to avoid re-triggering upload logic.
-        from django.db import connection
+        obj.image.name = image_path
         obj.save()
         return obj
 
@@ -113,11 +111,15 @@ class PricingRuleFactory(factory.django.DjangoModelFactory):
         lambda: round(random.uniform(-20, 50), 2)
     )
     is_percentage = factory.LazyFunction(lambda: random.choice([True, False]))
+    # Fixed: start_date first, then end_date is always after
     start_date = factory.LazyFunction(
-        lambda: fake.date_between(start_date="-60d", end_date="today")
+        lambda: fake.date_between(start_date="-60d", end_date="+30d")
     )
-    end_date = factory.LazyFunction(
-        lambda: fake.date_between(start_date="today", end_date="+90d")
+    end_date = factory.LazyAttribute(
+        lambda o: fake.date_between(
+            start_date=o.start_date,
+            end_date=o.start_date + timedelta(days=random.randint(7, 90))
+        )
     )
     min_nights = factory.LazyFunction(
         lambda: random.choice([None, None, 2, 3, 7])
