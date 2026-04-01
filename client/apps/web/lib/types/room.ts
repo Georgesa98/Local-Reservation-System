@@ -20,6 +20,8 @@ export interface Room {
   description: string
   base_price_per_night: string // Decimal as string from API
   location: string
+  latitude: number | null
+  longitude: number | null
   capacity: number
   services: string[]
   average_rating: string // Backend returns as string

@@ -10,7 +10,7 @@ import { fetchRoomById } from "./api";
 import { ImageCarousel } from "@/components/room-detail/image-carousel";
 import { AmenitiesGrid } from "@/components/room-detail/amenities-grid";
 import { ReviewsSection } from "@/components/room-detail/reviews-section";
-import { MapPlaceholder } from "@/components/room-detail/map-placeholder";
+import { RoomMapWrapper } from "@/components/room-detail/room-map-wrapper";
 import { StickyBookingBar } from "@/components/room-detail/sticky-booking-bar";
 
 interface RoomDetailPageProps {
@@ -187,8 +187,13 @@ export default function RoomDetailPage({ params }: RoomDetailPageProps) {
                         averageRating={room.average_rating}
                     />
 
-                    {/* Map Placeholder */}
-                    <MapPlaceholder location={room.location} />
+                    {/* Room Map */}
+                    <RoomMapWrapper
+                        latitude={room.latitude}
+                        longitude={room.longitude}
+                        roomName={room.title}
+                        location={room.location}
+                    />
 
                     {/* Chat Button Placeholder */}
                     <div className="rounded-2xl bg-card p-6">
