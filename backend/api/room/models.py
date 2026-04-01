@@ -16,6 +16,22 @@ class Room(SafeDeleteModel):
     )
     location = models.CharField(max_length=255)
     full_address = models.TextField(blank=True)
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+        help_text="Geographic latitude (-90 to 90)",
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+        help_text="Geographic longitude (-180 to 180)",
+    )
     manager = models.ForeignKey(
         Manager,
         on_delete=models.SET_NULL,
