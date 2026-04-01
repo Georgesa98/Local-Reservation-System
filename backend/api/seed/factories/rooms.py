@@ -28,6 +28,13 @@ def _random_services():
     return random.sample(_SERVICES, k=random.randint(3, 8))
 
 
+def _random_coordinates():
+    """Generate paired (latitude, longitude) or None for ~20% of rooms."""
+    if random.random() > 0.2:
+        return (round(random.uniform(-90, 90), 6), round(random.uniform(-180, 180), 6))
+    return (None, None)
+
+
 def _past_datetime(days_back_min=30, days_back_max=365):
     from django.utils import timezone
     return timezone.now() - timedelta(days=random.randint(days_back_min, days_back_max))
@@ -59,6 +66,16 @@ class RoomFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Room
+
+    @factory.post_generation
+    def set_coordinates(obj, create, extracted, **kwargs):
+        """Set paired latitude/longitude - either both exist or both None."""
+        lat, lng = _random_coordinates()
+        obj.latitude = lat
+        obj.longitude = lng
+        if create:
+            Room.objects.filter(pk=obj.pk).update(latitude=lat, longitude=lng)
+            obj.refresh_from_db()
 
     @classmethod
     def _after_postgeneration(cls, instance, create, results=None):
