@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { MapPin, Heart } from "lucide-react";
 import { Badge } from "@workspace/ui/components/badge";
 import { cn } from "@workspace/ui/lib/utils";
@@ -34,8 +35,9 @@ export function PropertyCard({
 
     return (
         <article className={cn("group space-y-4", className)}>
-            {/* Image Container */}
-            <div className="radius-hero relative aspect-[4/3] overflow-hidden">
+            <Link href={`/rooms/${room.id}`} className="block space-y-4">
+                {/* Image Container */}
+                <div className="radius-hero relative aspect-[4/3] overflow-hidden">
                 <Image
                     src={imageUrl}
                     alt={imageAlt}
@@ -46,7 +48,10 @@ export function PropertyCard({
 
                 {/* Favorite Button */}
                 <button
-                    onClick={onFavoriteClick}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onFavoriteClick?.();
+                    }}
                     className="absolute right-4 top-4 flex items-center justify-center rounded-full bg-white/20 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-white/30"
                     aria-label="Add to favorites"
                 >
@@ -101,6 +106,7 @@ export function PropertyCard({
                     </span>
                 </div>
             </div>
+            </Link>
         </article>
     );
 }
