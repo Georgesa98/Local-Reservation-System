@@ -5,6 +5,7 @@ from config.utils import SuccessResponse, ErrorResponse
 
 from ..serializers import (
     PublicRoomSerializer,
+    PublicRoomListQuerySerializer,
     PublicRoomSearchQuerySerializer,
     FeaturedRoomQuerySerializer,
 )
@@ -24,15 +25,11 @@ class RoomPublicListView(APIView):
     authentication_classes = []
 
     def get(self, request):
-        filters = {}
-        if "location" in request.GET:
-            filters["location"] = request.GET["location"]
-        if "base_price_per_night" in request.GET:
-            filters["base_price_per_night"] = request.GET["base_price_per_night"]
-        if "capacity" in request.GET:
-            filters["capacity"] = request.GET["capacity"]
-        if "average_rating" in request.GET:
-            filters["average_rating"] = request.GET["average_rating"]
+        query_serializer = PublicRoomListQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+
+        filters = query_serializer.validated_data.copy()
+        filters["is_active"] = True
 
         queryset = RoomService.list_rooms(filters=filters)
 
