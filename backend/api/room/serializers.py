@@ -133,6 +133,24 @@ class FeaturedRoomQuerySerializer(PublicRoomFilterQuerySerializer):
     limit = serializers.IntegerField(required=False, min_value=1, max_value=50, default=6)
 
 
+class PublicRoomListQuerySerializer(serializers.Serializer):
+    location = serializers.CharField(required=False, max_length=255)
+    base_price_per_night = serializers.DecimalField(
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+        min_value=0,
+    )
+    capacity = serializers.IntegerField(required=False, min_value=1)
+    average_rating = serializers.DecimalField(
+        required=False,
+        max_digits=3,
+        decimal_places=2,
+        min_value=0,
+        max_value=5,
+    )
+
+
 class PublicRoomSerializer(serializers.ModelSerializer):
     """
     Lean serializer for unauthenticated / guest browsing.
@@ -209,6 +227,6 @@ class RoomSerializer(serializers.ModelSerializer):
         """Lazy import to avoid circular dependency."""
         from api.booking.serializers import ReviewSerializer
 
-        # Filter to only published reviews for public view
+        # Include only published reviews.
         reviews = obj.reviews.filter(is_published=True)
         return ReviewSerializer(reviews, many=True).data
