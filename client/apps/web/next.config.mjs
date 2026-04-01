@@ -1,15 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@workspace/ui"],
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "isnjgdlkycxgmsfvvupv.storage.supabase.co",
-        pathname: "/room_images/**",
-      },
-    ],
-  },
-}
+    transpilePackages: ["@workspace/ui"],
 
-export default nextConfig
+    images: {
+        unoptimized: process.env.NODE_ENV === "development",
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "isnjgdlkycxgmsfvvupv.storage.supabase.co",
+                pathname: "/room_images/**",
+            },
+        ],
+    },
+};
+
+export default nextConfig;

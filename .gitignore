@@ -13,3 +13,5 @@ dist
 .ignore
 .opencode
 .playwright-mcp
+media/
+assets/
