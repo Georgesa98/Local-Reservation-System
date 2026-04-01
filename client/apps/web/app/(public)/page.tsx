@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, MapIcon } from "lucide-react";
-import Image from "next/image";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { PropertyCard } from "@/components/property-card";
@@ -27,7 +26,7 @@ export default function LandingPage() {
     const [activeCategory, setActiveCategory] = useState("modern-villas");
 
     // Fetch featured rooms
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, isError } = useQuery({
         queryKey: ["rooms", "featured", { limit: 6 }],
         queryFn: () => fetchFeaturedRooms({ limit: 6 }),
     });
@@ -41,7 +40,7 @@ export default function LandingPage() {
                 {/* Hero Section */}
                 <section className="space-y-6">
                     <div className="space-y-2">
-                        <p className="text-[11px] font-bold uppercase tracking-widest text-primary">
+                        <p className="label-sm">
                             Curated Collections
                         </p>
                         <h1 className="font-headline text-4xl font-extrabold leading-tight tracking-tight text-foreground">
@@ -52,7 +51,7 @@ export default function LandingPage() {
                     </div>
 
                     {/* Search Bar */}
-                    <div className="flex w-full items-center gap-1 rounded-full bg-card p-1 shadow-[0_8px_30px_rgba(40,47,63,0.04)]">
+                    <div className="ambient-shadow flex w-full items-center gap-1 rounded-full bg-card p-1">
                         <div className="flex flex-1 items-center gap-3 px-5">
                             <Search className="h-5 w-5 text-muted-foreground" />
                             <Input
@@ -107,7 +106,7 @@ export default function LandingPage() {
                         <div className="flex flex-col gap-8">
                             {[1, 2, 3].map((i) => (
                                 <div key={i} className="space-y-4">
-                                    <div className="aspect-[4/3] animate-pulse rounded-[32px] bg-muted" />
+                                    <div className="radius-hero aspect-[4/3] animate-pulse bg-muted" />
                                     <div className="space-y-2">
                                         <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
                                         <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
@@ -117,8 +116,20 @@ export default function LandingPage() {
                         </div>
                     )}
 
+                    {/* Error State */}
+                    {!isLoading && isError && (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <h3 className="mb-2 font-headline text-xl font-bold">
+                                Unable to load properties
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Please try again in a moment.
+                            </p>
+                        </div>
+                    )}
+
                     {/* Property Cards */}
-                    {!isLoading && (
+                    {!isLoading && !isError && (
                         <div className="flex flex-col gap-8">
                             {rooms.map((room, index) => (
                                 <PropertyCard
@@ -146,7 +157,7 @@ export default function LandingPage() {
                     )}
 
                     {/* Empty State */}
-                    {!isLoading && rooms.length === 0 && (
+                    {!isLoading && !isError && rooms.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 text-center">
                             <MapIcon className="mb-4 h-12 w-12 text-muted-foreground" />
                             <h3 className="mb-2 font-headline text-xl font-bold">

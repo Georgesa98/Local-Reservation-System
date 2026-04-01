@@ -28,7 +28,7 @@ export function PropertyCard({
   return (
     <article className={cn("group space-y-4", className)}>
       {/* Image Container */}
-      <div className="relative aspect-[4/3] overflow-hidden rounded-[32px]">
+      <div className="radius-hero relative aspect-[4/3] overflow-hidden">
         <Image
           src={imageUrl}
           alt={imageAlt}

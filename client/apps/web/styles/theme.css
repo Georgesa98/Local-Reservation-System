@@ -322,6 +322,16 @@
     text-transform: uppercase;
     color: var(--muted-foreground);
   }
+
+  /* Shared hero-card radius token for landing visuals */
+  .radius-hero {
+    border-radius: 2rem; /* 32px */
+  }
+
+  .radius-hero-top {
+    border-top-left-radius: 2rem;
+    border-top-right-radius: 2rem;
+  }
 }
 
 /* ─── Elevation & Depth System ──────────────────────────────────────────────── */
@@ -334,6 +344,10 @@
   /* X: 0, Y: 8, Blur: 30, Color: on-surface at 4% opacity */
   .ambient-shadow {
     box-shadow: 0 8px 30px oklch(0.22 0.02 245 / 0.04);
+  }
+
+  .ambient-shadow-top {
+    box-shadow: 0 -8px 30px oklch(0.22 0.02 245 / 0.04);
   }
 
   /* Elevated shadow for cards that need more lift */
@@ -350,6 +364,16 @@
   /* Ghost Border on focus: Primary at 40% opacity */
   .ghost-border-focus {
     border: 2px solid oklch(0.48 0.18 265 / 0.40);
+  }
+}
+
+@layer utilities {
+  .text-rating-star {
+    color: oklch(0.78 0.16 88);
+  }
+
+  .fill-rating-star {
+    fill: oklch(0.78 0.16 88);
   }
 }
 

@@ -40,7 +40,7 @@ export function StarRating({
         {Array.from({ length: fullStars }).map((_, i) => (
           <Star
             key={`full-${i}`}
-            className={cn(sizeClasses[size], "fill-amber-400 text-amber-400")}
+            className={cn(sizeClasses[size], "fill-rating-star text-rating-star")}
           />
         ))}
 
@@ -48,12 +48,12 @@ export function StarRating({
         {hasHalfStar && (
           <div className="relative">
             <Star
-              className={cn(sizeClasses[size], "text-amber-400")}
+              className={cn(sizeClasses[size], "text-rating-star")}
               fill="none"
             />
             <div className="absolute inset-0 overflow-hidden" style={{ width: "50%" }}>
               <Star
-                className={cn(sizeClasses[size], "fill-amber-400 text-amber-400")}
+                className={cn(sizeClasses[size], "fill-rating-star text-rating-star")}
               />
             </div>
           </div>
