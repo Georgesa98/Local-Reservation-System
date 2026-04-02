@@ -62,7 +62,7 @@ export function RoomMap({
             <div className="text-xs font-bold uppercase tracking-widest text-primary">
                 Location
             </div>
-            <div className="relative h-64 w-full overflow-hidden rounded-3xl">
+            <div className="relative z-40 h-64 w-full overflow-hidden rounded-3xl">
                 <MapContainer
                     center={[latitude, longitude]}
                     zoom={15}
