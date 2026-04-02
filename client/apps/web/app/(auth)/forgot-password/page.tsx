@@ -36,8 +36,7 @@ export default function ForgotPasswordPage() {
         try {
             await forgotPassword(data);
             localStorage.setItem("otpPhoneFull", data.phone_number);
-            localStorage.setItem("otpFlow", "reset");
-            router.push("/otp");
+            router.push("/otp?flow=reset");
         } catch (error: any) {
             setIsLoading(false);
 

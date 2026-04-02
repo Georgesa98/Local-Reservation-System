@@ -7,7 +7,7 @@ import {
     KeyboardEvent,
     ClipboardEvent,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +28,8 @@ type Channel = "whatsapp" | "telegram" | "email";
 
 export default function OTPVerificationPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const flow = searchParams.get("flow");
     const [isLoading, setIsLoading] = useState(false);
     const [isResending, setIsResending] = useState(false);
     const [apiError, setApiError] = useState<string>("");
@@ -151,8 +153,7 @@ export default function OTPVerificationPage() {
             const response = await verifyOTP(data, fullPhone);
 
             if (response.data?.verified) {
-                const otpFlow = localStorage.getItem("otpFlow");
-                if (otpFlow === "reset") {
+                if (flow === "reset") {
                     router.push("/reset-password");
                 } else {
                     const refreshed = await tokenManager.refreshTokens();
