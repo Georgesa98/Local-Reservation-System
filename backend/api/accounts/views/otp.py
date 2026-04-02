@@ -8,7 +8,6 @@ from api.accounts.serializers import (
     VerifyOTPSerializer,
     ForgotPasswordRequestSerializer,
     ResetPasswordSerializer,
-    ResetPasswordSerializer,
 )
 from api.accounts.services.OTPService import (
     can_resend_otp,
