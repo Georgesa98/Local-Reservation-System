@@ -109,12 +109,10 @@ class OTPInitiateView(APIView):
                 
                 if send_otp_flag:
                     ok = send_otp(phone_number, channel=OTP_CHANNEL_WHATSAPP)
-                    if not ok:
-                        return ErrorResponse(
-                            message="Failed to send OTP. Please try again.",
-                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        )
-                    message = "OTP sent successfully"
+                    if ok:
+                        message = "OTP sent successfully"
+                    else:
+                        message = "Could not send OTP via WhatsApp. Please use resend to try another channel."
                 else:
                     message = "OTP data retrieved"
 
