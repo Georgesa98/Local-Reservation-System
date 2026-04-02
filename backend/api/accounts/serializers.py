@@ -104,6 +104,11 @@ class ResendOTPSerializer(serializers.Serializer):
     )
 
 
+class ForgotPasswordRequestSerializer(serializers.Serializer):
+    """Serializer for forgot password request - validates phone number."""
+    phone_number = PhoneNumberField()
+
+
 class GuestCreateSerializer(serializers.Serializer):
     """Serializer for staff creating shadow guests (walk-in/phone bookings)."""
     first_name = serializers.CharField(max_length=30)
