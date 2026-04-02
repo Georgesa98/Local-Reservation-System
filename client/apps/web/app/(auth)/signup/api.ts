@@ -1,5 +1,4 @@
 import axiosInstance from "@/lib/axios";
-import { maskPhoneNumber, maskEmail } from "@/lib/mask";
 import type { SignupFormData } from "./schema";
 
 /**
@@ -77,14 +76,8 @@ export async function signup(data: SignupFormData): Promise<SignupResponse> {
       payload
     );
 
-    // Store masked phone/email data in localStorage for OTP verification
     if (typeof window !== "undefined") {
-      localStorage.setItem("otpPhone", maskPhoneNumber(response.data.phone_number));
       localStorage.setItem("otpPhoneFull", response.data.phone_number);
-      
-      if (response.data.email) {
-        localStorage.setItem("otpEmail", maskEmail(response.data.email));
-      }
     }
 
     return response.data;

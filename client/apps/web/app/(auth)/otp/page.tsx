@@ -14,16 +14,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
   Clock,
-  MessageCircle,
   Mail,
   Send,
   Loader2,
 } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
 import { otpSchema, type OTPFormData } from "./schema";
-import { verifyOTP, resendOTP, getOTPData, clearOTPData } from "./api";
-import { SiTelegram, SiWhatsapp } from "@icons-pack/react-simple-icons";
+import { verifyOTP, resendOTP, fetchOTPData, clearOTPData, type OTPChannelInfo } from "./api";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { tokenManager } from "@/lib/axios";
 
 type Channel = "whatsapp" | "telegram" | "email";
@@ -42,19 +40,10 @@ export default function OTPVerificationPage() {
     "",
     "",
   ]);
-  const [lastResendTime, setLastResendTime] = useState<number | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
 
-  // Refs for OTP inputs
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // OTP data from localStorage
-  const [otpData, setOtpData] = useState<{
-    maskedPhone: string;
-    fullPhone: string;
-    maskedEmail: string | null;
-    hasEmail: boolean;
-  } | null>(null);
+  const [fullPhone, setFullPhone] = useState<string>("");
+  const [channelInfo, setChannelInfo] = useState<OTPChannelInfo | null>(null);
 
   const {
     handleSubmit,
@@ -65,21 +54,21 @@ export default function OTPVerificationPage() {
     resolver: zodResolver(otpSchema),
   });
 
-  // Initialize OTP data
-  useEffect(() => {
-    // Get OTP data from localStorage
-    const { isValid, data } = getOTPData();
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-    if (!isValid || !data) {
-      // No valid OTP data - redirect back to signup
+  useEffect(() => {
+    const phone = localStorage.getItem("otpPhoneFull");
+    if (!phone) {
       router.push("/signup");
       return;
     }
 
-    setOtpData(data);
+    setFullPhone(phone);
+    fetchOTPData(phone)
+      .then((data) => setChannelInfo(data))
+      .catch(() => router.push("/signup"));
   }, [router]);
 
-  // Countdown timer effect
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
@@ -92,7 +81,6 @@ export default function OTPVerificationPage() {
     };
   }, [countdown]);
 
-  // Focus first input on mount
   useEffect(() => {
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus();
@@ -100,34 +88,28 @@ export default function OTPVerificationPage() {
   }, []);
 
   const handleDigitChange = (index: number, value: string) => {
-    // Only allow single digits
     const digit = value.replace(/\D/g, "").slice(-1);
 
     const newDigits = [...otpDigits];
     newDigits[index] = digit;
     setOtpDigits(newDigits);
 
-    // Update form value
     const otpCode = newDigits.join("");
     setValue("otp_code", otpCode);
 
-    // Clear any previous errors
     if (apiError) setApiError("");
     clearErrors();
 
-    // Auto-focus next input
     if (digit && index < 5 && inputRefs.current[index + 1]) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    // Handle backspace - focus previous input if current is empty
     if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
 
-    // Handle arrow keys
     if (e.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -148,13 +130,12 @@ export default function OTPVerificationPage() {
       setOtpDigits(newDigits);
       setValue("otp_code", paste);
 
-      // Focus last input
       inputRefs.current[5]?.focus();
     }
   };
 
   const onSubmit = async (data: OTPFormData) => {
-    if (!otpData) {
+    if (!fullPhone) {
       setApiError("Session expired. Please sign up again.");
       router.push("/signup");
       return;
@@ -164,21 +145,17 @@ export default function OTPVerificationPage() {
     setIsLoading(true);
 
     try {
-      const response = await verifyOTP(data, otpData.fullPhone);
+      const response = await verifyOTP(data, fullPhone);
 
       if (response.data?.verified) {
-        // Clear OTP data from localStorage
         clearOTPData();
 
-        // Refresh JWT tokens to get updated is_verified claim
         const refreshed = await tokenManager.refreshTokens();
         
         if (!refreshed) {
-          // If refresh fails, user can still proceed but may need to re-login
           console.warn('Failed to refresh tokens after verification');
         }
 
-        // Redirect to home (user is now verified with updated JWT)
         router.push("/");
       } else {
         setApiError("Invalid OTP code. Please try again.");
@@ -191,7 +168,7 @@ export default function OTPVerificationPage() {
   };
 
   const handleResend = async (channel: Channel) => {
-    if (!otpData) return;
+    if (!fullPhone) return;
 
     if (countdown > 0) {
       setApiError(
@@ -205,7 +182,7 @@ export default function OTPVerificationPage() {
     setIsResending(true);
 
     try {
-      const response = await resendOTP(otpData.fullPhone, channel);
+      const response = await resendOTP(fullPhone, channel);
 
       if (response.success) {
         const channelName =
@@ -216,15 +193,11 @@ export default function OTPVerificationPage() {
               : "Email";
         setSuccessMessage(`New code sent via ${channelName}`);
 
-        // Set 5-minute countdown (300 seconds)
-        setLastResendTime(Date.now());
         setCountdown(300);
 
-        // Clear OTP inputs
         setOtpDigits(["", "", "", "", "", ""]);
         setValue("otp_code", "");
 
-        // Focus first input
         if (inputRefs.current[0]) {
           inputRefs.current[0].focus();
         }
@@ -242,7 +215,7 @@ export default function OTPVerificationPage() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  if (!otpData) {
+  if (!channelInfo) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -255,7 +228,6 @@ export default function OTPVerificationPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Back Button - at top, outside centered container */}
       <header className="w-full max-w-md px-6 pt-6">
         <Link
           href="/signup"
@@ -266,30 +238,18 @@ export default function OTPVerificationPage() {
         </Link>
       </header>
 
-      {/* Main Content - centered */}
       <main className="min-h-screen flex flex-col items-center justify-center px-6 pb-12">
-        {/* Header Section */}
         <div className="w-full max-w-md text-center mb-10">
           <h1 className="font-headline font-bold text-4xl text-foreground tracking-tight mb-3">
             Verify Your Phone
           </h1>
           <p className="font-body text-lg text-muted-foreground mb-2">
-            We sent a 6-digit code to
+            We sent a 6-digit code to your phone
           </p>
-          <p className="font-body text-lg font-semibold text-foreground">
-            {otpData.maskedPhone}
-          </p>
-          {otpData.maskedEmail && (
-            <p className="font-body text-sm text-muted-foreground mt-2">
-              and {otpData.maskedEmail}
-            </p>
-          )}
         </div>
 
-        {/* OTP Form Container */}
         <div className="w-full max-w-md space-y-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Success Message */}
             {successMessage && (
               <div className="bg-tertiary/10 border border-tertiary/20 rounded-lg p-4">
                 <p className="font-body text-sm text-tertiary">
@@ -298,14 +258,12 @@ export default function OTPVerificationPage() {
               </div>
             )}
 
-            {/* API Error Message */}
             {apiError && (
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="font-body text-sm text-destructive">{apiError}</p>
               </div>
             )}
 
-            {/* Form Error */}
             {errors.otp_code && (
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
                 <p className="font-body text-sm text-destructive">
@@ -314,7 +272,6 @@ export default function OTPVerificationPage() {
               </div>
             )}
 
-            {/* OTP Input */}
             <div>
               <label className="font-body text-sm font-medium text-foreground mb-4 block text-center">
                 Enter 6-Digit Code
@@ -341,7 +298,6 @@ export default function OTPVerificationPage() {
               </div>
             </div>
 
-            {/* Verify Button */}
             <Button
               type="submit"
               disabled={isLoading || otpDigits.join("").length !== 6}
@@ -358,10 +314,9 @@ export default function OTPVerificationPage() {
             </Button>
           </form>
 
-          {/* Resend Section */}
           <div className="text-center space-y-4">
             <p className="font-body text-sm text-muted-foreground">
-              Didn't receive the code?
+              Didn&apos;t receive the code?
             </p>
 
             {countdown > 0 && (
@@ -373,8 +328,7 @@ export default function OTPVerificationPage() {
               </div>
             )}
 
-            <div className="flex gap-3 justify-center">
-              {/* WhatsApp */}
+            <div className="flex gap-3 justify-center flex-wrap">
               <Button
                 type="button"
                 variant="outline"
@@ -387,21 +341,21 @@ export default function OTPVerificationPage() {
                 WhatsApp
               </Button>
 
-              {/* Telegram */}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isResending || countdown > 0}
-                onClick={() => handleResend("telegram")}
-                className="flex items-center gap-2 bg-card border-border/30 font-body text-xs px-4 py-2"
-              >
-                <Send className="w-4 h-4" />
-                Telegram
-              </Button>
+              {channelInfo.hasTelegram && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isResending || countdown > 0}
+                  onClick={() => handleResend("telegram")}
+                  className="flex items-center gap-2 bg-card border-border/30 font-body text-xs px-4 py-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Telegram
+                </Button>
+              )}
 
-              {/* Email (only if user provided email) */}
-              {otpData.hasEmail && (
+              {channelInfo.hasEmail && (
                 <Button
                   type="button"
                   variant="outline"
@@ -424,7 +378,6 @@ export default function OTPVerificationPage() {
             )}
           </div>
 
-          {/* Branding */}
           <div className="text-center mt-12">
             <p className="font-headline text-2xl font-bold text-primary">
               LuxeStay
