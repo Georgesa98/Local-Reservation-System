@@ -20,7 +20,7 @@ if (typeof window !== "undefined") {
     });
 }
 
-interface RoomMapProps {
+export interface RoomMapProps {
     latitude: number | null;
     longitude: number | null;
     roomName: string;

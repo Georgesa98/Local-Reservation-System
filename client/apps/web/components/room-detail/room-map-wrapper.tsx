@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { RoomMapProps } from "./room-map";
 
 // Dynamically import RoomMap with SSR disabled to avoid Leaflet window issues
-export const RoomMapWrapper = dynamic(
+export const RoomMapWrapper = dynamic<RoomMapProps>(
     () => import("./room-map").then((mod) => ({ default: mod.RoomMap })),
     {
         ssr: false,
