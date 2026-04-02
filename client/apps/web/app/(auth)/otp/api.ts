@@ -137,11 +137,9 @@ export async function verifyOTP(data: OTPFormData, phoneNumber: string): Promise
 
     return response.data;
   } catch (error: any) {
-    // Handle DRF validation errors
     if (error.response?.data) {
       const errorData = error.response.data as OTPErrorResponse;
 
-      // Extract first error message from any field
       if (errorData.otp_code) {
         throw new Error(errorData.otp_code[0]);
       }
@@ -153,7 +151,6 @@ export async function verifyOTP(data: OTPFormData, phoneNumber: string): Promise
       }
     }
 
-    // Generic error fallback
     throw new Error(
       error.response?.data?.message ||
         error.message ||
@@ -184,7 +181,6 @@ export async function resendOTP(phoneNumber: string, channel: "whatsapp" | "emai
 
     return response.data;
   } catch (error: any) {
-    // Handle rate limiting and other errors
     if (error.response?.status === 429) {
       throw new Error("Please wait before requesting another code.");
     }
@@ -200,7 +196,6 @@ export async function resendOTP(phoneNumber: string, channel: "whatsapp" | "emai
       }
     }
 
-    // Generic error fallback
     throw new Error(
       error.response?.data?.message ||
         error.message ||
@@ -215,5 +210,6 @@ export async function resendOTP(phoneNumber: string, channel: "whatsapp" | "emai
 export function clearOTPData() {
   if (typeof window !== "undefined") {
     localStorage.removeItem("otpPhoneFull");
+    localStorage.removeItem("otpFlow");
   }
 }
