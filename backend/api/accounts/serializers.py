@@ -109,6 +109,28 @@ class ForgotPasswordRequestSerializer(serializers.Serializer):
     phone_number = PhoneNumberField()
 
 
+class ResetPasswordSerializer(serializers.Serializer):
+    """Serializer for password reset after OTP verification."""
+    phone_number = PhoneNumberField()
+    new_password = serializers.CharField(min_length=8)
+
+    def validate_new_password(self, value):
+        from django.contrib.auth import password_validation
+        password_validation.validate_password(value)
+        return value
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Serializer for password reset after OTP verification."""
+    phone_number = PhoneNumberField()
+    new_password = serializers.CharField(min_length=8)
+
+    def validate_new_password(self, value):
+        from django.contrib.auth import password_validation
+        password_validation.validate_password(value)
+        return value
+
+
 class GuestCreateSerializer(serializers.Serializer):
     """Serializer for staff creating shadow guests (walk-in/phone bookings)."""
     first_name = serializers.CharField(max_length=30)

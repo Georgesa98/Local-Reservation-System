@@ -3,7 +3,13 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 
 from api.accounts.models import User
-from api.accounts.serializers import ResendOTPSerializer, VerifyOTPSerializer, ForgotPasswordRequestSerializer
+from api.accounts.serializers import (
+    ResendOTPSerializer,
+    VerifyOTPSerializer,
+    ForgotPasswordRequestSerializer,
+    ResetPasswordSerializer,
+    ResetPasswordSerializer,
+)
 from api.accounts.services.OTPService import (
     can_resend_otp,
     send_otp,
@@ -97,6 +103,7 @@ class OTPInitiateView(APIView):
     Initiates OTP flow: validates phone number,
     returns user contact info (masked), and sends OTP.
     """
+
     def post(self, request):
         try:
             serializer = ForgotPasswordRequestSerializer(data=request.data)
@@ -105,8 +112,10 @@ class OTPInitiateView(APIView):
 
                 contact_info = get_otp_channel_info(phone_number)
 
-                send_otp_flag = request.query_params.get("send_otp", "true").lower() == "true"
-                
+                send_otp_flag = (
+                    request.query_params.get("send_otp", "true").lower() == "true"
+                )
+
                 if send_otp_flag:
                     ok = send_otp(phone_number, channel=OTP_CHANNEL_WHATSAPP)
                     if ok:
@@ -132,9 +141,54 @@ class OTPInitiateView(APIView):
             )
         except ValidationError as val_error:
             return ErrorResponse(
-                message=str(val_error), status_code=status.HTTP_400_BAD_REQUEST
+                message=str(val_error),
+                status_code=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
             return ErrorResponse(
-                message=str(e), status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+                message=str(e),
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class ResetPasswordView(APIView):
+    """
+    Resets user password after OTP verification.
+    Requires user to be verified (is_verified=True).
+    """
+
+    def post(self, request):
+        try:
+            serializer = ResetPasswordSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                phone_number = serializer.data["phone_number"]
+                new_password = serializer.data["new_password"]
+
+                user = User.objects.get(phone_number=phone_number)
+
+                if not user.is_verified:
+                    return ErrorResponse(
+                        message="Please verify your phone number first.",
+                        status_code=status.HTTP_403_FORBIDDEN,
+                    )
+
+                user.set_password(new_password)
+                user.save()
+
+                return SuccessResponse(message="Password reset successfully")
+
+        except User.DoesNotExist:
+            return ErrorResponse(
+                message="No account found with this phone number.",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+        except ValidationError as val_error:
+            return ErrorResponse(
+                message=str(val_error),
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return ErrorResponse(
+                message=str(e),
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
