@@ -40,9 +40,7 @@ export default function LandingPage() {
                 {/* Hero Section */}
                 <section className="space-y-6">
                     <div className="space-y-2">
-                        <p className="label-sm">
-                            Curated Collections
-                        </p>
+                        <p className="label-sm">Curated Collections</p>
                         <h1 className="font-headline text-4xl font-extrabold leading-tight tracking-tight text-foreground">
                             Find your next{" "}
                             <span className="text-primary">masterpiece</span>{" "}
@@ -135,19 +133,6 @@ export default function LandingPage() {
                                 <PropertyCard
                                     key={room.id}
                                     room={room}
-                                    badge={
-                                        index === 0
-                                            ? {
-                                                  label: "Rare Find",
-                                                  variant: "tertiary",
-                                              }
-                                            : index === 2
-                                              ? {
-                                                    label: "New Arrival",
-                                                    variant: "secondary",
-                                                }
-                                              : undefined
-                                    }
                                     onFavoriteClick={() =>
                                         console.log("Favorite clicked", room.id)
                                     }
