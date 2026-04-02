@@ -196,11 +196,14 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Forgot Password Link - Placeholder for now */}
+          {/* Forgot Password Link */}
           <div className="flex justify-center">
-            <span className="font-body text-sm text-muted-foreground cursor-not-allowed">
+            <Link
+              href="/forgot-password"
+              className="font-body text-sm text-primary hover:underline"
+            >
               Forgot password?
-            </span>
+            </Link>
           </div>
 
           {/* Divider */}
