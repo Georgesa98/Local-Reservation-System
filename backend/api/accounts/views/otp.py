@@ -8,7 +8,7 @@ from api.accounts.services.OTPService import (
     can_resend_otp,
     send_otp,
     verify_otp,
-    get_user_contact_info,
+    get_otp_channel_info,
     OTP_CHANNEL_WHATSAPP,
 )
 from config.utils import SuccessResponse, ErrorResponse
@@ -103,7 +103,7 @@ class OTPInitiateView(APIView):
             if serializer.is_valid(raise_exception=True):
                 phone_number = serializer.data["phone_number"]
 
-                contact_info = get_user_contact_info(phone_number)
+                contact_info = get_otp_channel_info(phone_number)
 
                 send_otp_flag = request.query_params.get("send_otp", "true").lower() == "true"
                 
@@ -120,8 +120,6 @@ class OTPInitiateView(APIView):
 
                 return SuccessResponse(
                     data={
-                        "masked_phone": contact_info["masked_phone"],
-                        "masked_email": contact_info["masked_email"],
                         "has_email": contact_info["has_email"],
                         "has_telegram": contact_info["has_telegram"],
                         "is_verified": contact_info["is_verified"],

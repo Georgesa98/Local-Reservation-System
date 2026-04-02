@@ -101,42 +101,19 @@ def can_resend_otp(phone_number) -> tuple[bool, str | None]:
     return True, None
 
 
-def get_user_contact_info(phone_number: str) -> dict:
+def get_otp_channel_info(phone_number: str) -> dict:
     """
-    Fetch user contact info for OTP flow (forgot password or signup).
+    Fetch user channel availability for OTP flow.
     
-    Returns masked phone, masked email (if exists), is_verified status,
-    and whether telegram/email channels are available.
+    Returns whether email/telegram channels are available and verification status.
     
     Raises:
         User.DoesNotExist: If no user found with given phone number.
     """
     user = User.objects.get(phone_number=phone_number)
     
-    # Mask phone number: show first 3 and last 3 chars
-    phone_str = str(user.phone_number)
-    if len(phone_str) > 6:
-        masked_phone = phone_str[:3] + "***" + phone_str[-3:]
-    else:
-        masked_phone = "***" + phone_str[-2:]
-    
-    # Mask email if exists
-    masked_email = None
-    has_email = bool(user.email)
-    if user.email:
-        local, domain = user.email.split("@", 1)
-        if len(local) > 2:
-            masked_local = local[0] + "***" + local[-1]
-        else:
-            masked_local = local[0] + "***"
-        masked_email = f"{masked_local}@{domain}"
-    
-    has_telegram = bool(user.telegram_chat_id)
-    
     return {
-        "masked_phone": masked_phone,
-        "masked_email": masked_email,
-        "has_email": has_email,
-        "has_telegram": has_telegram,
+        "has_email": bool(user.email),
+        "has_telegram": bool(user.telegram_chat_id),
         "is_verified": user.is_verified,
     }
