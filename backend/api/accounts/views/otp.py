@@ -103,16 +103,20 @@ class OTPInitiateView(APIView):
             if serializer.is_valid(raise_exception=True):
                 phone_number = serializer.data["phone_number"]
 
-                # Fetch user contact info (raises DoesNotExist if not found)
                 contact_info = get_user_contact_info(phone_number)
 
-                # Send OTP via WhatsApp by default
-                ok = send_otp(phone_number, channel=OTP_CHANNEL_WHATSAPP)
-                if not ok:
-                    return ErrorResponse(
-                        message="Failed to send OTP. Please try again.",
-                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    )
+                send_otp_flag = request.query_params.get("send_otp", "true").lower() == "true"
+                
+                if send_otp_flag:
+                    ok = send_otp(phone_number, channel=OTP_CHANNEL_WHATSAPP)
+                    if not ok:
+                        return ErrorResponse(
+                            message="Failed to send OTP. Please try again.",
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        )
+                    message = "OTP sent successfully"
+                else:
+                    message = "OTP data retrieved"
 
                 return SuccessResponse(
                     data={
@@ -122,7 +126,7 @@ class OTPInitiateView(APIView):
                         "has_telegram": contact_info["has_telegram"],
                         "is_verified": contact_info["is_verified"],
                     },
-                    message="OTP sent successfully",
+                    message=message,
                 )
 
         except User.DoesNotExist:
