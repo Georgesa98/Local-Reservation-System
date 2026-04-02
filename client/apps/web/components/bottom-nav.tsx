@@ -27,8 +27,20 @@ const navItems = [
     },
 ];
 
+const hiddenNavRoutes = [
+    /^\/rooms\/[^/]+$/,
+];
+
 export function BottomNav() {
     const pathname = usePathname();
+
+    const shouldHideNav = hiddenNavRoutes.some((pattern) =>
+        pattern.test(pathname),
+    );
+
+    if (shouldHideNav) {
+        return null;
+    }
 
     const isActiveRoute = (href: string) => {
         if (href === "/") {
