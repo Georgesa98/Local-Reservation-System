@@ -96,3 +96,21 @@ class ReviewCreateSerializer(serializers.Serializer):
 class ReviewUpdateSerializer(serializers.Serializer):
     rating = serializers.IntegerField(min_value=1, max_value=5, required=False)
     comment = serializers.CharField(required=False, allow_blank=True)
+
+
+class PublicReviewSerializer(serializers.ModelSerializer):
+    guest = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = [
+            "id",
+            "guest",
+            "rating",
+            "comment",
+            "created_at",
+        ]
+
+    def get_guest(self, obj):
+        first = obj.guest.first_name or ""
+        return f"{first[0]}***" if first else "Guest ***"

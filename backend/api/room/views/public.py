@@ -1,4 +1,4 @@
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Value, BooleanField
 from rest_framework.views import APIView
 from rest_framework import status
 from api.room.models import Room
@@ -7,6 +7,7 @@ from config.utils import SuccessResponse, ErrorResponse
 
 from ..serializers import (
     PublicRoomSerializer,
+    PublicRoomCardSerializer,
     PublicRoomListQuerySerializer,
     PublicRoomSearchQuerySerializer,
     FeaturedRoomQuerySerializer,
@@ -41,16 +42,20 @@ class RoomPublicListView(APIView):
                     Wishlist.objects.filter(user=request.user, room=OuterRef("pk"))
                 )
             )
+        else:
+            queryset = queryset.annotate(
+                is_wishlisted=Value(False, output_field=BooleanField())
+            )
 
         paginator = RoomPagination()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = PublicRoomSerializer(
+            serializer = PublicRoomCardSerializer(
                 page, many=True, context={"request": request}
             )
             return SuccessResponse(data=serializer.data)
 
-        serializer = PublicRoomSerializer(
+        serializer = PublicRoomCardSerializer(
             queryset, many=True, context={"request": request}
         )
         return SuccessResponse(data=serializer.data)
@@ -112,16 +117,20 @@ class RoomPublicSearchView(APIView):
                     Wishlist.objects.filter(user=request.user, room=OuterRef("pk"))
                 )
             )
+        else:
+            queryset = queryset.annotate(
+                is_wishlisted=Value(False, output_field=BooleanField())
+            )
 
         paginator = RoomPagination()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = PublicRoomSerializer(
+            serializer = PublicRoomCardSerializer(
                 page, many=True, context={"request": request}
             )
             return SuccessResponse(data=serializer.data)
 
-        serializer = PublicRoomSerializer(
+        serializer = PublicRoomCardSerializer(
             queryset, many=True, context={"request": request}
         )
         return SuccessResponse(data=serializer.data)
@@ -153,7 +162,11 @@ class RoomPublicFeaturedView(APIView):
                     Wishlist.objects.filter(user=request.user, room=OuterRef("pk"))
                 )
             )
-        serializer = PublicRoomSerializer(
+        else:
+            queryset = queryset.annotate(
+                is_wishlisted=Value(False, output_field=BooleanField())
+            )
+        serializer = PublicRoomCardSerializer(
             queryset, many=True, context={"request": request}
         )
         return SuccessResponse(data=serializer.data)

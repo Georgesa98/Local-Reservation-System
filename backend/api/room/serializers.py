@@ -160,6 +160,7 @@ class PublicRoomSerializer(serializers.ModelSerializer):
 
     images = RoomImageSerializer(many=True, read_only=True)
     reviews = serializers.SerializerMethodField()
+    is_wishlisted = serializers.BooleanField(read_only=True, default=False)
 
     class Meta:
         model = Room
@@ -181,19 +182,12 @@ class PublicRoomSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-    def get_is_wishlisted(self, obj):
-        """Check if the current user has wishlisted this room."""
-        request = self.context.get("request")
-        if request and request.user.is_authenticated:
-            return getattr(obj, "is_wishlisted", False)
-        return False
-
     def get_reviews(self, obj):
         """Lazy import to avoid circular dependency."""
-        from api.booking.serializers import ReviewSerializer
+        from api.booking.serializers import PublicReviewSerializer
 
         reviews = obj.reviews.filter(is_published=True)
-        return ReviewSerializer(reviews, many=True).data
+        return PublicReviewSerializer(reviews, many=True).data
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -240,3 +234,29 @@ class RoomSerializer(serializers.ModelSerializer):
         # Include only published reviews.
         reviews = obj.reviews.filter(is_published=True)
         return ReviewSerializer(reviews, many=True).data
+
+
+class PublicRoomCardSerializer(serializers.ModelSerializer):
+    main_image = serializers.SerializerMethodField()
+    display_price = serializers.SerializerMethodField()
+    is_wishlisted = serializers.BooleanField(read_only=True, default=False)
+
+    class Meta:
+        model = Room
+        fields = [
+            "id",
+            "title",
+            "main_image",
+            "display_price",
+            "average_rating",
+            "ratings_count",
+            "is_wishlisted",
+        ]
+        read_only_fields = fields
+
+    def get_main_image(self, obj):
+        image = obj.images.filter(is_main=True).first() or obj.images.first()
+        return RoomImageSerializer(image).data if image else None
+
+    def get_display_price(self, obj):
+        return obj.base_price_per_night
