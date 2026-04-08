@@ -1,7 +1,9 @@
+from django.db.models import Exists, OuterRef, Value, BooleanField
 from django.shortcuts import get_object_or_404
 
 from api.booking.models import Booking, BookingStatus
 from api.room.models import Room, RoomImage
+from api.room.wishlist.models import Wishlist
 
 
 def create_room(data, user):
@@ -87,14 +89,28 @@ def list_rooms(filters=None, user=None, scope_to_manager: bool = False):
     return queryset.distinct()
 
 
-def search_public_rooms(filters=None):
+def _annotate_wishlist(queryset, user):
+    """Internal helper: annotate queryset with is_wishlisted for the given user."""
+    if user.is_authenticated:
+        return queryset.annotate(
+            is_wishlisted=Exists(
+                Wishlist.objects.filter(user=user, room=OuterRef("pk"))
+            )
+        )
+    return queryset.annotate(
+        is_wishlisted=Value(False, output_field=BooleanField())
+    )
+
+
+def search_public_rooms(filters=None, user=None):
     search_filters = {"is_active": True}
     if filters:
         search_filters.update(filters)
-    return list_rooms(filters=search_filters)
+    queryset = list_rooms(filters=search_filters)
+    return _annotate_wishlist(queryset, user)
 
 
-def list_featured_public_rooms(filters=None, limit=6):
+def list_featured_public_rooms(filters=None, user=None, limit=6):
     featured_filters = {"is_active": True, "featured_only": True}
     if filters:
         featured_filters.update(filters)
@@ -102,7 +118,7 @@ def list_featured_public_rooms(filters=None, limit=6):
     queryset = list_rooms(filters=featured_filters).order_by(
         "-average_rating", "-ratings_count", "id"
     )
-    return queryset[:limit]
+    return _annotate_wishlist(queryset, user)[:limit]
 
 
 def add_room_images(room_id, images_list, user=None):
@@ -140,3 +156,33 @@ def set_main_room_image(room_id, image_id, user=None):
     image.is_main = True
     image.save(update_fields=["is_main"])
     return image
+
+
+def annotate_wishlist(queryset, user):
+    """Annotate rooms with is_wishlisted for the given user."""
+    if user.is_authenticated:
+        return queryset.annotate(
+            is_wishlisted=Exists(
+                Wishlist.objects.filter(user=user, room=OuterRef("pk"))
+            )
+        )
+    return queryset.annotate(
+        is_wishlisted=Value(False, output_field=BooleanField())
+    )
+
+
+def get_detail_room(room_id, user):
+    """Fetch a single room for the detail view with is_wishlisted annotation.
+
+    Returns None if the room is inactive.
+    """
+    room = get_object_or_404(Room, id=room_id)
+    if not room.is_active:
+        return None
+    if user.is_authenticated:
+        return Room.objects.filter(id=room_id).annotate(
+            is_wishlisted=Exists(
+                Wishlist.objects.filter(user=user, room=OuterRef("pk"))
+            )
+        ).first()
+    return room

@@ -1,8 +1,6 @@
-from django.db.models import Exists, OuterRef, Value, BooleanField
 from rest_framework.views import APIView
 from rest_framework import status
 from api.room.models import Room
-from api.room.wishlist.models import Wishlist
 from config.utils import SuccessResponse, ErrorResponse
 
 from ..serializers import (
@@ -13,6 +11,7 @@ from ..serializers import (
     FeaturedRoomQuerySerializer,
 )
 from ..services import RoomService
+from ..services.RoomService import get_detail_room
 from .pagination import RoomPagination
 
 
@@ -20,7 +19,7 @@ class RoomPublicListView(APIView):
     """
     GET /api/rooms/public/
     Truly unauthenticated — no token required.
-    Always forces is_active=True. Uses PublicRoomSerializer (no pricing_rules/availabilities).
+    Always forces is_active=True. Uses PublicRoomCardSerializer.
     Paginated.
     """
 
@@ -32,20 +31,8 @@ class RoomPublicListView(APIView):
         query_serializer.is_valid(raise_exception=True)
 
         filters = query_serializer.validated_data.copy()
-        filters["is_active"] = True
 
-        queryset = RoomService.list_rooms(filters=filters)
-
-        if request.user.is_authenticated:
-            queryset = queryset.annotate(
-                is_wishlisted=Exists(
-                    Wishlist.objects.filter(user=request.user, room=OuterRef("pk"))
-                )
-            )
-        else:
-            queryset = queryset.annotate(
-                is_wishlisted=Value(False, output_field=BooleanField())
-            )
+        queryset = RoomService.search_public_rooms(filters=filters, user=request.user)
 
         paginator = RoomPagination()
         page = paginator.paginate_queryset(queryset, request)
@@ -72,18 +59,13 @@ class RoomPublicDetailView(APIView):
     authentication_classes = []
 
     def get(self, request, pk):
-        try:
-            room = RoomService.get_room(pk)
-            if not room.is_active:
-                return ErrorResponse(
-                    message="Not found.", status_code=status.HTTP_404_NOT_FOUND
-                )
-            serializer = PublicRoomSerializer(room, context={"request": request})
-            return SuccessResponse(data=serializer.data)
-        except Room.DoesNotExist:
+        room = get_detail_room(pk, request.user)
+        if room is None:
             return ErrorResponse(
                 message="Not found.", status_code=status.HTTP_404_NOT_FOUND
             )
+        serializer = PublicRoomSerializer(room, context={"request": request})
+        return SuccessResponse(data=serializer.data)
 
 
 class RoomPublicSearchView(APIView):
@@ -109,18 +91,7 @@ class RoomPublicSearchView(APIView):
         if featured:
             filters["featured_only"] = True
 
-        queryset = RoomService.search_public_rooms(filters=filters)
-
-        if request.user.is_authenticated:
-            queryset = queryset.annotate(
-                is_wishlisted=Exists(
-                    Wishlist.objects.filter(user=request.user, room=OuterRef("pk"))
-                )
-            )
-        else:
-            queryset = queryset.annotate(
-                is_wishlisted=Value(False, output_field=BooleanField())
-            )
+        queryset = RoomService.search_public_rooms(filters=filters, user=request.user)
 
         paginator = RoomPagination()
         page = paginator.paginate_queryset(queryset, request)
@@ -154,18 +125,8 @@ class RoomPublicFeaturedView(APIView):
         limit = validated.pop("limit", 6)
 
         queryset = RoomService.list_featured_public_rooms(
-            filters=validated, limit=limit
+            filters=validated, user=request.user, limit=limit
         )
-        if request.user.is_authenticated:
-            queryset = queryset.annotate(
-                is_wishlisted=Exists(
-                    Wishlist.objects.filter(user=request.user, room=OuterRef("pk"))
-                )
-            )
-        else:
-            queryset = queryset.annotate(
-                is_wishlisted=Value(False, output_field=BooleanField())
-            )
         serializer = PublicRoomCardSerializer(
             queryset, many=True, context={"request": request}
         )
