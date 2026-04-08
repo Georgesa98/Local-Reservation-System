@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from api.room.wishlist import WishlistService
-
 from .models import Room, RoomImage, PricingRule, RoomAvailability
 
 
@@ -115,15 +113,9 @@ class PublicRoomFilterQuerySerializer(serializers.Serializer):
                 {"check_out": "check_out must be after check_in."}
             )
 
-        if (
-            min_price is not None
-            and max_price is not None
-            and max_price < min_price
-        ):
+        if min_price is not None and max_price is not None and max_price < min_price:
             raise serializers.ValidationError(
-                {
-                    "max_price": "max_price must be greater than or equal to min_price."
-                }
+                {"max_price": "max_price must be greater than or equal to min_price."}
             )
 
         return attrs
@@ -134,7 +126,9 @@ class PublicRoomSearchQuerySerializer(PublicRoomFilterQuerySerializer):
 
 
 class FeaturedRoomQuerySerializer(PublicRoomFilterQuerySerializer):
-    limit = serializers.IntegerField(required=False, min_value=1, max_value=50, default=6)
+    limit = serializers.IntegerField(
+        required=False, min_value=1, max_value=50, default=6
+    )
 
 
 class PublicRoomListQuerySerializer(serializers.Serializer):
@@ -183,17 +177,17 @@ class PublicRoomSerializer(serializers.ModelSerializer):
             "ratings_count",
             "images",
             "reviews",
-            'is_wishlisted',
+            "is_wishlisted",
         ]
         read_only_fields = fields
 
     def get_is_wishlisted(self, obj):
         """Check if the current user has wishlisted this room."""
-        user = self.context.get("request").user
-        if user.is_authenticated:
-            return WishlistService.check_if_wishlisted(user, obj)
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return getattr(obj, "is_wishlisted", False)
         return False
-    
+
     def get_reviews(self, obj):
         """Lazy import to avoid circular dependency."""
         from api.booking.serializers import ReviewSerializer
