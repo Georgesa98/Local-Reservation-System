@@ -36,10 +36,10 @@ class RoomPublicListView(APIView):
         paginator = RoomPagination()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = PublicRoomSerializer(page, many=True)
+            serializer = PublicRoomSerializer(page, many=True, context = {'request': request})
             return SuccessResponse(data=serializer.data)
 
-        serializer = PublicRoomSerializer(queryset, many=True)
+        serializer = PublicRoomSerializer(queryset, many=True, context = {'request': request})
         return SuccessResponse(data=serializer.data)
 
 
@@ -60,7 +60,7 @@ class RoomPublicDetailView(APIView):
                 return ErrorResponse(
                     message="Not found.", status_code=status.HTTP_404_NOT_FOUND
                 )
-            serializer = PublicRoomSerializer(room)
+            serializer = PublicRoomSerializer(room, context={'request': request})
             return SuccessResponse(data=serializer.data)
         except Room.DoesNotExist:
             return ErrorResponse(
@@ -96,10 +96,10 @@ class RoomPublicSearchView(APIView):
         paginator = RoomPagination()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = PublicRoomSerializer(page, many=True)
+            serializer = PublicRoomSerializer(page, many=True, context = {'request': request})
             return SuccessResponse(data=serializer.data)
 
-        serializer = PublicRoomSerializer(queryset, many=True)
+        serializer = PublicRoomSerializer(queryset, many=True, context = {'request': request})
         return SuccessResponse(data=serializer.data)
 
 
@@ -123,5 +123,5 @@ class RoomPublicFeaturedView(APIView):
         queryset = RoomService.list_featured_public_rooms(
             filters=validated, limit=limit
         )
-        serializer = PublicRoomSerializer(queryset, many=True)
+        serializer = PublicRoomSerializer(queryset, many=True, context = {'request': request})
         return SuccessResponse(data=serializer.data)

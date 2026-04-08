@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from api.room.wishlist import WishlistService
+
 from .models import Room, RoomImage, PricingRule, RoomAvailability
 
 
@@ -181,9 +183,17 @@ class PublicRoomSerializer(serializers.ModelSerializer):
             "ratings_count",
             "images",
             "reviews",
+            'is_wishlisted',
         ]
         read_only_fields = fields
 
+    def get_is_wishlisted(self, obj):
+        """Check if the current user has wishlisted this room."""
+        user = self.context.get("request").user
+        if user.is_authenticated:
+            return WishlistService.check_if_wishlisted(user, obj)
+        return False
+    
     def get_reviews(self, obj):
         """Lazy import to avoid circular dependency."""
         from api.booking.serializers import ReviewSerializer
