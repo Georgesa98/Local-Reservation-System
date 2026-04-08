@@ -5,4 +5,4 @@ from .models import Wishlist
 class WishlistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wishlist
-        fields = ["id", "user", "room", "created_at"]
+        read_only_fields = ["id", "user", "room" "created_at"]
