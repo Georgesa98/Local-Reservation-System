@@ -1,3 +1,4 @@
+from django.db import IntegrityError, transaction
 from django.shortcuts import render
 from rest_framework.views import APIView, status
 from rest_framework.permissions import IsAuthenticated
@@ -18,8 +19,14 @@ class ListToggleWishlistView(APIView):
 
     def get(self, request):
         user_id = request.user.id
-        page_number = int(request.query_params.get("page", 1))
-        page_size = int(request.query_params.get("page_size", 10))
+        try:
+            page_number = int(request.query_params.get("page", 1))
+            page_size = int(request.query_params.get("page_size", 10))
+        except ValueError:
+            return ErrorResponse(
+                message="Invalid pagination parameters",
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
         page_size = min(page_size, 100)
         queryset = list_user_wishlists(user_id)
         paginator = Paginator(queryset, page_size)
@@ -30,7 +37,9 @@ class ListToggleWishlistView(APIView):
                 message="Invalid page number", status_code=status.HTTP_404_NOT_FOUND
             )
         except Exception as e:
-            return ErrorResponse({"error": str(e)}, status=400)
+            return ErrorResponse(
+                {"error": str(e)}, status_code=status.HTTP_400_BAD_REQUEST
+            )
         serializer = WishlistSerializer(page.object_list, many=True)
         response_data = {
             "count": paginator.count,
@@ -56,17 +65,24 @@ class ListToggleWishlistView(APIView):
             )
 
             if not is_wishlisted:
-                add_wishlist(request.user, serializer.validated_data["room"])
+                with transaction.atomic():
+                    add_wishlist(request.user, serializer.validated_data["room"])
                 return SuccessResponse(
                     message="Room added to wishlist successfully",
                     status_code=status.HTTP_201_CREATED,
                 )
-            elif is_wishlisted:
+            else:
                 remove_wishlist(request.user, serializer.validated_data["room"])
                 return SuccessResponse(
                     message="Room removed from wishlist successfully",
                     status_code=status.HTTP_200_OK,
                 )
+        except IntegrityError:
+            return ErrorResponse(
+                message="Wishlist state changed concurrently",
+                errors={"detail": "Please try again"},
+                status_code=status.HTTP_409_CONFLICT,
+            )
         except DjangoValidationError as e:
             return ErrorResponse(
                 message=str(e),
