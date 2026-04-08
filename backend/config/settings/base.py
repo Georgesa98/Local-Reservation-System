@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     "api",
     "api.accounts",
     "api.room",
+    "api.room.wishlist",
     "api.booking",
     "api.notification",
     "api.payment",
