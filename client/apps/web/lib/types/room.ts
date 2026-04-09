@@ -18,7 +18,7 @@ export interface RoomCard {
     title: string;
     main_image: RoomImage;
     average_rating: string;
-    rating_count: number;
+    ratings_count: number;
     display_price: string;
     is_wishlisted: boolean;
 }

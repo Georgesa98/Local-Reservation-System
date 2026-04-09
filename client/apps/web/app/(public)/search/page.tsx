@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, MapPin, Sparkles } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
@@ -9,7 +10,7 @@ import { cn } from "@workspace/ui/lib/utils";
 import { toast } from "sonner";
 import { PropertyCard } from "@/components/property-card";
 import type { RoomCard, WishlistParams } from "@/lib/types/room";
-import { fetchSearchCatalogRooms, wishlistRoom } from "./api";
+import { fetchSearchTopRatedRooms, wishlistRoom } from "./api";
 
 const categories = [
     { id: "all", label: "All", keywords: [] as string[] },
@@ -31,8 +32,6 @@ const categories = [
         keywords: ["business", "studio", "work"],
     },
 ];
-
-const roomsQueryKey = ["rooms", "search", "catalog", { limit: 18 }];
 
 function matchesCategory(room: RoomCard, categoryId: string) {
     if (categoryId === "all") return true;
@@ -63,14 +62,29 @@ function getAreaFromTitle(title: string) {
 }
 
 export default function SearchPage() {
-    const [searchQuery, setSearchQuery] = useState("");
+    const searchParams = useSearchParams();
+    const initialQuery = searchParams.get("q") || "";
+
+    const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [activeCategory, setActiveCategory] = useState("all");
     const [activeArea, setActiveArea] = useState("all");
     const queryClient = useQueryClient();
 
+    const normalizedQuery = searchQuery.trim();
+    const roomsQueryKey = [
+        "rooms",
+        "search",
+        "top-rated",
+        { location: normalizedQuery || "", limit: 18 },
+    ];
+
     const { data, isLoading, isError } = useQuery({
         queryKey: roomsQueryKey,
-        queryFn: fetchSearchCatalogRooms,
+        queryFn: () =>
+            fetchSearchTopRatedRooms({
+                location: normalizedQuery || undefined,
+                limit: 18,
+            }),
     });
 
     const rooms = data || [];
@@ -89,13 +103,13 @@ export default function SearchPage() {
     }, [rooms]);
 
     const filteredRooms = useMemo(() => {
-        const normalizedQuery = searchQuery.trim().toLowerCase();
+        const normalizedSearchText = searchQuery.trim().toLowerCase();
 
         return rooms.filter((room) => {
             const area = getAreaFromTitle(room.title);
             const matchesText =
-                normalizedQuery.length === 0 ||
-                room.title.toLowerCase().includes(normalizedQuery);
+                normalizedSearchText.length === 0 ||
+                room.title.toLowerCase().includes(normalizedSearchText);
             const matchesArea = activeArea === "all" || area === activeArea;
 
             return (
@@ -106,11 +120,10 @@ export default function SearchPage() {
         });
     }, [rooms, searchQuery, activeArea, activeCategory]);
 
-    const topRatedRooms = useMemo(() => {
-        return [...filteredRooms]
-            .sort((a, b) => Number(b.average_rating) - Number(a.average_rating))
-            .slice(0, 8);
-    }, [filteredRooms]);
+    const topRatedRooms = useMemo(
+        () => filteredRooms.slice(0, 8),
+        [filteredRooms],
+    );
 
     async function handleRoomWishlist(wishlistData: WishlistParams) {
         if (!wishlistData.user_id) {
