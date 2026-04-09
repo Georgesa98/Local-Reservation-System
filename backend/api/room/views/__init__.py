@@ -15,6 +15,7 @@ from .public import (
     RoomPublicDetailView,
     RoomPublicSearchView,
     RoomPublicFeaturedView,
+    RoomPublicTopRatedView,
 )
 from .dashboard import DashboardMetricsView
 
@@ -34,5 +35,6 @@ __all__ = [
     "RoomPublicDetailView",
     "RoomPublicSearchView",
     "RoomPublicFeaturedView",
+    "RoomPublicTopRatedView",
     "DashboardMetricsView",
 ]

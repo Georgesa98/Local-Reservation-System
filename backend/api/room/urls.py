@@ -16,13 +16,15 @@ from .views import (
     RoomPublicSearchView,
     RoomPublicFeaturedView,
     DashboardMetricsView,
+    RoomPublicTopRatedView,
 )
 
 
 urlpatterns = [
     # Dashboard — IsAuthenticated + IsManager | IsAdmin
-    path("dashboard/metrics/", DashboardMetricsView.as_view(), name="dashboard-metrics"),
-
+    path(
+        "dashboard/metrics/", DashboardMetricsView.as_view(), name="dashboard-metrics"
+    ),
     # Public — no auth required
     path("public/", RoomPublicListView.as_view(), name="room-public-list"),
     path("public/search/", RoomPublicSearchView.as_view(), name="room-public-search"),
@@ -31,12 +33,15 @@ urlpatterns = [
         RoomPublicFeaturedView.as_view(),
         name="room-public-featured",
     ),
+    path(
+        "public/top-rated/",
+        RoomPublicTopRatedView.as_view(),
+        name="room-public-top-rated",
+    ),
     path("public/<int:pk>/", RoomPublicDetailView.as_view(), name="room-public-detail"),
-
     # Admin — IsAuthenticated + IsAdmin, all rooms across managers
     path("admin/", AdminRoomListView.as_view(), name="room-admin-list"),
     path("admin/<int:pk>/", AdminRoomDetailView.as_view(), name="room-admin-detail"),
-
     # Manager — IsAuthenticated + IsManager, scoped to own rooms
     path("", RoomListCreateView.as_view(), name="room-list-create"),
     path("<int:pk>/", RoomDetailView.as_view(), name="room-detail"),

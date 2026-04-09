@@ -97,9 +97,7 @@ def _annotate_wishlist(queryset, user):
                 Wishlist.objects.filter(user=user, room=OuterRef("pk"))
             )
         )
-    return queryset.annotate(
-        is_wishlisted=Value(False, output_field=BooleanField())
-    )
+    return queryset.annotate(is_wishlisted=Value(False, output_field=BooleanField()))
 
 
 def search_public_rooms(filters=None, user=None):
@@ -166,9 +164,7 @@ def annotate_wishlist(queryset, user):
                 Wishlist.objects.filter(user=user, room=OuterRef("pk"))
             )
         )
-    return queryset.annotate(
-        is_wishlisted=Value(False, output_field=BooleanField())
-    )
+    return queryset.annotate(is_wishlisted=Value(False, output_field=BooleanField()))
 
 
 def get_detail_room(room_id, user):
@@ -180,9 +176,20 @@ def get_detail_room(room_id, user):
     if not room.is_active:
         return None
     if user.is_authenticated:
-        return Room.objects.filter(id=room_id).annotate(
-            is_wishlisted=Exists(
-                Wishlist.objects.filter(user=user, room=OuterRef("pk"))
+        return (
+            Room.objects.filter(id=room_id)
+            .annotate(
+                is_wishlisted=Exists(
+                    Wishlist.objects.filter(user=user, room=OuterRef("pk"))
+                )
             )
-        ).first()
+            .first()
+        )
     return room
+
+
+def get_top_rated_rooms(limit=5):
+    """Fetch top-rated rooms for the homepage."""
+    return Room.objects.filter(is_active=True).order_by(
+        "-average_rating", "-ratings_count", "id"
+    )[:limit]

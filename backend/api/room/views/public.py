@@ -131,3 +131,31 @@ class RoomPublicFeaturedView(APIView):
             queryset, many=True, context={"request": request}
         )
         return SuccessResponse(data=serializer.data)
+
+
+class RoomPublicTopRatedView(APIView):
+    """
+    GET /api/rooms/public/top-rated/
+    Public list of top-rated active rooms ordered by rating and ratings_count.
+    Supports optional room filters + limit.
+    """
+
+    permission_classes = []
+    authentication_classes = []
+
+    def get(self, request):
+        query_serializer = FeaturedRoomQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
+
+        validated = query_serializer.validated_data.copy()
+        limit = validated.pop("limit", 6)
+
+        # Reuse featured room logic but ignore featured_only filter
+        filters = {k: v for k, v in validated.items() if k != "featured_only"}
+        queryset = RoomService.list_featured_public_rooms(
+            filters=filters, user=request.user, limit=limit
+        )
+        serializer = PublicRoomCardSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return SuccessResponse(data=serializer.data, status_code=status.HTTP_200_OK)
