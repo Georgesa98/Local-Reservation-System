@@ -31,6 +31,7 @@ export interface Room {
     latitude: number | null;
     longitude: number | null;
     capacity: number;
+    is_wishlisted: boolean;
     services: string[];
     average_rating: string; // Backend returns as string
     ratings_count: number;

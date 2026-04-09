@@ -1,9 +1,9 @@
 "use client";
 
 import { use } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Share2, Star, MessageCircle } from "lucide-react";
+import { ArrowLeft, Share2, Star, MessageCircle, Heart } from "lucide-react";
 import { Button } from "@workspace/ui/components/button";
 import { Badge } from "@workspace/ui/components/badge";
 import { fetchRoomById } from "./api";
@@ -12,6 +12,10 @@ import { AmenitiesGrid } from "@/components/room-detail/amenities-grid";
 import { ReviewsSection } from "@/components/room-detail/reviews-section";
 import { RoomMapWrapper } from "@/components/room-detail/room-map-wrapper";
 import { StickyBookingBar } from "@/components/room-detail/sticky-booking-bar";
+import { wishlistRoom } from "../../api";
+import useCurrentUser from "@/hooks/useCurrentUser";
+import { toast } from "sonner";
+import { Room } from "@/lib/types/room";
 
 interface RoomDetailPageProps {
     params: Promise<{
@@ -22,9 +26,17 @@ interface RoomDetailPageProps {
 export default function RoomDetailPage({ params }: RoomDetailPageProps) {
     const router = useRouter();
     const { id } = use(params);
+    const queryClient = useQueryClient();
+    const user = useCurrentUser();
 
-    const { data: room, isLoading, isError } = useQuery({
-        queryKey: ["room", id],
+    const roomDetailsQueryKey = ["room", id];
+
+    const {
+        data: room,
+        isLoading,
+        isError,
+    } = useQuery({
+        queryKey: roomDetailsQueryKey,
         queryFn: () => fetchRoomById(id),
     });
 
@@ -47,7 +59,25 @@ export default function RoomDetailPage({ params }: RoomDetailPageProps) {
             alert("Link copied to clipboard!");
         }
     };
-
+    const handleWishlist = async () => {
+        try {
+            const message = await wishlistRoom({
+                room_id: room?.id,
+                user_id: user.user?.user_id,
+            });
+            queryClient.setQueryData<Room>(roomDetailsQueryKey, (room) =>
+                room
+                    ? {
+                          ...room,
+                          is_wishlisted: !room.is_wishlisted,
+                      }
+                    : undefined,
+            );
+            toast.success(message);
+        } catch (error) {
+            toast.error("Failed to update wishlist. Please try again.");
+        }
+    };
     const handleReserve = () => {
         // TODO: Navigate to booking flow
         console.log("Reserve clicked for room:", id);
@@ -97,9 +127,7 @@ export default function RoomDetailPage({ params }: RoomDetailPageProps) {
                     The room you're looking for doesn't exist or is no longer
                     available.
                 </p>
-                <Button onClick={() => router.push("/")}>
-                    Back to home
-                </Button>
+                <Button onClick={() => router.push("/")}>Back to home</Button>
             </div>
         );
     }
@@ -130,8 +158,16 @@ export default function RoomDetailPage({ params }: RoomDetailPageProps) {
                         >
                             <Share2 className="h-5 w-5" />
                         </button>
-                        <button className="transition-transform duration-200 active:scale-95">
-                            <Star className="h-5 w-5" />
+                        <button
+                            className="transition-transform duration-200 active:scale-95"
+                            onClick={handleWishlist}
+                        >
+                            <Heart
+                                className="h-5 w-5"
+                                fill={
+                                    room.is_wishlisted ? "currentColor" : "none"
+                                }
+                            />
                         </button>
                     </div>
                 </div>
@@ -199,9 +235,7 @@ export default function RoomDetailPage({ params }: RoomDetailPageProps) {
                     <div className="rounded-2xl bg-card p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-semibold">
-                                    Have questions?
-                                </p>
+                                <p className="font-semibold">Have questions?</p>
                                 <p className="text-sm text-muted-foreground">
                                     Chat feature coming soon
                                 </p>

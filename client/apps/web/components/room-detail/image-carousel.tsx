@@ -16,7 +16,7 @@ export function ImageCarousel({ images, roomTitle }: ImageCarouselProps) {
 
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(
         /\/$/,
-        ""
+        "",
     ).replace(/\/api$/, "");
 
     useEffect(() => {
@@ -58,8 +58,8 @@ export function ImageCarousel({ images, roomTitle }: ImageCarouselProps) {
                 className="flex h-full w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
                 {sortedImages.map((image, index) => {
-                    const imageUrl = `${baseUrl}${image.image}`;
-                    const imageAlt = image.alt_text || `${roomTitle} - Image ${index + 1}`;
+                    const imageAlt =
+                        image.alt_text || `${roomTitle} - Image ${index + 1}`;
 
                     return (
                         <div
@@ -67,7 +67,7 @@ export function ImageCarousel({ images, roomTitle }: ImageCarouselProps) {
                             className="relative h-full min-w-full shrink-0 snap-center"
                         >
                             <Image
-                                src={imageUrl}
+                                src={image.image}
                                 alt={imageAlt}
                                 fill
                                 className="object-cover"
@@ -89,7 +89,7 @@ export function ImageCarousel({ images, roomTitle }: ImageCarouselProps) {
                                 "h-2 w-2 rounded-full transition-colors",
                                 index === currentIndex
                                     ? "bg-white"
-                                    : "bg-white/40"
+                                    : "bg-white/40",
                             )}
                         />
                     ))}
