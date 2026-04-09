@@ -1,8 +1,8 @@
-from django.db.models import Exists, OuterRef, Value, BooleanField
+from django.db.models import Exists, OuterRef, Value, BooleanField, Prefetch
 from django.shortcuts import get_object_or_404
 
 from api.booking.models import Booking, BookingStatus
-from api.room.models import Room, RoomImage
+from api.room.models import Room, RoomImage, RoomAvailability
 from api.room.wishlist.models import Wishlist
 
 
@@ -32,13 +32,14 @@ def delete_room(room_id, user=None):
 
 
 def _exclude_unavailable_rooms(queryset, check_in, check_out):
-    blocked_room_ids = queryset.filter(
-        availabilities__start_date__lt=check_out,
-        availabilities__end_date__gt=check_in,
-    ).values_list("id", flat=True)
+    blocked_ranges = RoomAvailability.objects.filter(
+        room_id=OuterRef("pk"),
+        start_date__lt=check_out,
+        end_date__gt=check_in,
+    )
 
-    booked_room_ids = Booking.objects.filter(
-        room_id__in=queryset.values_list("id", flat=True),
+    booked_ranges = Booking.objects.filter(
+        room_id=OuterRef("pk"),
         status__in=[
             BookingStatus.PENDING,
             BookingStatus.CONFIRMED,
@@ -46,11 +47,58 @@ def _exclude_unavailable_rooms(queryset, check_in, check_out):
         ],
         check_in_date__lt=check_out,
         check_out_date__gt=check_in,
-    ).values_list("room_id", flat=True)
+    )
 
-    unavailable_ids = set(blocked_room_ids) | set(booked_room_ids)
-    if unavailable_ids:
-        queryset = queryset.exclude(id__in=unavailable_ids)
+    return queryset.annotate(
+        has_blocked_range=Exists(blocked_ranges),
+        has_active_booking=Exists(booked_ranges),
+    ).filter(has_blocked_range=False, has_active_booking=False)
+
+
+def _optimize_public_card_queryset(queryset):
+    return queryset.prefetch_related(
+        Prefetch("images", queryset=RoomImage.objects.order_by("-is_main", "id"))
+    )
+
+
+def _apply_room_filters(queryset, filters):
+    if not filters:
+        return queryset
+
+    if filters.get("is_active") is not None:
+        queryset = queryset.filter(is_active=filters["is_active"])
+
+    if filters.get("location"):
+        queryset = queryset.filter(location__icontains=filters["location"])
+
+    if filters.get("base_price_per_night"):
+        queryset = queryset.filter(base_price_per_night=filters["base_price_per_night"])
+
+    if filters.get("capacity"):
+        queryset = queryset.filter(capacity=filters["capacity"])
+
+    if filters.get("average_rating"):
+        queryset = queryset.filter(average_rating__gte=filters["average_rating"])
+
+    if filters.get("min_price") is not None:
+        queryset = queryset.filter(base_price_per_night__gte=filters["min_price"])
+
+    if filters.get("max_price") is not None:
+        queryset = queryset.filter(base_price_per_night__lte=filters["max_price"])
+
+    if filters.get("guests"):
+        queryset = queryset.filter(capacity__gte=filters["guests"])
+
+    if filters.get("manager"):
+        queryset = queryset.filter(manager=filters["manager"])
+
+    if filters.get("featured_only") is True:
+        queryset = queryset.filter(average_rating__gte=4)
+
+    check_in = filters.get("check_in")
+    check_out = filters.get("check_out")
+    if check_in and check_out:
+        queryset = _exclude_unavailable_rooms(queryset, check_in, check_out)
 
     return queryset
 
@@ -60,33 +108,8 @@ def list_rooms(filters=None, user=None, scope_to_manager: bool = False):
     if scope_to_manager and user is not None:
         queryset = queryset.filter(manager=user, is_active=True)
 
-    if filters:
-        if "location" in filters and filters["location"]:
-            queryset = queryset.filter(location__icontains=filters["location"])
-        if "base_price_per_night" in filters and filters["base_price_per_night"]:
-            queryset = queryset.filter(
-                base_price_per_night=filters["base_price_per_night"]
-            )
-        if "capacity" in filters and filters["capacity"]:
-            queryset = queryset.filter(capacity=filters["capacity"])
-        if "average_rating" in filters and filters["average_rating"]:
-            queryset = queryset.filter(average_rating__gte=filters["average_rating"])
-        if "min_price" in filters and filters["min_price"] is not None:
-            queryset = queryset.filter(base_price_per_night__gte=filters["min_price"])
-        if "max_price" in filters and filters["max_price"] is not None:
-            queryset = queryset.filter(base_price_per_night__lte=filters["max_price"])
-        if "guests" in filters and filters["guests"]:
-            queryset = queryset.filter(capacity__gte=filters["guests"])
-        if "manager" in filters and filters["manager"]:
-            queryset = queryset.filter(manager=filters["manager"])
-        if "featured_only" in filters and filters["featured_only"] is True:
-            queryset = queryset.filter(average_rating__gte=4)
-        if "check_in" in filters and "check_out" in filters:
-            queryset = _exclude_unavailable_rooms(
-                queryset, filters["check_in"], filters["check_out"]
-            )
-
-    return queryset.distinct()
+    queryset = _apply_room_filters(queryset, filters)
+    return queryset
 
 
 def _annotate_wishlist(queryset, user):
@@ -105,7 +128,8 @@ def search_public_rooms(filters=None, user=None):
     if filters:
         search_filters.update(filters)
     queryset = list_rooms(filters=search_filters)
-    return _annotate_wishlist(queryset, user)
+    queryset = _annotate_wishlist(queryset, user)
+    return _optimize_public_card_queryset(queryset)
 
 
 def list_featured_public_rooms(filters=None, user=None, limit=6):
@@ -116,7 +140,22 @@ def list_featured_public_rooms(filters=None, user=None, limit=6):
     queryset = list_rooms(filters=featured_filters).order_by(
         "-average_rating", "-ratings_count", "id"
     )
-    return _annotate_wishlist(queryset, user)[:limit]
+    queryset = _annotate_wishlist(queryset, user)
+    queryset = _optimize_public_card_queryset(queryset)
+    return queryset[:limit]
+
+
+def list_top_rated_public_rooms(filters=None, user=None, limit=6):
+    top_rated_filters = {"is_active": True}
+    if filters:
+        top_rated_filters.update(filters)
+
+    queryset = list_rooms(filters=top_rated_filters).order_by(
+        "-average_rating", "-ratings_count", "id"
+    )
+    queryset = _annotate_wishlist(queryset, user)
+    queryset = _optimize_public_card_queryset(queryset)
+    return queryset[:limit]
 
 
 def add_room_images(room_id, images_list, user=None):

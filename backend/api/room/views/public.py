@@ -150,10 +150,8 @@ class RoomPublicTopRatedView(APIView):
         validated = query_serializer.validated_data.copy()
         limit = validated.pop("limit", 6)
 
-        # Reuse featured room logic but ignore featured_only filter
-        filters = {k: v for k, v in validated.items() if k != "featured_only"}
-        queryset = RoomService.list_featured_public_rooms(
-            filters=filters, user=request.user, limit=limit
+        queryset = RoomService.list_top_rated_public_rooms(
+            filters=validated, user=request.user, limit=limit
         )
         serializer = PublicRoomCardSerializer(
             queryset, many=True, context={"request": request}
