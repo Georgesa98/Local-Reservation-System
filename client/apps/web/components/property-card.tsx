@@ -1,14 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Heart } from "lucide-react";
-import { Badge } from "@workspace/ui/components/badge";
+import { Heart } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { StarRating } from "./star-rating";
-import type { Room } from "@/lib/types/room";
+import type { RoomCard, WishlistParams } from "@/lib/types/room";
+import useCurrentUser from "@/hooks/useCurrentUser";
 
 interface PropertyCardProps {
-    room: Room;
-    onFavoriteClick?: () => void;
+    room: RoomCard;
+    onFavoriteClick: (data: WishlistParams) => void;
     className?: string;
 }
 
@@ -17,7 +17,8 @@ export function PropertyCard({
     onFavoriteClick,
     className,
 }: PropertyCardProps) {
-    const mainImage = room.images.find((img) => img.is_main) || room.images[0];
+    const user = useCurrentUser();
+    const mainImage = room.main_image;
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(
         /\/$/,
         "",
@@ -45,12 +46,18 @@ export function PropertyCard({
                     <button
                         onClick={(e) => {
                             e.preventDefault();
-                            onFavoriteClick?.();
+                            onFavoriteClick({
+                                room_id: room.id,
+                                user_id: user.user?.user_id || 0,
+                            });
                         }}
                         className="absolute right-4 top-4 flex items-center justify-center rounded-full bg-white/20 p-2.5 text-white backdrop-blur-md transition-colors hover:bg-white/30"
                         aria-label="Add to favorites"
                     >
-                        <Heart className="h-5 w-5" />
+                        <Heart
+                            className="h-5 w-5"
+                            fill={room.is_wishlisted ? "currentColor" : "none"}
+                        />
                     </button>
                 </div>
 
@@ -68,16 +75,10 @@ export function PropertyCard({
                         />
                     </div>
 
-                    {/* Location */}
-                    <p className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        {room.location}
-                    </p>
-
                     {/* Price */}
                     <div className="flex items-baseline gap-1 pt-2">
                         <span className="text-lg font-extrabold text-primary">
-                            ${parseFloat(room.base_price_per_night).toFixed(0)}
+                            ${parseFloat(room.display_price).toFixed(0)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                             / night

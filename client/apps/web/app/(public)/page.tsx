@@ -6,8 +6,10 @@ import { Search, SlidersHorizontal, MapIcon } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { PropertyCard } from "@/components/property-card";
-import { fetchFeaturedRooms } from "./api";
+import { fetchFeaturedRooms, wishlistRoom } from "./api";
 import { cn } from "@workspace/ui/lib/utils";
+import { WishlistParams } from "@/lib/types/room";
+import { toast } from "sonner";
 
 const categories = [
     {
@@ -32,6 +34,15 @@ export default function LandingPage() {
     });
 
     const rooms = data || [];
+
+    async function handleRoomWishlist(data: WishlistParams) {
+        try {
+            const message = await wishlistRoom(data);
+            toast.success(message);
+        } catch (error) {
+            toast.error("Failed to update wishlist. Please try again.");
+        }
+    }
 
     return (
         <>
@@ -133,9 +144,7 @@ export default function LandingPage() {
                                 <PropertyCard
                                     key={room.id}
                                     room={room}
-                                    onFavoriteClick={() =>
-                                        console.log("Favorite clicked", room.id)
-                                    }
+                                    onFavoriteClick={handleRoomWishlist}
                                 />
                             ))}
                         </div>
