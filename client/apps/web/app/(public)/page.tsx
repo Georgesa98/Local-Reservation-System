@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, MapIcon } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { PropertyCard } from "@/components/property-card";
 import { fetchFeaturedRooms, wishlistRoom } from "./api";
 import { cn } from "@workspace/ui/lib/utils";
-import { WishlistParams } from "@/lib/types/room";
+import type { RoomCard, WishlistParams } from "@/lib/types/room";
 import { toast } from "sonner";
 
 const categories = [
@@ -26,18 +26,32 @@ const categories = [
 export default function LandingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState("modern-villas");
+    const queryClient = useQueryClient();
+    const roomsQueryKey = ["rooms", "featured", { limit: 6 }];
 
     // Fetch featured rooms
     const { data, isLoading, isError } = useQuery({
-        queryKey: ["rooms", "featured", { limit: 6 }],
+        queryKey: roomsQueryKey,
         queryFn: () => fetchFeaturedRooms({ limit: 6 }),
     });
 
     const rooms = data || [];
 
-    async function handleRoomWishlist(data: WishlistParams) {
+    async function handleRoomWishlist(wishlistData: WishlistParams) {
         try {
-            const message = await wishlistRoom(data);
+            const message = await wishlistRoom(wishlistData);
+            queryClient.setQueryData<RoomCard[]>(
+                roomsQueryKey,
+                (currentRooms) =>
+                    currentRooms?.map((room) =>
+                        room.id === wishlistData.room_id
+                            ? {
+                                  ...room,
+                                  is_wishlisted: !room.is_wishlisted,
+                              }
+                            : room,
+                    ),
+            );
             toast.success(message);
         } catch (error) {
             toast.error("Failed to update wishlist. Please try again.");
