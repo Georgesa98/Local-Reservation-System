@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, MapIcon } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
@@ -26,6 +27,7 @@ const categories = [
 export default function LandingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState("modern-villas");
+    const router = useRouter();
     const queryClient = useQueryClient();
     const roomsQueryKey = ["rooms", "featured", { limit: 6 }];
 
@@ -58,6 +60,17 @@ export default function LandingPage() {
         }
     }
 
+    function goToSearch() {
+        const query = searchQuery.trim();
+
+        if (!query) {
+            router.push("/search");
+            return;
+        }
+
+        router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+
     return (
         <>
             {/* Main Content */}
@@ -82,11 +95,17 @@ export default function LandingPage() {
                                 placeholder="Where to next?"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        goToSearch();
+                                    }
+                                }}
                                 className="border-none bg-transparent text-sm font-medium focus-visible:ring-0"
                             />
                         </div>
                         <Button
                             size="icon"
+                            onClick={goToSearch}
                             className="h-12 w-12 rounded-full bg-primary from-primary to-primary-container shadow-lg transition-transform active:scale-95"
                         >
                             <SlidersHorizontal className="h-5 w-5" />
@@ -96,21 +115,27 @@ export default function LandingPage() {
 
                 {/* Category Chips */}
                 <section className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {categories.map((category) => (
-                        <Button
-                            key={category.id}
-                            variant={category.active ? "default" : "outline"}
-                            onClick={() => setActiveCategory(category.id)}
-                            className={cn(
-                                "flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3 text-sm font-semibold shadow-md transition-colors",
-                                category.active && "bg-primary text-white",
-                                !category.active &&
-                                    "border-0 bg-card text-muted-foreground hover:bg-muted",
-                            )}
-                        >
-                            <span className="text-sm">{category.label}</span>
-                        </Button>
-                    ))}
+                    {categories.map((category) => {
+                        const isActive = activeCategory === category.id;
+
+                        return (
+                            <Button
+                                key={category.id}
+                                variant={isActive ? "default" : "outline"}
+                                onClick={() => setActiveCategory(category.id)}
+                                className={cn(
+                                    "flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3 text-sm font-semibold shadow-md transition-colors",
+                                    isActive && "bg-primary text-white",
+                                    !isActive &&
+                                        "border-0 bg-card text-muted-foreground hover:bg-muted",
+                                )}
+                            >
+                                <span className="text-sm">
+                                    {category.label}
+                                </span>
+                            </Button>
+                        );
+                    })}
                 </section>
 
                 {/* Featured Properties */}
@@ -154,7 +179,7 @@ export default function LandingPage() {
                     {/* Property Cards */}
                     {!isLoading && !isError && (
                         <div className="flex flex-col gap-8">
-                            {rooms.map((room, index) => (
+                            {rooms.map((room) => (
                                 <PropertyCard
                                     key={room.id}
                                     room={room}
