@@ -15,9 +15,21 @@ const categories = [
     { id: "all", label: "All", keywords: [] as string[] },
     { id: "family", label: "Family", keywords: ["family", "suite", "2 bed"] },
     { id: "budget", label: "Budget", keywords: ["budget", "basic", "economy"] },
-    { id: "premium", label: "Premium", keywords: ["luxury", "premium", "executive"] },
-    { id: "weekend", label: "Weekend", keywords: ["resort", "weekend", "getaway"] },
-    { id: "work", label: "Workcation", keywords: ["business", "studio", "work"] },
+    {
+        id: "premium",
+        label: "Premium",
+        keywords: ["luxury", "premium", "executive"],
+    },
+    {
+        id: "weekend",
+        label: "Weekend",
+        keywords: ["resort", "weekend", "getaway"],
+    },
+    {
+        id: "work",
+        label: "Workcation",
+        keywords: ["business", "studio", "work"],
+    },
 ];
 
 const roomsQueryKey = ["rooms", "search", "catalog", { limit: 18 }];
@@ -40,7 +52,10 @@ function getAreaFromTitle(title: string) {
     for (const separator of separators) {
         const parts = normalized.split(separator);
         if (parts.length > 1) {
-            return parts[parts.length - 1].trim();
+            const areaSegment = parts[parts.length - 1];
+            if (areaSegment) {
+                return areaSegment.trim();
+            }
         }
     }
 
@@ -83,7 +98,11 @@ export default function SearchPage() {
                 room.title.toLowerCase().includes(normalizedQuery);
             const matchesArea = activeArea === "all" || area === activeArea;
 
-            return matchesText && matchesArea && matchesCategory(room, activeCategory);
+            return (
+                matchesText &&
+                matchesArea &&
+                matchesCategory(room, activeCategory)
+            );
         });
     }, [rooms, searchQuery, activeArea, activeCategory]);
 
@@ -101,15 +120,17 @@ export default function SearchPage() {
 
         try {
             const message = await wishlistRoom(wishlistData);
-            queryClient.setQueryData<RoomCard[]>(roomsQueryKey, (currentRooms) =>
-                currentRooms?.map((room) =>
-                    room.id === wishlistData.room_id
-                        ? {
-                              ...room,
-                              is_wishlisted: !room.is_wishlisted,
-                          }
-                        : room,
-                ),
+            queryClient.setQueryData<RoomCard[]>(
+                roomsQueryKey,
+                (currentRooms) =>
+                    currentRooms?.map((room) =>
+                        room.id === wishlistData.room_id
+                            ? {
+                                  ...room,
+                                  is_wishlisted: !room.is_wishlisted,
+                              }
+                            : room,
+                    ),
             );
             toast.success(message);
         } catch {
