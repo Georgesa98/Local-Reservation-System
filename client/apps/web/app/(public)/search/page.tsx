@@ -3,13 +3,23 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, MapPin, Sparkles } from "lucide-react";
+import {
+    Search,
+    SlidersHorizontal,
+    MapPin,
+    Sparkles,
+    Sliders,
+} from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { toast } from "sonner";
 import { PropertyCard } from "@/components/property-card";
-import type { RoomCard, WishlistParams } from "@/lib/types/room";
+import type {
+    RoomCard,
+    RoomSearchParams,
+    WishlistParams,
+} from "@/lib/types/room";
 import { fetchSearchTopRatedRooms, wishlistRoom } from "./api";
 
 const categories = [
@@ -65,26 +75,37 @@ export default function SearchPage() {
     const searchParams = useSearchParams();
     const initialQuery = searchParams.get("q") || "";
 
+    const [searchQueryInput, setSearchQueryInput] = useState(initialQuery);
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [activeCategory, setActiveCategory] = useState("all");
     const [activeArea, setActiveArea] = useState("all");
+    const [guestInput, setGuestInput] = useState("");
+    const [minPriceInput, setMinPriceInput] = useState("");
+    const [maxPriceInput, setMaxPriceInput] = useState("");
+    const [checkInInput, setCheckInInput] = useState("");
+    const [checkOutInput, setCheckOutInput] = useState("");
+    const [appliedFilters, setAppliedFilters] = useState<RoomSearchParams>({});
     const queryClient = useQueryClient();
 
     const normalizedQuery = searchQuery.trim();
-    const roomsQueryKey = [
-        "rooms",
-        "search",
-        "top-rated",
-        { location: normalizedQuery || "", limit: 18 },
-    ];
+    const backendParams = useMemo<RoomSearchParams>(() => {
+        const params: RoomSearchParams = {
+            ...appliedFilters,
+            limit: 18,
+        };
+
+        if (normalizedQuery) {
+            params.location = normalizedQuery;
+        }
+
+        return params;
+    }, [appliedFilters, normalizedQuery]);
+
+    const roomsQueryKey = ["rooms", "search", "top-rated", backendParams];
 
     const { data, isLoading, isError } = useQuery({
         queryKey: roomsQueryKey,
-        queryFn: () =>
-            fetchSearchTopRatedRooms({
-                location: normalizedQuery || undefined,
-                limit: 18,
-            }),
+        queryFn: () => fetchSearchTopRatedRooms(backendParams),
     });
 
     const rooms = data || [];
@@ -151,16 +172,71 @@ export default function SearchPage() {
         }
     }
 
+    function applyFilters() {
+        const guests = guestInput ? Number(guestInput) : undefined;
+        const minPrice = minPriceInput ? Number(minPriceInput) : undefined;
+        const maxPrice = maxPriceInput ? Number(maxPriceInput) : undefined;
+
+        if (
+            (checkInInput && !checkOutInput) ||
+            (!checkInInput && checkOutInput)
+        ) {
+            toast.error("Please select both check-in and check-out dates.");
+            return;
+        }
+
+        if (checkInInput && checkOutInput && checkOutInput <= checkInInput) {
+            toast.error("Check-out must be after check-in.");
+            return;
+        }
+
+        if (
+            minPrice !== undefined &&
+            maxPrice !== undefined &&
+            maxPrice < minPrice
+        ) {
+            toast.error(
+                "Max price must be greater than or equal to min price.",
+            );
+            return;
+        }
+
+        setSearchQuery(searchQueryInput.trim());
+        setAppliedFilters({
+            guests,
+            min_price: minPrice,
+            max_price: maxPrice,
+            check_in: checkInInput || undefined,
+            check_out: checkOutInput || undefined,
+        });
+    }
+
+    function clearFilters() {
+        setSearchQueryInput("");
+        setSearchQuery("");
+        setGuestInput("");
+        setMinPriceInput("");
+        setMaxPriceInput("");
+        setCheckInInput("");
+        setCheckOutInput("");
+        setAppliedFilters({});
+        setActiveArea("all");
+        setActiveCategory("all");
+    }
+
     return (
         <main className="space-y-8 px-6 pb-28 pt-24">
             <section className="space-y-3">
-                <p className="label-sm">Local Discovery</p>
+                <p className="label-sm">Search Workspace</p>
                 <div className="flex items-end justify-between gap-3">
                     <h1 className="font-headline text-4xl font-extrabold leading-tight tracking-tight text-foreground">
-                        Search nearby stays
+                        Find your exact stay
                     </h1>
-                    <Sparkles className="h-6 w-6 text-primary" />
                 </div>
+                <p className="text-sm text-muted-foreground">
+                    Refine by query, area, and intent. Results come from the
+                    top-rated local index.
+                </p>
             </section>
 
             <section className="ambient-shadow flex w-full items-center gap-1 rounded-full bg-card p-1">
@@ -169,18 +245,77 @@ export default function SearchPage() {
                     <Input
                         type="text"
                         placeholder="Neighborhood, vibe, or room type"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="border-none bg-transparent text-sm font-medium focus-visible:ring-0"
+                        value={searchQueryInput}
+                        onChange={(e) => setSearchQueryInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                applyFilters();
+                            }
+                        }}
+                        className="border-none bg-transparent text-sm font-medium focus-visible:ring-0 h-auto py-3"
                     />
                 </div>
-                <Button
-                    size="icon"
-                    className="h-12 w-12 rounded-full bg-primary from-primary to-primary-container shadow-lg transition-transform active:scale-95"
-                    aria-label="Open filters"
-                >
-                    <SlidersHorizontal className="h-5 w-5" />
-                </Button>
+            </section>
+
+            <section className="rounded-3xl border border-border/40 bg-card p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <Sliders className="h-4 w-4 text-primary" />
+                    Filters
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                    <Input
+                        type="date"
+                        value={checkInInput}
+                        onChange={(e) => setCheckInInput(e.target.value)}
+                        className="h-10 shadow-md border-primary/10"
+                        aria-label="Check-in date"
+                    />
+                    <Input
+                        type="date"
+                        value={checkOutInput}
+                        onChange={(e) => setCheckOutInput(e.target.value)}
+                        className="h-10 shadow-md border-primary/10"
+                        aria-label="Check-out date"
+                    />
+                    <Input
+                        type="number"
+                        min={1}
+                        placeholder="Guests"
+                        value={guestInput}
+                        onChange={(e) => setGuestInput(e.target.value)}
+                        className="h-10 shadow-md border-primary/10"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                        <Input
+                            type="number"
+                            min={0}
+                            placeholder="Min"
+                            value={minPriceInput}
+                            onChange={(e) => setMinPriceInput(e.target.value)}
+                            className="h-10 shadow-md border-primary/10"
+                        />
+                        <Input
+                            type="number"
+                            min={0}
+                            placeholder="Max"
+                            value={maxPriceInput}
+                            onChange={(e) => setMaxPriceInput(e.target.value)}
+                            className="h-10 shadow-md border-primary/10"
+                        />
+                    </div>
+                </div>
+                <div className="mt-3 flex gap-2">
+                    <Button onClick={applyFilters} className="flex-1">
+                        Apply filters
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={clearFilters}
+                        className="flex-1"
+                    >
+                        Clear
+                    </Button>
+                </div>
             </section>
 
             <section className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
@@ -204,53 +339,10 @@ export default function SearchPage() {
                     );
                 })}
             </section>
-
-            <section className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    <h2 className="font-headline text-xl font-bold tracking-tight">
-                        Popular nearby areas
-                    </h2>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <Button
-                        variant={activeArea === "all" ? "default" : "outline"}
-                        onClick={() => setActiveArea("all")}
-                        className={cn(
-                            "whitespace-nowrap rounded-full px-4 py-2 text-sm",
-                            activeArea === "all"
-                                ? "border-primary bg-primary text-white"
-                                : "border-0 bg-card text-muted-foreground",
-                        )}
-                    >
-                        All areas
-                    </Button>
-                    {popularAreas.map((area) => {
-                        const isActive = activeArea === area.label;
-
-                        return (
-                            <Button
-                                key={area.label}
-                                variant={isActive ? "default" : "outline"}
-                                onClick={() => setActiveArea(area.label)}
-                                className={cn(
-                                    "whitespace-nowrap rounded-full px-4 py-2 text-sm",
-                                    isActive
-                                        ? "border-primary bg-primary text-white"
-                                        : "border-0 bg-card text-muted-foreground",
-                                )}
-                            >
-                                {area.label} ({area.count})
-                            </Button>
-                        );
-                    })}
-                </div>
-            </section>
-
             <section className="space-y-5 pb-2">
                 <div className="flex items-end justify-between">
                     <h2 className="font-headline text-2xl font-bold tracking-tight">
-                        Top rated nearby
+                        Matching stays
                     </h2>
                     <span className="text-sm font-semibold text-muted-foreground">
                         {topRatedRooms.length} results

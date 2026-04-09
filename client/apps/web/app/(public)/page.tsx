@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search, SlidersHorizontal, MapIcon } from "lucide-react";
+import { Search, SlidersHorizontal, MapIcon, ArrowRight } from "lucide-react";
 import { Input } from "@workspace/ui/components/input";
 import { Button } from "@workspace/ui/components/button";
 import { PropertyCard } from "@/components/property-card";
@@ -12,21 +12,15 @@ import { cn } from "@workspace/ui/lib/utils";
 import type { RoomCard, WishlistParams } from "@/lib/types/room";
 import { toast } from "sonner";
 
-const categories = [
-    {
-        id: "modern-villas",
-        label: "Modern Villas",
-        icon: "villa",
-        active: true,
-    },
-    { id: "castles", label: "Castles", icon: "castle", active: false },
-    { id: "cabins", label: "Cabins", icon: "cabin", active: false },
-    { id: "penthouses", label: "Penthouses", icon: "apartment", active: false },
+const discoveryIntents = [
+    { id: "weekend", label: "Weekend escape", query: "weekend" },
+    { id: "family", label: "Family stay", query: "family" },
+    { id: "work", label: "Work-friendly", query: "business" },
+    { id: "budget", label: "Budget", query: "budget" },
 ];
 
 export default function LandingPage() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [activeCategory, setActiveCategory] = useState("modern-villas");
     const router = useRouter();
     const queryClient = useQueryClient();
     const roomsQueryKey = ["rooms", "featured", { limit: 6 }];
@@ -71,138 +65,132 @@ export default function LandingPage() {
         router.push(`/search?q=${encodeURIComponent(query)}`);
     }
 
+    function goToIntentSearch(query: string) {
+        router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+
     return (
-        <>
-            {/* Main Content */}
-            <main className="px-6 pt-24 space-y-10">
-                {/* Hero Section */}
-                <section className="space-y-6">
-                    <div className="space-y-2">
-                        <p className="label-sm">Curated Collections</p>
-                        <h1 className="font-headline text-4xl font-extrabold leading-tight tracking-tight text-foreground">
-                            Find your next{" "}
-                            <span className="text-primary">masterpiece</span>{" "}
-                            stay.
-                        </h1>
-                    </div>
+        <main className="space-y-10 px-6 pb-28 pt-24">
+            <section className="space-y-6">
+                <div className="space-y-2">
+                    <p className="label-sm">Discover Local Stays</p>
+                    <h1 className="font-headline text-4xl font-extrabold leading-tight tracking-tight text-foreground">
+                        Find a stay that fits your
+                        <span className="text-primary"> moment</span>.
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        Start with inspiration here, then jump into Search to
+                        filter by what matters.
+                    </p>
+                </div>
 
-                    {/* Search Bar */}
-                    <div className="ambient-shadow flex w-full items-center gap-1 rounded-full bg-card p-1">
-                        <div className="flex flex-1 items-center gap-3 px-5">
-                            <Search className="h-5 w-5 text-muted-foreground" />
-                            <Input
-                                type="text"
-                                placeholder="Where to next?"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                        goToSearch();
-                                    }
-                                }}
-                                className="border-none bg-transparent text-sm font-medium focus-visible:ring-0"
-                            />
-                        </div>
+                <div className="ambient-shadow flex w-full items-center gap-1 rounded-full bg-card p-1">
+                    <div className="flex flex-1 items-center gap-3 px-5">
+                        <Search className="h-5 w-5 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Try: downtown, family, weekend"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    goToSearch();
+                                }
+                            }}
+                            className="border-none h-auto py-3 bg-transparent text-sm font-medium focus-visible:ring-0"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <section className="space-y-3">
+                <div className="flex items-end justify-between">
+                    <h2 className="font-headline text-xl font-bold tracking-tight">
+                        Start with an intent
+                    </h2>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Quick jump
+                    </span>
+                </div>
+                <div className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {discoveryIntents.map((intent) => (
                         <Button
-                            size="icon"
-                            onClick={goToSearch}
-                            className="h-12 w-12 rounded-full bg-primary from-primary to-primary-container shadow-lg transition-transform active:scale-95"
+                            key={intent.id}
+                            variant="outline"
+                            onClick={() => goToIntentSearch(intent.query)}
+                            className={cn(
+                                "whitespace-nowrap rounded-full border-0 bg-card px-5 py-2.5 text-sm font-semibold text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground",
+                            )}
                         >
-                            <SlidersHorizontal className="h-5 w-5" />
+                            {intent.label}
                         </Button>
-                    </div>
-                </section>
+                    ))}
+                </div>
+            </section>
 
-                {/* Category Chips */}
-                <section className="-mx-6 flex gap-3 overflow-x-auto px-6 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {categories.map((category) => {
-                        const isActive = activeCategory === category.id;
+            <section className="space-y-6">
+                <div className="flex items-end justify-between">
+                    <h2 className="font-headline text-2xl font-bold tracking-tight">
+                        Editor picks this week
+                    </h2>
+                    <Button
+                        variant="ghost"
+                        onClick={() => router.push("/search")}
+                        className="h-auto p-0 text-sm font-bold text-primary"
+                    >
+                        Open Search <ArrowRight className="ml-1 h-4 w-4" />
+                    </Button>
+                </div>
 
-                        return (
-                            <Button
-                                key={category.id}
-                                variant={isActive ? "default" : "outline"}
-                                onClick={() => setActiveCategory(category.id)}
-                                className={cn(
-                                    "flex items-center gap-2 whitespace-nowrap rounded-full px-6 py-3 text-sm font-semibold shadow-md transition-colors",
-                                    isActive && "bg-primary text-white",
-                                    !isActive &&
-                                        "border-0 bg-card text-muted-foreground hover:bg-muted",
-                                )}
-                            >
-                                <span className="text-sm">
-                                    {category.label}
-                                </span>
-                            </Button>
-                        );
-                    })}
-                </section>
-
-                {/* Featured Properties */}
-                <section className="space-y-8 pb-12">
-                    <div className="flex items-end justify-between">
-                        <h2 className="font-headline text-2xl font-bold tracking-tight">
-                            Handpicked for you
-                        </h2>
-                        <span className="text-sm font-bold text-primary">
-                            View all
-                        </span>
-                    </div>
-
-                    {/* Loading State */}
-                    {isLoading && (
-                        <div className="flex flex-col gap-8">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="space-y-4">
-                                    <div className="radius-hero aspect-[4/3] animate-pulse bg-muted" />
-                                    <div className="space-y-2">
-                                        <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
-                                        <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
-                                    </div>
+                {isLoading && (
+                    <div className="flex flex-col gap-8">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="space-y-4">
+                                <div className="radius-hero aspect-[4/3] animate-pulse bg-muted" />
+                                <div className="space-y-2">
+                                    <div className="h-6 w-3/4 animate-pulse rounded bg-muted" />
+                                    <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                            </div>
+                        ))}
+                    </div>
+                )}
 
-                    {/* Error State */}
-                    {!isLoading && isError && (
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <h3 className="mb-2 font-headline text-xl font-bold">
-                                Unable to load properties
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                                Please try again in a moment.
-                            </p>
-                        </div>
-                    )}
+                {!isLoading && isError && (
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                        <h3 className="mb-2 font-headline text-xl font-bold">
+                            Unable to load picks
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                            Please try again in a moment.
+                        </p>
+                    </div>
+                )}
 
-                    {/* Property Cards */}
-                    {!isLoading && !isError && (
-                        <div className="flex flex-col gap-8">
-                            {rooms.map((room) => (
-                                <PropertyCard
-                                    key={room.id}
-                                    room={room}
-                                    onFavoriteClick={handleRoomWishlist}
-                                />
-                            ))}
-                        </div>
-                    )}
+                {!isLoading && !isError && rooms.length > 0 && (
+                    <div className="flex flex-col gap-8">
+                        {rooms.slice(0, 3).map((room) => (
+                            <PropertyCard
+                                key={room.id}
+                                room={room}
+                                onFavoriteClick={handleRoomWishlist}
+                            />
+                        ))}
+                    </div>
+                )}
 
-                    {/* Empty State */}
-                    {!isLoading && !isError && rooms.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12 text-center">
-                            <MapIcon className="mb-4 h-12 w-12 text-muted-foreground" />
-                            <h3 className="mb-2 font-headline text-xl font-bold">
-                                No properties found
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                                Try adjusting your search or check back later.
-                            </p>
-                        </div>
-                    )}
-                </section>
-            </main>
-        </>
+                {!isLoading && !isError && rooms.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                        <MapIcon className="mb-4 h-12 w-12 text-muted-foreground" />
+                        <h3 className="mb-2 font-headline text-xl font-bold">
+                            No properties found
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                            Explore Search for broader matches.
+                        </p>
+                    </div>
+                )}
+            </section>
+        </main>
     );
 }
