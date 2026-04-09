@@ -1,8 +1,6 @@
 .github
-AGENTS.md
 .venv
 .env
-docs
 __pycache__/
 .vscode
 .zed
