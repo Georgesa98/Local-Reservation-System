@@ -728,13 +728,29 @@ class TestStripeAdapter(PaymentTestBase):
             with self.assertRaises(ValueError):
                 StripeAdapter({})
 
+    def test_stripe_adapter_uses_env_webhook_secret_fallback(self):
+        with patch(
+            "api.payment.adapters.stripe.settings.STRIPE_WEBHOOK_SECRET",
+            "whsec_env_fallback",
+        ), patch("api.payment.adapters.stripe.stripe.Webhook.construct_event") as mock_construct:
+            mock_construct.return_value = {"id": "evt_env_fallback"}
+
+            adapter = StripeAdapter({"secret_key": "sk_test_fake"})
+            result = adapter.verify_webhook(b"payload", "sig")
+
+        mock_construct.assert_called_once_with(
+            b"payload", "sig", "whsec_env_fallback"
+        )
+        self.assertEqual(result["id"], "evt_env_fallback")
+
     # H
     def test_verify_webhook_without_webhook_secret_raises_value_error(self):
         # Build adapter with no webhook_secret
-        adapter = StripeAdapter({"secret_key": "sk_test_fake"})
+        with patch("api.payment.adapters.stripe.settings.STRIPE_WEBHOOK_SECRET", ""):
+            adapter = StripeAdapter({"secret_key": "sk_test_fake"})
 
-        with self.assertRaises(ValueError):
-            adapter.verify_webhook(b"payload", "sig")
+            with self.assertRaises(ValueError):
+                adapter.verify_webhook(b"payload", "sig")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

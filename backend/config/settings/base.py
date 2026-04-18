@@ -28,6 +28,7 @@ env = environ.Env(
     TELEGRAM_BOT_TOKEN=str,
     STRIPE_PUBLIC_KEY=str,
     STRIPE_SECRET_KEY=str,
+    STRIPE_WEBHOOK_SECRET=str,
     FIELD_ENCRYPTION_KEY=str,
     CELERY_BROKER_URL=str,
     EMAIL_HOST_USER=str,
@@ -52,6 +53,7 @@ TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
 
 STRIPE_PUBLIC_KEY = env("STRIPE_PUBLIC_KEY")
 STRIPE_SECRET_KEY = env("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
 
 # Email (Gmail SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

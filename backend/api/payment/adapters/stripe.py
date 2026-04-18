@@ -16,7 +16,9 @@ class StripeAdapter(BasePaymentAdapter):
         self._secret_key = configuration.get("secret_key") or getattr(
             settings, "STRIPE_SECRET_KEY", ""
         )
-        self._webhook_secret = configuration.get("webhook_secret")
+        self._webhook_secret = configuration.get("webhook_secret") or getattr(
+            settings, "STRIPE_WEBHOOK_SECRET", ""
+        )
         if not self._secret_key:
             raise ValueError(
                 "StripeAdapter requires a secret key. Set secret_key on the active "
@@ -73,7 +75,8 @@ class StripeAdapter(BasePaymentAdapter):
     def verify_webhook(self, payload: bytes, signature_header: str) -> object:
         if not self._webhook_secret:
             raise ValueError(
-                "StripeAdapter requires 'webhook_secret' in configuration."
+                "StripeAdapter requires a webhook secret. Set webhook_secret on the "
+                "active PaymentProvider or define STRIPE_WEBHOOK_SECRET in backend .env."
             )
         # construct_event validates the signature AND returns the parsed event
         return stripe.Webhook.construct_event(
