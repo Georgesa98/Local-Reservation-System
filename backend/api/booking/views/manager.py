@@ -83,10 +83,13 @@ class BookingListCreateView(APIView):
             }
 
             try:
-                booking = BookingService.create_booking(booking_data)
+                booking, client_secret = BookingService.create_booking(booking_data)
                 response_serializer = BookingSerializer(booking)
+                response_data = dict(response_serializer.data)
+                if client_secret:
+                    response_data["client_secret"] = client_secret
                 return Response(
-                    response_serializer.data, status=status.HTTP_201_CREATED
+                    response_data, status=status.HTTP_201_CREATED
                 )
             except Exception as e:
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

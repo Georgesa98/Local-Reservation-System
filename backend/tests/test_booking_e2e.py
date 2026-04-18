@@ -1,5 +1,6 @@
 import pytest
 from datetime import date, timedelta
+from unittest.mock import patch
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -152,6 +153,28 @@ class BookingE2ETests(TestCase):
         self.assertEqual(response.data["number_of_nights"], 3)
         self.assertEqual(response.data["status"], BookingStatus.PENDING)
         self.assertEqual(response.data["special_requests"], "Late check-in please")
+
+    @patch("api.booking.views.manager.BookingService.create_booking")
+    def test_create_booking_returns_client_secret_when_gateway(self, mock_create_booking):
+        """Booking create should expose Stripe client secret for gateway flows."""
+        self.client.force_authenticate(user=self.manager)
+        mock_create_booking.return_value = (self.booking1, "pi_test_secret_123")
+
+        data = {
+            "guest_id": self.guest_user.id,
+            "room_id": self.room2.id,
+            "check_in_date": str(self.today + timedelta(days=20)),
+            "check_out_date": str(self.today + timedelta(days=23)),
+            "number_of_guests": 2,
+            "booking_source": BookingSource.WEB,
+            "payment_method": "gateway",
+        }
+
+        response = self.client.post(reverse("booking-list-create"), data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["id"], self.booking1.id)
+        self.assertEqual(response.data["client_secret"], "pi_test_secret_123")
 
     def test_create_booking_invalid_dates(self):
         """Test creating booking with check-out before check-in"""
