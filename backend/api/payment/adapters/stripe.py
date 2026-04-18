@@ -1,4 +1,5 @@
 import stripe
+from django.conf import settings
 
 from .base import BasePaymentAdapter
 
@@ -6,14 +7,21 @@ from .base import BasePaymentAdapter
 class StripeAdapter(BasePaymentAdapter):
     """
     Stripe implementation of BasePaymentAdapter.
-    Credentials come from the PaymentProvider.configuration dict (encrypted in DB).
+    Credentials come from the PaymentProvider.configuration dict (encrypted in DB),
+    with backend settings used as a fallback for local/dev setups.
     """
 
     def __init__(self, configuration: dict):
-        self._secret_key = configuration.get("secret_key")
+        configuration = configuration or {}
+        self._secret_key = configuration.get("secret_key") or getattr(
+            settings, "STRIPE_SECRET_KEY", ""
+        )
         self._webhook_secret = configuration.get("webhook_secret")
         if not self._secret_key:
-            raise ValueError("StripeAdapter requires 'secret_key' in configuration.")
+            raise ValueError(
+                "StripeAdapter requires a secret key. Set secret_key on the active "
+                "PaymentProvider or define STRIPE_SECRET_KEY in backend .env."
+            )
 
     def _client(self) -> stripe.StripeClient:
         return stripe.StripeClient(self._secret_key)

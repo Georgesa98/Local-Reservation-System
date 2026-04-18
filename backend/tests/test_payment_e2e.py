@@ -517,6 +517,30 @@ class TestGatewayPayment(PaymentTestBase):
         self.booking.refresh_from_db()
         self.assertEqual(self.booking.status, BookingStatus.PENDING)
 
+    # 20b
+    def test_create_gateway_payment_uses_env_secret_key_when_provider_config_missing(
+        self,
+    ):
+        self.provider.configuration = {}
+        self.provider.save(update_fields=["_configuration"])
+        mock_intent = self._mock_intent()
+
+        with patch(
+            "api.payment.adapters.stripe.settings.STRIPE_SECRET_KEY",
+            "sk_env_fallback",
+        ), patch("api.payment.adapters.stripe.stripe.StripeClient") as mock_client_cls:
+            mock_client = MagicMock()
+            mock_client_cls.return_value = mock_client
+            mock_client.payment_intents.create.return_value = mock_intent
+
+            payment, client_secret = PaymentService.create_gateway_payment(
+                self.booking
+            )
+
+        mock_client_cls.assert_called_once_with("sk_env_fallback")
+        self.assertEqual(payment.payment_type, PaymentType.GATEWAY)
+        self.assertEqual(client_secret, mock_intent.client_secret)
+
     # F
     def test_stripe_error_during_create_payment_intent_does_not_save_payment(self):
         with patch("api.payment.services.PaymentService.get_adapter") as mock_gta:
@@ -680,9 +704,29 @@ class TestStripeAdapter(PaymentTestBase):
             get_adapter(paypal_provider)
 
     # G
-    def test_stripe_adapter_without_secret_key_raises_value_error(self):
-        with self.assertRaises(ValueError):
-            StripeAdapter({})
+    def test_stripe_adapter_uses_env_secret_key_fallback(self):
+        mock_intent = _make_intent_mock(intent_id="pi_env_fallback")
+
+        with patch(
+            "api.payment.adapters.stripe.settings.STRIPE_SECRET_KEY",
+            "sk_env_fallback",
+        ), patch("api.payment.adapters.stripe.stripe.StripeClient") as mock_client_cls:
+            mock_client = MagicMock()
+            mock_client_cls.return_value = mock_client
+            mock_client.payment_intents.create.return_value = mock_intent
+
+            adapter = StripeAdapter({})
+            result = adapter.create_payment_intent(
+                amount_cents=1000, currency="usd", metadata={}
+            )
+
+        mock_client_cls.assert_called_once_with("sk_env_fallback")
+        self.assertEqual(result["id"], "pi_env_fallback")
+
+    def test_stripe_adapter_without_secret_key_or_env_fallback_raises_value_error(self):
+        with patch("api.payment.adapters.stripe.settings.STRIPE_SECRET_KEY", ""):
+            with self.assertRaises(ValueError):
+                StripeAdapter({})
 
     # H
     def test_verify_webhook_without_webhook_secret_raises_value_error(self):
