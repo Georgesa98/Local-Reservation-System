@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { cn } from "@workspace/ui/lib/utils";
 import type { RoomImage } from "@/lib/types/room";
+import { resolveImageUrl } from "../../lib/image-url";
 
 interface ImageCarouselProps {
     images: RoomImage[];
@@ -13,11 +14,6 @@ interface ImageCarouselProps {
 export function ImageCarousel({ images, roomTitle }: ImageCarouselProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(
-        /\/$/,
-        "",
-    ).replace(/\/api$/, "");
 
     useEffect(() => {
         const container = scrollContainerRef.current;
@@ -67,7 +63,7 @@ export function ImageCarousel({ images, roomTitle }: ImageCarouselProps) {
                             className="relative h-full min-w-full shrink-0 snap-center"
                         >
                             <Image
-                                src={image.image}
+                                src={resolveImageUrl(image.image)}
                                 alt={imageAlt}
                                 fill
                                 className="object-cover"

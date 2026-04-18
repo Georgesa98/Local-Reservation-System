@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 import { StarRating } from "./star-rating";
 import type { RoomCard, WishlistParams } from "@/lib/types/room";
+import { resolveImageUrl } from "../lib/image-url";
 import useCurrentUser from "@/hooks/useCurrentUser";
 
 interface PropertyCardProps {
@@ -19,21 +20,14 @@ export function PropertyCard({
 }: PropertyCardProps) {
     const user = useCurrentUser();
     const mainImage = room.main_image;
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(
-        /\/$/,
-        "",
-    ).replace(/\/api$/, "");
-
-    const imageUrl = mainImage?.image
-        ? `${baseUrl}${mainImage.image}`
-        : "/placeholder-room.jpg";
+        const imageUrl = resolveImageUrl(mainImage?.image);
     const imageAlt = mainImage?.alt_text || room.title;
 
     return (
         <article className={cn("group space-y-4", className)}>
             <Link href={`/rooms/${room.id}`} className="block space-y-4">
                 {/* Image Container */}
-                <div className="radius-hero relative aspect-[4/3] overflow-hidden">
+                <div className="radius-hero relative aspect-4/3 overflow-hidden">
                     <Image
                         src={imageUrl}
                         alt={imageAlt}

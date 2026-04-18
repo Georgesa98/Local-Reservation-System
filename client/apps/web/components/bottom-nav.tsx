@@ -14,12 +14,6 @@ const navItems = [
         href: "/search",
     },
     {
-        id: "trips",
-        label: "Trips",
-        icon: Compass,
-        href: "/trips",
-    },
-    {
         id: "profile",
         label: "Profile",
         icon: User,
@@ -27,9 +21,7 @@ const navItems = [
     },
 ];
 
-const hiddenNavRoutes = [
-    /^\/rooms\/[^/]+$/,
-];
+const hiddenNavRoutes = [/^\/rooms\/[^/]+$/];
 
 export function BottomNav() {
     const pathname = usePathname();
