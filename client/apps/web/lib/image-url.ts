@@ -1,7 +1,7 @@
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "").replace(
-    /\/api$/,
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(
+    /\/$/,
     "",
-);
+).replace(/\/api$/, "");
 
 export function resolveImageUrl(
     imagePath?: string | null,
