@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Compass, User } from "lucide-react";
+import { Home, Search, User } from "lucide-react";
 import { cn } from "@workspace/ui/lib/utils";
 
 const navItems = [
@@ -21,7 +21,7 @@ const navItems = [
     },
 ];
 
-const hiddenNavRoutes = [/^\/rooms\/[^/]+$/];
+const hiddenNavRoutes = [/^\/rooms\/[^/]+$/, /^\/bookings(?:\/.*)?$/];
 
 export function BottomNav() {
     const pathname = usePathname();

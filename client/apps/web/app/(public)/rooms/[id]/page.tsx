@@ -60,10 +60,15 @@ export default function RoomDetailPage({ params }: RoomDetailPageProps) {
         }
     };
     const handleWishlist = async () => {
+        if (!room?.id || !user.user?.user_id) {
+            toast.error("Please login to save wishlist items.");
+            return;
+        }
+
         try {
             const message = await wishlistRoom({
-                room_id: room?.id,
-                user_id: user.user?.user_id,
+                room_id: room.id,
+                user_id: user.user.user_id,
             });
             queryClient.setQueryData<Room>(roomDetailsQueryKey, (room) =>
                 room
@@ -79,9 +84,7 @@ export default function RoomDetailPage({ params }: RoomDetailPageProps) {
         }
     };
     const handleReserve = () => {
-        // TODO: Navigate to booking flow
-        console.log("Reserve clicked for room:", id);
-        alert("Booking flow coming soon!");
+        router.push(`/bookings/checkout?roomId=${encodeURIComponent(id)}`);
     };
 
     const handleChatClick = () => {
