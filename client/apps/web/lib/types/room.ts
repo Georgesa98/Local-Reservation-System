@@ -37,6 +37,7 @@ export interface Room {
     ratings_count: number;
     images: RoomImage[];
     reviews: RoomReview[];
+    blocked_dates?: string[];
 }
 
 // Standard paginated response (count, next, previous, results)

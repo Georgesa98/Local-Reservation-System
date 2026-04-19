@@ -5,7 +5,7 @@ import axios from "axios";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { format, differenceInCalendarDays } from "date-fns";
+import { format, differenceInCalendarDays, parseISO } from "date-fns";
 import {
     ArrowLeft,
     CalendarDays,
@@ -106,6 +106,12 @@ export default function BookingCheckoutPage() {
     const room = roomQuery.data;
     const roomImage =
         room?.images.find((image) => image.is_main) || room?.images[0];
+    const blockedDates = useMemo(
+        () =>
+            room?.blocked_dates?.map((blockedDate) => parseISO(blockedDate)) ??
+            [],
+        [room?.blocked_dates],
+    );
 
     useEffect(() => {
         if (!currentUser.user) {
@@ -391,7 +397,11 @@ export default function BookingCheckoutPage() {
                     Stripe handles card collection in the next step.
                 </p>
 
-                <StayDateCalendar value={dateRange} onChange={setDateRange} />
+                <StayDateCalendar
+                    value={dateRange}
+                    onChange={setDateRange}
+                    blockedDates={blockedDates}
+                />
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div className="rounded-2xl bg-surface-container-low p-3">

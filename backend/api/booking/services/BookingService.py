@@ -13,7 +13,7 @@ def _calculate_nights(check_in_date, check_out_date):
 def _check_availability(room, check_in_date, check_out_date):
     """Check if the room is available for the given dates."""
     blocked_dates = RoomAvailability.objects.filter(
-        room=room, start_date__lte=check_out_date, end_date__gte=check_in_date
+        room=room, start_date__lt=check_out_date, end_date__gt=check_in_date
     ).exists()
     if blocked_dates:
         raise Exception("Room is blocked for the selected dates.")

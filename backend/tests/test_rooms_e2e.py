@@ -1,8 +1,10 @@
 import pytest
+from datetime import date
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
+from api.booking.models import Booking, BookingSource, BookingStatus
 from api.accounts.models import Guest, User, Manager
 from api.room.models import Room, PricingRule, RoomAvailability
 
@@ -256,6 +258,48 @@ class RoomE2ETests(TestCase):
         response = self.client.get(reverse("room-public-list"), {"location": "SF"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
+
+    def test_public_room_detail_returns_blocked_dates(self):
+        RoomAvailability.objects.create(
+            room=self.room1,
+            start_date=date(2026, 4, 20),
+            end_date=date(2026, 4, 23),
+            reason="maintenance",
+            notes="Private manager note",
+            created_by=self.manager,
+        )
+        Booking.objects.create(
+            guest=self.guest,
+            room=self.room1,
+            check_in_date=date(2026, 4, 25),
+            check_out_date=date(2026, 4, 27),
+            number_of_nights=2,
+            number_of_guests=2,
+            total_price="200.00",
+            status=BookingStatus.CONFIRMED,
+            created_by=self.manager,
+            booking_source=BookingSource.WEB,
+            special_requests="",
+        )
+
+        response = self.client.get(
+            reverse("room-public-detail", kwargs={"pk": self.room1.id})
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        room_data = response.data["data"]
+        self.assertEqual(
+            room_data["blocked_dates"],
+            [
+                "2026-04-20",
+                "2026-04-21",
+                "2026-04-22",
+                "2026-04-25",
+                "2026-04-26",
+            ],
+        )
+        self.assertNotIn("reason", room_data)
+        self.assertNotIn("availabilities", room_data)
 
 
 class PricingRuleE2ETests(TestCase):

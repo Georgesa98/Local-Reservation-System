@@ -1,5 +1,8 @@
 from rest_framework import serializers
 
+from api.booking.models import BookingStatus
+from api.common.date_ranges import expand_date_ranges
+
 from .models import Room, RoomImage, PricingRule, RoomAvailability
 
 
@@ -153,13 +156,14 @@ class PublicRoomSerializer(serializers.ModelSerializer):
     """
     Lean serializer for unauthenticated / guest browsing.
 
-    Exposes only guest-relevant fields — pricing_rules and availabilities
-    are internal management data and must not be leaked to the public.
+    Exposes only guest-relevant fields. Raw availability reasons stay internal;
+    public consumers only receive blocked dates.
     Published reviews are included so guests can read ratings.
     """
 
     images = RoomImageSerializer(many=True, read_only=True)
     reviews = serializers.SerializerMethodField()
+    blocked_dates = serializers.SerializerMethodField()
     is_wishlisted = serializers.BooleanField(read_only=True, default=False)
 
     class Meta:
@@ -178,6 +182,7 @@ class PublicRoomSerializer(serializers.ModelSerializer):
             "ratings_count",
             "images",
             "reviews",
+            "blocked_dates",
             "is_wishlisted",
         ]
         read_only_fields = fields
@@ -188,6 +193,21 @@ class PublicRoomSerializer(serializers.ModelSerializer):
 
         reviews = obj.reviews.filter(is_published=True)
         return PublicReviewSerializer(reviews, many=True).data
+
+    def get_blocked_dates(self, obj):
+        availability_ranges = obj.availabilities.values_list("start_date", "end_date")
+        booking_ranges = obj.bookings.filter(
+            status__in=[
+                BookingStatus.PENDING,
+                BookingStatus.CONFIRMED,
+                BookingStatus.CHECKED_IN,
+            ]
+        ).values_list("check_in_date", "check_out_date")
+
+        blocked_dates = expand_date_ranges(
+            list(availability_ranges) + list(booking_ranges)
+        )
+        return [blocked_date.isoformat() for blocked_date in blocked_dates]
 
 
 class RoomSerializer(serializers.ModelSerializer):

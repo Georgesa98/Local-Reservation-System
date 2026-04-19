@@ -1,5 +1,6 @@
 "use client";
 
+import { addDays } from "date-fns";
 import { Calendar } from "@workspace/ui/components/calendar";
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -20,6 +21,26 @@ function getStartOfToday(): Date {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+function rangeContainsBlockedDate(
+    from: Date,
+    to: Date,
+    blockedDates: Date[],
+): boolean {
+    const blockedTimestamps = new Set(
+        blockedDates.map((blockedDate) => blockedDate.getTime()),
+    );
+
+    let currentDate = from;
+    while (currentDate < to) {
+        if (blockedTimestamps.has(currentDate.getTime())) {
+            return true;
+        }
+        currentDate = addDays(currentDate, 1);
+    }
+
+    return false;
+}
+
 export function StayDateCalendar({
     value,
     onChange,
@@ -27,6 +48,7 @@ export function StayDateCalendar({
     blockedDates = [],
 }: StayDateCalendarProps) {
     const minDate = getStartOfToday();
+    const normalizedBlockedDates = blockedDates ?? [];
 
     return (
         <div
@@ -39,11 +61,30 @@ export function StayDateCalendar({
                 mode="range"
                 numberOfMonths={1}
                 selected={value}
-                onSelect={(next) => onChange(next as StayDateRange | undefined)}
-                disabled={[
-                    { before: minDate },
-                    ...blockedDates,
-                ]}
+                onSelect={(next) => {
+                    const nextRange = next as StayDateRange | undefined;
+
+                    if (
+                        nextRange?.from &&
+                        nextRange.to &&
+                        rangeContainsBlockedDate(
+                            nextRange.from,
+                            nextRange.to,
+                            normalizedBlockedDates,
+                        )
+                    ) {
+                        onChange({ from: nextRange.from });
+                        return;
+                    }
+
+                    onChange(nextRange);
+                }}
+                disabled={[{ before: minDate }, ...normalizedBlockedDates]}
+                modifiers={{ blocked: normalizedBlockedDates }}
+                modifiersClassNames={{
+                    blocked:
+                        "bg-destructive/10 text-destructive opacity-100 ring-1 ring-destructive/15",
+                }}
                 className="w-full"
             />
         </div>
